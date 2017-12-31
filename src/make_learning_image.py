@@ -9,7 +9,7 @@ import cv2
 ESC_KEY = 0x1d
 # p key (pause)
 P_KEY = 0x70
-# s key (restart)
+# s key (save data and restart)
 S_KEY = 0x73
 # intervel of receive key
 INTERVAL = 1
