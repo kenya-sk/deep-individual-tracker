@@ -83,9 +83,16 @@ class Motion:
 
     # save cordinate and figure. there are feature point information
     def save_data(self):
-        cv2.imwrite("../image/{}.png".format(self.frameNum), self.frame)
-        np.savetxt("../data/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
-        print("save data frame number: {}".format(self.frameNum))
+        if self.features is None:
+            print("Not select feature")
+        else:
+            cv2.imwrite("../image/{}.png".format(self.frameNum), self.frame)
+            #convert: opencv axis -> matplotlib axis
+            print(self.frame.shape[1])
+            self.features[:, 1] = self.frame.shape[0] - self.features[:, 1]
+            np.savetxt("../data/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
+            print("save data frame number: {}".format(self.frameNum))
+        return
 
 
 if __name__ == "__main__":
