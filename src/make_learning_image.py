@@ -3,6 +3,8 @@
 
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 import cv2
 
 # esc key (end)
@@ -84,15 +86,22 @@ class Motion:
     # save cordinate and figure. there are feature point information
     def save_data(self):
         if self.features is None:
-            print("Not select feature")
+            print("Not select feature point")
         else:
             cv2.imwrite("../image/{}.png".format(self.frameNum), self.frame)
             #convert: opencv axis -> matplotlib axis
-            print(self.frame.shape[1])
             self.features[:, 1] = self.frame.shape[0] - self.features[:, 1]
             np.savetxt("../data/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
+            self.plot_density_estimation()
             print("save data frame number: {}".format(self.frameNum))
         return
+
+    def plot_density_estimation(self):
+        plt.figure()
+        sns.kdeplot(self.features, kernel="gau", shade="False", bw=3)
+        plt.xlim(0, 640)
+        plt.ylim(0, 360)
+        plt.savefig("../image/dens_{}.png".format(self.frameNum))
 
 
 if __name__ == "__main__":
