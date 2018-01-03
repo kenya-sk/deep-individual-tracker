@@ -4,6 +4,7 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 import cv2
 
@@ -83,6 +84,20 @@ class Motion:
             self.features = np.append(self.features, [[x, y]], axis=0).astype(np.uint16)
             self.status = np.append(self.status, 1)
 
+
+    # plot and save 2D kernel density estimation
+    def plot_density_estimation(self):
+        feature_df = pd.DataFrame(self.features, columns=["x", "y"])
+        f, ax = plt.subplots(figsize=(self.frame.shape[1]/100, self.frame.shape[0]/100))
+        #plt.subplots_adjust(left=0, right=1.0, bottom=0, top=1.0, hspace=0.0, wspace=0.0)
+        ax.tick_params(labelbottom=False, bottom=False, labelleft=False, left=False)
+        plt.axis("off")
+        sns.kdeplot(feature_df.x, feature_df.y, kernel="gau", n_lavels=60, shade="True", bw=6)
+        plt.xlim(0, self.frame.shape[1])
+        plt.ylim(0, self.frame.shape[0])
+        plt.savefig("../image/dens_{}.png".format(self.frameNum))
+
+
     # save cordinate and figure. there are feature point information
     def save_data(self):
         if self.features is None:
@@ -95,13 +110,6 @@ class Motion:
             self.plot_density_estimation()
             print("save data frame number: {}".format(self.frameNum))
         return
-
-    def plot_density_estimation(self):
-        plt.figure()
-        sns.kdeplot(self.features, kernel="gau", shade="False", bw=3)
-        plt.xlim(0, 640)
-        plt.ylim(0, 360)
-        plt.savefig("../image/dens_{}.png".format(self.frameNum))
 
 
 if __name__ == "__main__":
