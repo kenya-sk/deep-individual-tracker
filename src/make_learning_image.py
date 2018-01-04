@@ -8,14 +8,14 @@ import pandas as pd
 import seaborn as sns
 import cv2
 
-# esc key (end)
-ESC_KEY = 0x1d
+# q key (end)
+Q_KEY = 0x71 
 # p key (pause)
 P_KEY = 0x70
 # s key (save data and restart)
 S_KEY = 0x73
 # intervel of receive key
-INTERVAL = 0.1
+INTERVAL = 1
 
 
 class Motion:
@@ -48,8 +48,8 @@ class Motion:
             ret, self.frame = self.video.read()
 
             # each key operation
-            key = cv2.waitKey(self.interval)
-            if key == ESC_KEY:
+            key = cv2.waitKey(self.interval) & 0xFF
+            if key == Q_KEY:
                 break
             elif key == P_KEY:
                 self.interval = 0
