@@ -15,7 +15,7 @@ P_KEY = 0x70
 # s key (save data and restart)
 S_KEY = 0x73
 # intervel of receive key
-INTERVAL = 1
+INTERVAL = 0.1
 
 
 class Motion:
