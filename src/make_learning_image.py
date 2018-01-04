@@ -111,6 +111,17 @@ class Motion:
             print("save data frame number: {}".format(self.frameNum))
         return
 
+    def gauss_kernel(point_arr, sigma_pow):
+        width = self.frame.shape[1]
+        height = self.frame.shape[0]
+        densMap = np.zeros((width, height))
+        for i in range(width):
+            for j in range(height):
+                for point in point_arr:
+                    kernel = np.exp((-np.linalg.norm([i, j] - point)**2) / (2*sigma_pow))
+                    densMap[i][j] += kernel
+        return densMap
+
 
 if __name__ == "__main__":
     inputFilePath = input("input movie file path: ")
