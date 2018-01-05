@@ -26,8 +26,8 @@ class Motion:
         self.video = cv2.VideoCapture(inputFilePath)
         self.interval = INTERVAL
         self.frame = None
-		self.width = None
-		self.height = None
+        self.width = None
+        self.height = None
         self.features = None
         self.status = None
         self.frameNum = 0
@@ -41,8 +41,8 @@ class Motion:
 
         # processing of initial frame
         ret, self.frame = self.video.read()
-		self.width = self.frame.shape[1]
-		self.height = self.frame.shape[0]
+        self.width = self.frame.shape[1]
+        self.height = self.frame.shape[0]
         for i in range(width):
             for j in range(height):
                 self.cordinateMatrix[i][j] = [i, j]
@@ -136,7 +136,7 @@ class Motion:
             print("save data frame number: {}".format(self.frameNum))
         return
 
-    # calculate density map by gauss kernel 
+    # calculate density map by gauss kernel
     def gauss_kernel(self, sigmaPow):
         kernel = np.zeros((self.width, self.height))
 
