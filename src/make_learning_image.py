@@ -9,7 +9,7 @@ import seaborn as sns
 import cv2
 
 # q key (end)
-Q_KEY = 0x71 
+Q_KEY = 0x71
 # p key (pause)
 P_KEY = 0x70
 # s key (save data and restart)
@@ -85,19 +85,6 @@ class Motion:
             self.status = np.append(self.status, 1)
 
 
-    # plot and save 2D kernel density estimation
-    def plot_density_estimation(self):
-        feature_df = pd.DataFrame(self.features, columns=["x", "y"])
-        f, ax = plt.subplots(figsize=(self.frame.shape[1]/100, self.frame.shape[0]/100))
-        #plt.subplots_adjust(left=0, right=1.0, bottom=0, top=1.0, hspace=0.0, wspace=0.0)
-        ax.tick_params(labelbottom=False, bottom=False, labelleft=False, left=False)
-        plt.axis("off")
-        sns.kdeplot(feature_df.x, feature_df.y, kernel="gau", n_lavels=60, shade="True", bw=6)
-        plt.xlim(0, self.frame.shape[1])
-        plt.ylim(0, self.frame.shape[0])
-        plt.savefig("../image/dens_{}.png".format(self.frameNum))
-
-
     # save cordinate and figure. there are feature point information
     def save_data(self):
         if self.features is None:
@@ -106,21 +93,31 @@ class Motion:
             cv2.imwrite("../image/{}.png".format(self.frameNum), self.frame)
             #convert: opencv axis -> matplotlib axis
             self.features[:, 1] = self.frame.shape[0] - self.features[:, 1]
-            np.savetxt("../data/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
-            self.plot_density_estimation()
+            np.savetxt("../data/cord/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
+            self.gauss_kernel(sigmaPow=4)
             print("save data frame number: {}".format(self.frameNum))
         return
 
-    def gauss_kernel(point_arr, sigma_pow):
+    # calculate density map by gauss kernel 
+    def gauss_kernel(self, sigmaPow):
         width = self.frame.shape[1]
         height = self.frame.shape[0]
-        densMap = np.zeros((width, height))
+        kernel = np.zeros((width, height))
+
+        cordMatrix = np.zeros((width, height, 2), dtype="int64")
         for i in range(width):
             for j in range(height):
-                for point in point_arr:
-                    kernel = np.exp((-np.linalg.norm([i, j] - point)**2) / (2*sigma_pow))
-                    densMap[i][j] += kernel
-        return densMap
+                cordMatrix[i][j] = [i, j]
+
+        for point in self.features:
+            tmpCordMatrix = np.array(cordMatrix)
+            pointMatrix = np.full((width, height, 2), point)
+            diffMatrix = tmpCordMatrix - pointMatrix
+            powMatrix = diffMatrix * diffMatrix
+            norm = powMatrix[:, :, 0] + powMatrix[:, :, 1]
+            kernel += np.exp(-norm/ (2 * sigmaPow))
+
+        np.save("../data/dens/{}".format(self.frameNum), kernel)
 
 
 if __name__ == "__main__":
