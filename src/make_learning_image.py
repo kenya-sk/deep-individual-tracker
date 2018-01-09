@@ -30,8 +30,9 @@ class Motion:
         self.height = None
         self.features = None
         self.status = None
+        self.cordinateMatrix = None
         self.frameNum = 0
-        self.cordinateMatrix = np.zeros((width, height, 2), dtype="int64")
+
 
     # main method
     def run(self):
@@ -43,39 +44,10 @@ class Motion:
         ret, self.frame = self.video.read()
         self.width = self.frame.shape[1]
         self.height = self.frame.shape[0]
-        for i in range(width):
-            for j in range(height):
+        self.cordinateMatrix = np.zeros((self.width, self.height, 2), dtype="int64")
+        for i in range(self.width):
+            for j in range(self.height):
                 self.cordinateMatrix[i][j] = [i, j]
-
-    # main method
-    def run(self):
-        if not(self.video.isOpened()):
-            print("Can not read movie file")
-            sys.exit(1)
-
-        # processing of initial frame
-        ret, self.frame = self.video.read()
-
-        while ret:
-            self.features = None
-            self.frameNum += 1
-            # display image
-            cv2.imshow("select feature point", self.frame)
-            # processing of next frame
-            ret, self.frame = self.video.read()
-
-            # each key operation
-            key = cv2.waitKey(self.interval) & 0xFF
-            if key == Q_KEY:
-                break
-            elif key == P_KEY:
-                self.interval = 0
-            elif key == S_KEY:
-                self.save_data()
-                self.interval = INTERVAL
-
-        # end processing
-        cv2.destroyAllWindows()
 
         while ret:
             self.features = None
