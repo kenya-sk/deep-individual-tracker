@@ -120,7 +120,7 @@ class Motion:
             norm = powMatrix[:, :, 0] + powMatrix[:, :, 1]
             kernel += np.exp(-norm/ (2 * sigmaPow))
 
-        np.save("../data/dens/{}".format(self.frameNum), kernel)
+        np.save("../data/dens/0422_10_{}".format(self.frameNum), kernel)
 
 
 if __name__ == "__main__":
