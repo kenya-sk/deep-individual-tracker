@@ -4,8 +4,6 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
 import cv2
 
 # q key (end)
