@@ -2,7 +2,7 @@
 
 ### src
 1. get_image_from_movie.cpp
-    * get images from movie at arbitrary interval (default: 1 sec).
+    * get images from movie at arbitrary interval (default: 1 min).
 
 2. learningImg_from_movie.py
     * load movie, select feature points with a mouse for specific frames,
