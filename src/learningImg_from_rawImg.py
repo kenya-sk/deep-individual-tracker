@@ -38,6 +38,7 @@ class ImgMotion(learningImg_from_movie.Motion):
                 break
         cv2.destroyAllWindows()
 
+
     def get_frameNum(self):
         return self.inputFilePath.split("/")[-1].split(".")[0]
 

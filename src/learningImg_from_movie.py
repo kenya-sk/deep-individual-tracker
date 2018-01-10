@@ -80,7 +80,7 @@ class Motion:
         # draw and add feature point
         cv2.circle(self.frame, (x, y), 4, (0, 0, 255), -1, 8, 0)
         self.add_feature(x, y)
-        cv2.imshow("select feature point", self.frame)
+        cv2.imshow("select feature points", self.frame)
         return
 
 
