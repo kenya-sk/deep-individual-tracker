@@ -8,6 +8,6 @@
     * load movie, select feature points with a mouse for specific frames,
     and output the coordinate of density map.
 
-3. lerningImg_from_rawImg.py
+3. learningImg_from_rawImg.py
     * input the directory path, select feature points with a mouse for all image file,
     and output the coordinate of density map.
