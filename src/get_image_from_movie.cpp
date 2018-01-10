@@ -34,7 +34,7 @@ void movie_to_image(std::string inputFilePath, std::string outputDircPath){
         frameNum++;
 
         if(frameNum % interval == 0){
-            outputFilePath = outputDircPath + "/11_" + to_string(frameNum) + ".png";
+            outputFilePath = outputDircPath + "/13_" + to_string(frameNum) + ".png";
             cv::imwrite(outputFilePath, frame);
             cout << "Saved image(frame number: " << frameNum << ")" << endl;
         }

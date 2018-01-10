@@ -3,7 +3,6 @@
 
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
 import cv2
 
 # q key (end)
@@ -19,9 +18,10 @@ INTERVAL = 1
 class Motion:
     # constructor
     def __init__(self, inputFilePath):
-        cv2.namedWindow("select feature point")
-        cv2.setMouseCallback("select feature point", self.mouse_event)
-        self.video = cv2.VideoCapture(inputFilePath)
+        cv2.namedWindow("select feature points")
+        cv2.setMouseCallback("select feature points", self.mouse_event)
+        self.inputFilePath = inputFilePath
+        self.video = None
         self.interval = INTERVAL
         self.frame = None
         self.width = None
@@ -34,6 +34,7 @@ class Motion:
 
     # main method
     def run(self):
+        self.video = cv2.VideoCapture(self.inputFilePath)
         if not(self.video.isOpened()):
             print("Can not read movie file")
             sys.exit(1)
@@ -51,7 +52,7 @@ class Motion:
             self.features = None
             self.frameNum += 1
             # display image
-            cv2.imshow("select feature point", self.frame)
+            cv2.imshow("select feature points", self.frame)
             # processing of next frame
             ret, self.frame = self.video.read()
 
@@ -98,7 +99,7 @@ class Motion:
         if self.features is None:
             print("Not select feature point")
         else:
-            cv2.imwrite("../image/{}.png".format(self.frameNum), self.frame)
+            cv2.imwrite("../image/plot/{}.png".format(self.frameNum), self.frame)
             #convert: opencv axis -> matplotlib axis
             self.features[:, 1] = self.frame.shape[0] - self.features[:, 1]
             np.savetxt("../data/cord/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
@@ -118,7 +119,7 @@ class Motion:
             norm = powMatrix[:, :, 0] + powMatrix[:, :, 1]
             kernel += np.exp(-norm/ (2 * sigmaPow))
 
-        np.save("../data/dens/0422_10_{}".format(self.frameNum), kernel)
+        np.save("../data/dens/{}".format(self.frameNum), kernel)
 
 
 if __name__ == "__main__":
