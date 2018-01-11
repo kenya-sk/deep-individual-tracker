@@ -100,8 +100,6 @@ class Motion:
             print("Error: Not select feature point")
         else:
             cv2.imwrite("../image/grandTruth/{}.png".format(self.frameNum), self.frame)
-            #convert: opencv axis -> matplotlib axis
-            self.features[:, 1] = self.frame.shape[0] - self.features[:, 1]
             np.savetxt("../data/cord/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
             self.gauss_kernel(sigmaPow=4)
             print("save data frame number: {}".format(self.frameNum))
@@ -119,7 +117,7 @@ class Motion:
             norm = powMatrix[:, :, 0] + powMatrix[:, :, 1]
             kernel += np.exp(-norm/ (2 * sigmaPow))
 
-        np.save("../data/dens/{}".format(self.frameNum), kernel)
+        np.save("../data/dens/{}".format(self.frameNum), kernel.T)
 
 
 if __name__ == "__main__":
