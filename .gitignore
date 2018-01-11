@@ -15,7 +15,6 @@ data/
 !*.cpp
 !*.h
 !*.sh
-!*.ipynb
 !*.md
 !CMakeLists.txt
 
