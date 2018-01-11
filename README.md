@@ -11,3 +11,6 @@
 3. image2trainingData.py
     * input the directory path, select feature points with a mouse for all image file,
     and output the coordinate of density map.
+
+4. img2localimg.py
+	* make local image from original image and cordinate of feature points.

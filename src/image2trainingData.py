@@ -7,12 +7,12 @@ import re
 import numpy as np
 import cv2
 
-import learningImg_from_movie
+import movie2trainingData
 
 # s key (save data and restart)
 S_KEY = 0x73
 
-class ImgMotion(learningImg_from_movie.Motion):
+class ImgMotion(movie2trainingData.Motion):
     # constructor
     def __init__(self, inputFilePath):
         super().__init__(inputFilePath)
