@@ -99,7 +99,7 @@ class Motion:
         if self.features is None:
             print("Error: Not select feature point")
         else:
-            cv2.imwrite("../image/plot/{}.png".format(self.frameNum), self.frame)
+            cv2.imwrite("../image/grandTruth/{}.png".format(self.frameNum), self.frame)
             #convert: opencv axis -> matplotlib axis
             self.features[:, 1] = self.frame.shape[0] - self.features[:, 1]
             np.savetxt("../data/cord/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
