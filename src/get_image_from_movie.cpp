@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void movie_to_image(std::string inputFilePath, std::string outputDircPath){
+void movie_to_image(std::string inputFilePath, std::string outputDirPath){
     cv::VideoCapture capture(inputFilePath);
     if(!capture.isOpened()){
         cout << "Error: can not open movie file." << endl;
@@ -34,7 +34,7 @@ void movie_to_image(std::string inputFilePath, std::string outputDircPath){
         frameNum++;
 
         if(frameNum % interval == 0){
-            outputFilePath = outputDircPath + "/13_" + to_string(frameNum) + ".png";
+            outputFilePath = outputDirPath + "/16_" + to_string(frameNum) + ".png";
             cv::imwrite(outputFilePath, frame);
             cout << "Saved image(frame number: " << frameNum << ")" << endl;
         }
@@ -44,14 +44,14 @@ void movie_to_image(std::string inputFilePath, std::string outputDircPath){
 }
 
 int main(int argc, char **argv) {
-    string inputFilePath, outputDircPath;
+    string inputFilePath, outputDirPath;
     cout << "Input movie file path: ";
     cin >> inputFilePath;
     cout << "\nOutput directory path: ";
-    cin >> outputDircPath;
+    cin >> outputDirPath;
     cout << endl;
 
-    movie_to_image(inputFilePath, outputDircPath);
+    movie_to_image(inputFilePath, outputDirPath);
 
     return 0;
 }

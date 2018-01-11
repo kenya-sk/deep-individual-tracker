@@ -1,7 +1,9 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import os.path
 import sys
+import re
 import numpy as np
 import cv2
 
@@ -18,7 +20,7 @@ class ImgMotion(learningImg_from_movie.Motion):
     def run(self):
         self.frame = cv2.imread(self.inputFilePath)
         if self.frame is None:
-            print("Can not open image file")
+            print("Error: Can not open image file")
             sys.exit(1)
 
         self.frameNum = self.get_frameNum()
@@ -42,6 +44,20 @@ class ImgMotion(learningImg_from_movie.Motion):
     def get_frameNum(self):
         return self.inputFilePath.split("/")[-1].split(".")[0]
 
+
+def batch_processing(inputDirPath):
+    if not(os.path.isdir(inputDirPath)):
+        print("Error: Do not exist directory")
+        sys.exit(1)
+
+    file_lst = os.listdir(inputDirPath)
+    pattern = r"^(?!._).*(.png)$"
+    repattern = re.compile(pattern)
+    for fileName in file_lst:
+        filePath = inputDirPath + "/" + fileName
+        ImgMotion(filePath).run()
+
+
 if __name__ == "__main__":
-    inputFilePath = input("input image file path: ")
-    ImgMotion(inputFilePath).run()
+    inputDirPath = input("input image directory path: ")
+    batch_processing(inputDirPath)

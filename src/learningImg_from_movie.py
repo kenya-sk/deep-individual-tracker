@@ -36,7 +36,7 @@ class Motion:
     def run(self):
         self.video = cv2.VideoCapture(self.inputFilePath)
         if not(self.video.isOpened()):
-            print("Can not read movie file")
+            print("Error: Can not read movie file")
             sys.exit(1)
 
         # processing of initial frame
@@ -97,7 +97,7 @@ class Motion:
     # save cordinate and figure. there are feature point information
     def save_data(self):
         if self.features is None:
-            print("Not select feature point")
+            print("Error: Not select feature point")
         else:
             cv2.imwrite("../image/plot/{}.png".format(self.frameNum), self.frame)
             #convert: opencv axis -> matplotlib axis
