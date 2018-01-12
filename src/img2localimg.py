@@ -23,8 +23,10 @@ def local_image(originalImg, cord ,size=15):
     band = int((size - 1)/2)
     # switch according to the number of channels
     if len(originalImg.shape) == 3:
+        # color image
         localImg = np.zeros((originalImg.shape[2], size, size))
     else:
+        # gray scale
         localImg = np.zeros((size, size))
 
     # edges of local image
@@ -83,12 +85,16 @@ def local_image(originalImg, cord ,size=15):
 
 if __name__ == "__main__":
     inputDensPath = input("Input file path (density map (.npy)): ")
+    inputRawPath = input("Input file path (raw image (.png)): ")
     inputCordPath = input("Input file path (cordinate (.csv)): ")
     dens = np.load(inputDensPath)
+    rawImg = np.array(cv2.imread(inputRawPath))
     cord_arr = read_csv(inputCordPath)
     fileName = inputDensPath.split("/")[-1].split(".")[0]
+    
     for i, cord in enumerate(cord_arr):
         print("cordinate: {}".format(cord))
-
+        rawLocalImg = local_image(rawImg, cord, 15)
+        plt.imsave("../image/local/raw/{0}_{1}.png".format(fileName, i), rawLocalImg)
         densLocalImg = local_image(dens, cord, 15)
         plt.imsave("../image/local/density/{0}_{1}.png".format(fileName, i), densLocalImg)
