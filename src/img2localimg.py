@@ -21,7 +21,11 @@ def local_image(originalImg, cord ,size=15):
     heightMin = 0
     heightMax = int(originalImg.shape[0])
     band = int((size - 1)/2)
-    localImg = np.zeros((size, size))
+    # switch according to the number of channels
+    if len(originalImg.shape) == 3:
+        localImg = np.zeros((originalImg.shape[2], size, size))
+    else:
+        localImg = np.zeros((size, size))
 
     # edges of local image
     leftEdge = int(cord[0] - band)
