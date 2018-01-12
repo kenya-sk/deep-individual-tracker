@@ -62,6 +62,8 @@ class Motion:
                 break
             elif key == P_KEY:
                 self.interval = 0
+                # save original image
+                cv2.imwrite("../image/original/{}.png".format(self.frameNum), self.frame)
             elif key == S_KEY:
                 self.save_data()
                 self.interval = INTERVAL
