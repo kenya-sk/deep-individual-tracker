@@ -11,23 +11,23 @@ def read_csv(inputFilePath):
         lines = f.readlines()
         for line in lines:
             cord_lst.append(line.strip().split(","))
-    cord_arr = np.array(cord_lst, dtype=np.uint32)
+    cord_arr = np.array(cord_lst, dtype=np.uint64)
     return cord_arr
 
 
 def local_image(originalImg, cord ,size=15):
     widthMin = 0
-    widthMax = originalImg.shape[1]
+    widthMax = int(originalImg.shape[1])
     heightMin = 0
-    heightMax = originalImg.shape[0]
+    heightMax = int(originalImg.shape[0])
     band = int((size - 1)/2)
     localImg = np.zeros((size, size))
 
     # edges of local image
-    leftEdge = cord[0] - band
-    rightEdge = cord[0] + band
-    topEdge = cord[1] - band
-    bottomEdge = cord[1] + band
+    leftEdge = int(cord[0] - band)
+    rightEdge = int(cord[0] + band)
+    topEdge = int(cord[1] - band)
+    bottomEdge = int(cord[1] + band)
 
     # check that the local image is in the original image
     left = abs(leftEdge - widthMin)
@@ -48,7 +48,7 @@ def local_image(originalImg, cord ,size=15):
     if topEdge < heightMin:
         if rightEdge > widthMax:
             # over frame case 3: top and right
-            localImg[0:size-right, top:size] = originalImg.T[leftEdge:widthMax, heightMin:bottomEdge+1]
+            localImg[0:size-right, top:size] = originalImg.T[leftEdge:widthMax+1, heightMin:bottomEdge+1]
         else:
             # over frame case 4: top
             localImg[0:size, top:size] = originalImg.T[leftEdge:rightEdge+1, heightMin:bottomEdge+1]
@@ -57,24 +57,25 @@ def local_image(originalImg, cord ,size=15):
     if rightEdge > widthMax:
         if bottomEdge > heightMax:
             # over frame case 5: right and bottom
-            localImg[0:size-right, 0:size-bottom] = originalImg.T[leftEdge:widthMax, topEdge:heightMax]
+            localImg[0:size-right, 0:size-bottom] = originalImg.T[leftEdge:widthMax+1, topEdge:heightMax+1]
         else:
-            # over frame case 6: bottom
-            localImg[0:size, 0:size-bottom] = originalImg.T[leftEdge:rightEdge+1, topEdge:heightMax]
+            # over frame case 6: right
+            localImg[0:size-right, 0:size] = originalImg.T[leftEdge:widthMax+1, topEdge:bottomEdge+1]
         return localImg
 
     if bottomEdge > heightMax:
         if leftEdge < widthMin:
             # over frame case 7: bottom and left
-            localImg[left:size, 0:size-bottom] = originalImg.T[widthMin:rightEdge+1, topEdge:heightMax]
+            localImg[left:size, 0:size-bottom] = originalImg.T[widthMin:rightEdge+1, topEdge:heightMax+1]
         else:
-            # over frame case 8: left
-            localImg[left:size, 0:size] = originalImg.T[widthMin:rightEdge+1, topEdge:bottomEdge+1]
+            # over frame case 8: bottom
+            localImg[0:size, 0:size-bottom] = originalImg.T[leftEdge:rightEdge+1, topEdge:heightMax+1]
         return localImg
 
     # Not over frame
     localImg[0:size, 0:size] = originalImg.T[leftEdge:rightEdge+1, topEdge:bottomEdge+1]
     return localImg
+
 
 if __name__ == "__main__":
     inputDensPath = input("Input file path (density map (.npy)): ")
