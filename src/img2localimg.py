@@ -42,7 +42,7 @@ def local_image(originalImg, cord ,size=15):
         else:
             # over frame case 2: left
             localImg[left:size, 0:size] = originalImg.T[widthMin:rightEdge+1, topEdge:bottomEdge+1]
-        return localImg
+        return localImg.T
 
 
     if topEdge < heightMin:
@@ -52,7 +52,7 @@ def local_image(originalImg, cord ,size=15):
         else:
             # over frame case 4: top
             localImg[0:size, top:size] = originalImg.T[leftEdge:rightEdge+1, heightMin:bottomEdge+1]
-        return localImg
+        return localImg.T
 
     if rightEdge > widthMax:
         if bottomEdge > heightMax:
@@ -61,7 +61,7 @@ def local_image(originalImg, cord ,size=15):
         else:
             # over frame case 6: right
             localImg[0:size-right, 0:size] = originalImg.T[leftEdge:widthMax+1, topEdge:bottomEdge+1]
-        return localImg
+        return localImg.T
 
     if bottomEdge > heightMax:
         if leftEdge < widthMin:
@@ -70,11 +70,11 @@ def local_image(originalImg, cord ,size=15):
         else:
             # over frame case 8: bottom
             localImg[0:size, 0:size-bottom] = originalImg.T[leftEdge:rightEdge+1, topEdge:heightMax+1]
-        return localImg
+        return localImg.T
 
     # Not over frame
     localImg[0:size, 0:size] = originalImg.T[leftEdge:rightEdge+1, topEdge:bottomEdge+1]
-    return localImg
+    return localImg.T
 
 
 if __name__ == "__main__":
@@ -85,5 +85,6 @@ if __name__ == "__main__":
     fileName = inputDensPath.split("/")[-1].split(".")[0]
     for i, cord in enumerate(cord_arr):
         print("cordinate: {}".format(cord))
-        localImg = local_image(dens, cord, 15)
-        plt.imsave("../image/local/{0}_{1}.png".format(fileName, i), localImg)
+
+        densLocalImg = local_image(dens, cord, 15)
+        plt.imsave("../image/local/density/{0}_{1}.png".format(fileName, i), densLocalImg)
