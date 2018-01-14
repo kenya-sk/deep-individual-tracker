@@ -16,6 +16,7 @@ data/
 !*.h
 !*.sh
 !*.md
+!*.ipynb
 !CMakeLists.txt
 
 .ipynb_checkpoints
