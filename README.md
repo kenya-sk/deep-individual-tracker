@@ -14,3 +14,6 @@
 
 4. img2localimg.py
 	* make local image from original image and cordinate of feature points.
+
+5. cnn.py
+    * 6 layer CNN (In Development).
