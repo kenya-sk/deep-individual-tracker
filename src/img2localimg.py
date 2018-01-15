@@ -91,10 +91,12 @@ if __name__ == "__main__":
     rawImg = np.array(cv2.imread(inputRawPath))
     cord_arr = read_csv(inputCordPath)
     fileName = inputDensPath.split("/")[-1].split(".")[0]
-    
+
     for i, cord in enumerate(cord_arr):
         print("cordinate: {}".format(cord))
-        rawLocalImg = local_image(rawImg, cord, 15)
+        rawLocalImg = local_image(rawImg, cord, 71)
         plt.imsave("../image/local/raw/{0}_{1}.png".format(fileName, i), rawLocalImg)
+        np.save("../data/local/raw/{0}_{1}".format(fileName, i), rawLocalImg)
         densLocalImg = local_image(dens, cord, 15)
         plt.imsave("../image/local/density/{0}_{1}.png".format(fileName, i), densLocalImg)
+        np.save("../data/local/density/{0}_{1}".format(fileName, i), densLocalImg)

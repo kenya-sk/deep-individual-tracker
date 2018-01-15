@@ -1,9 +1,35 @@
 #! /usr/bin/env python
 #coding: utf-8
 
+import os
+import re
 import time
+import cv2
 import numpy as np
+from sklearn.model_selection import train_test_split
 import tensorflow as tf
+
+
+def load_data(inputDirPath):
+    def get_file_path(inputDirPath):
+        file_lst = os.listdir(inputDircPath)
+        pattern = r"^(?!._).*(.png)$"
+        repattern = re.compile(pattern)
+        file_lst = [name for name in file_lst if repattern.match(name)]
+        return file_lst
+
+    X = []
+    y = []
+    file_lst = get_file_path(inputDirPath)
+    for path in file_lst:
+        X.append(cv2.imread("../image/original/tmp/" + path))
+        densPath = path.replace(".png", ".npy")
+        y.append(np.load("../data/dens/" + densPath))
+    X = np.array(X)
+    y = np.array(y)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=1)
+    return X_train, X_val, y_train, y_val
+
 
 
 # initialize weight by normal distribution (standard deviation: 0.1)
@@ -28,15 +54,15 @@ def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
 
-def main(x, y_):
-    inputDim = 72*72*3
-    outputDim = 18*18
-    sess = tf.Interactive Session()
+def main():
+    inputDim = [72, 72, 3]
+    outputDim = 1
+    sess = tf.InteractiveSession()
     sess.run(tf.global_variables_initializer())
 
     # input
     with tf.name_scope("X"):
-        x = tf.placeholder(tf.float32, [None, inputDim])
+        X = tf.placeholder(tf.float32, [None, inputDim])
     # answer data
     with tf.name_scope("y_"):
         y_ = tf.placeholder(tf.float32, [None, outputDim])
@@ -48,8 +74,8 @@ def main(x, y_):
         #7x7x3 filter
         W_conv1 = weight_variable([7,7,3,32])
         b_conv1 = bias_variable([32])
-        x_image = tf.reshape(x, [-1, 72, 72, 3])
-        h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+        #x_image = tf.reshape(x, [-1, 72, 72, 3])
+        h_conv1 = tf.nn.relu(conv2d(X, W_conv1) + b_conv1)
 
     with tf.name_scope("pool1"):
         h_pool1 = max_pool_2x2(h_conv1)
@@ -115,21 +141,22 @@ def main(x, y_):
 
     # learning
     startTime = time.time()
-    n_epochs = 20000
+    n_steps = 20000
     batch_size = 50
     n_batches = int(x.shape[0] / batch_size)
-    for epoch in range(n_epochs):
-        if epoch % 100 == 0:
-            print("epoch: {0}".format(i))
+    for step in range(n_steps):
+        if step % 100 == 0:
+            print("step: {0}".format(i))
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
             print("loss: {0}".format(loss))
         for i in range(n_batches):
             startIndex = i * batch_size
             endIndex = startIndex + batch_size
-        train_step.run(feed_dict={x: x[startIndex:endIndex], y_: y_[startIndex:endIndex]})
+            train_step.run(feed_dict={X: X[startIndex:endIndex], y_: y_[startIndex:endIndex]})
 
     sess.close()
 
 if __name__ == "__main__":
+    X_train, X_val, y_train, y_val = load_data("../image/original/tmp")
     # tmp variable (NOT WORK)
-    main(x, y_)
+    main()
