@@ -12,7 +12,7 @@ import tensorflow as tf
 
 def load_data(inputDirPath):
     def get_file_path(inputDirPath):
-        file_lst = os.listdir(inputDircPath)
+        file_lst = os.listdir(inputDirPath)
         pattern = r"^(?!._).*(.png)$"
         repattern = re.compile(pattern)
         file_lst = [name for name in file_lst if repattern.match(name)]
@@ -32,25 +32,27 @@ def load_data(inputDirPath):
 
 
 def get_local_image(image, localImgSize, resize):
-    height = image.shpae[0]
-    width = iamge.shape[1]
-    pad = localImgSize - 1
-    if image.shpape == 3:
+    height = image.shape[0]
+    width = image.shape[1]
+    pad = int((localImgSize - 1)/2)
+    if len(image.shape) == 3:
         padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]))
         localImg = np.zeros((localImgSize, localImgSize, image.shape[2]))
     else:
         padImg = np.zeros((height + pad * 2, width + pad * 2))
         localImg = np.zeros((localImgSize, localImgSize))
 
-    padImg[pad:heigh+pad, pad:width+pad] = image
+    padImg[pad:height+pad, pad:width+pad] = image
     localImg_lst = []
     for h in range(pad,height+pad):
         for w in range(pad,width+pad):
-            localImg = padImg
+            tmpLocalImg = np.array(localImg)
+            tmpLocalImg = padImg[h-pad:h+pad+1, w-pad:w+pad+1]
             if resize == True:
-                # resize answer data
-                cv2.resize(localImg, (18, 18))
-            localImg_lst.append(localImg)
+                # resize answer data and flat
+                tmpLocalImg = cv2.resize(tmpLocalImg, (18, 18))
+                tmpLocalImg = np.reshape(tmpLocalImg, -1)
+            localImg_lst.append(tmpLocalImg)
     return localImg_lst
 
 
@@ -78,17 +80,12 @@ def max_pool_2x2(x):
 
 
 def main(X_train, X_val, y_train, y_val):
-    inputDim = [72, 72, 3]
-    outputDim = 1
-    sess = tf.InteractiveSession()
-    sess.run(tf.global_variables_initializer())
-
     # input
     with tf.name_scope("X"):
-        X = tf.placeholder(tf.float32, [None, inputDim])
+        X = tf.placeholder(tf.float32, [None, 71, 71, 3])
     # answer data
     with tf.name_scope("y_"):
-        y_ = tf.placeholder(tf.float32, [None, outputDim])
+        y_ = tf.placeholder(tf.float32, [None, 18*18])
 
     # first layer
     # convlution -> ReLU -> max pooling
@@ -156,33 +153,36 @@ def main(X_train, X_val, y_train, y_val):
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
         train_step = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
-    # variable of TensorBoard
-    with tf.name_scope("summary"):
-        tf.summary.scalar("loss", loss)
-        merged = tf.summary.merge_all()
-        writer = tf.summary.FileWriter("./logs", sess.graph)
+
 
     # learning
     startTime = time.time()
-    n_steps = 20000
+    n_steps = 10
     batch_size = 50
-    for step in range(n_steps):
-        if step % 100 == 0:
-            print("step: {0}".format(i))
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        # variable of TensorBoard
+        with tf.name_scope("summary"):
+            tf.summary.scalar("loss", loss)
+            merged = tf.summary.merge_all()
+            writer = tf.summary.FileWriter("./logs", sess.graph)
+
+        for step in range(n_steps):
+            print("step: {0}".format(step))
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
             print("loss: {0}".format(loss))
-        for i in range(len(X_train)):
-            X_train_local = get_local_image(X_train[i], 71, False)
-            y_train_local = get_local_image(y_train[i], 71, True)
-            n_batches = int(len(X_train_local) / batch_size)
-            for i in range(n_batches):
-                startIndex = i * batch_size
-                endIndex = startIndex + batch_size
-                train_step.run(feed_dict={X: X_train_local[startIndex:endIndex], y_: y_train[startIndex:endIndex]})
+            for i in range(len(X_train)):
+                X_train_local = get_local_image(X_train[i], 71, False)
+                y_train_local = get_local_image(y_train[i], 71, True)
+                n_batches = int(len(X_train_local) / batch_size)
+                for i in range(n_batches):
+                    startIndex = i * batch_size
+                    endIndex = startIndex + batch_size
+                    train_step.run(feed_dict={X: X_train_local[startIndex:endIndex], y_: y_train_local[startIndex:endIndex]})
 
     sess.close()
 
 if __name__ == "__main__":
-    X_train, X_val, y_train, y_val = load_data("../image/original/tmp")
+    X_train, X_val, y_train, y_val = load_data("../image/original")
     # tmp variable (NOT WORK)
     main(X_train, X_val, y_train, y_val)
