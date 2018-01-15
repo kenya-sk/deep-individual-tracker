@@ -31,7 +31,7 @@ def max_pool_2x2(x):
 def main(x, y_):
     inputDim = 72*72*3
     outputDim = 18*18
-    sess = tf.Session()
+    sess = tf.Interactive Session()
     sess.run(tf.global_variables_initializer())
 
     # input
@@ -122,6 +122,7 @@ def main(x, y_):
         if epoch % 100 == 0:
             print("epoch: {0}".format(i))
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
+            print("loss: {0}".format(loss))
         for i in range(n_batches):
             startIndex = i * batch_size
             endIndex = startIndex + batch_size
