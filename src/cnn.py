@@ -24,7 +24,7 @@ def load_data(inputDirPath):
     for path in file_lst:
         X.append(cv2.imread("../image/original/tmp/" + path))
         densPath = path.replace(".png", ".npy")
-        y.append(np.load("../data/dens/" + densPath))
+        y.append(np.load("../data/dens/tmp/" + densPath))
     X = np.array(X)
     y = np.array(y)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=1)
@@ -168,7 +168,6 @@ def main(X_train, X_val, y_train, y_val):
             writer = tf.summary.FileWriter("./logs", sess.graph)
 
         for step in range(n_steps):
-            print("step: {0}".format(step))
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
             print("loss: {0}".format(loss))
             for i in range(len(X_train)):
@@ -176,6 +175,7 @@ def main(X_train, X_val, y_train, y_val):
                 y_train_local = get_local_image(y_train[i], 71, True)
                 n_batches = int(len(X_train_local) / batch_size)
                 for i in range(n_batches):
+                    print("step: {0}, batch: {1}".format(step, i))
                     startIndex = i * batch_size
                     endIndex = startIndex + batch_size
                     train_step.run(feed_dict={X: X_train_local[startIndex:endIndex], y_: y_train_local[startIndex:endIndex]})
