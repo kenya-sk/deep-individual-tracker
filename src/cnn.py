@@ -48,7 +48,7 @@ def get_local_image(image, localImgSize, resize):
         for w in range(pad,width+pad):
             localImg = padImg
             if resize == True:
-                # resize answer data 
+                # resize answer data
                 cv2.resize(localImg, (18, 18))
             localImg_lst.append(localImg)
     return localImg_lst
@@ -77,7 +77,7 @@ def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
 
-def main():
+def main(X_train, X_val, y_train, y_val):
     inputDim = [72, 72, 3]
     outputDim = 1
     sess = tf.InteractiveSession()
@@ -166,20 +166,23 @@ def main():
     startTime = time.time()
     n_steps = 20000
     batch_size = 50
-    n_batches = int(len(X_train) / batch_size)
     for step in range(n_steps):
         if step % 100 == 0:
             print("step: {0}".format(i))
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
             print("loss: {0}".format(loss))
-        for i in range(n_batches):
-            startIndex = i * batch_size
-            endIndex = startIndex + batch_size
-            train_step.run(feed_dict={X: X_train[startIndex:endIndex], y_: y_train[startIndex:endIndex]})
+        for i in range(len(X_train)):
+            X_train_local = get_local_image(X_train[i], 71, False)
+            y_train_local = get_local_image(y_train[i], 71, True)
+            n_batches = int(len(X_train_local) / batch_size)
+            for i in range(n_batches):
+                startIndex = i * batch_size
+                endIndex = startIndex + batch_size
+                train_step.run(feed_dict={X: X_train_local[startIndex:endIndex], y_: y_train[startIndex:endIndex]})
 
     sess.close()
 
 if __name__ == "__main__":
     X_train, X_val, y_train, y_val = load_data("../image/original/tmp")
     # tmp variable (NOT WORK)
-    main()
+    main(X_train, X_val, y_train, y_val)
