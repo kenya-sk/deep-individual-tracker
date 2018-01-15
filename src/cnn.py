@@ -174,6 +174,7 @@ def main(X_train, X_val, y_train, y_val):
                 X_train_local = get_local_image(X_train[i], 71, False)
                 y_train_local = get_local_image(y_train[i], 71, True)
                 n_batches = int(len(X_train_local) / batch_size)
+                print("total batch number: {}".format(n_batches))
                 for i in range(n_batches):
                     print("step: {0}, batch: {1}".format(step, i))
                     startIndex = i * batch_size
