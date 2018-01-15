@@ -156,7 +156,7 @@ def main(X_train, X_val, y_train, y_val):
 
 
     # save weight
-    saver = tf.train.Sever()
+    saver = tf.train.Saver()
 
     # learning
     startTime = time.time()
@@ -172,23 +172,35 @@ def main(X_train, X_val, y_train, y_val):
 
         for step in range(n_steps):
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
-            print("loss: {0}".format(loss))
+
             for i in range(len(X_train)):
                 X_train_local = get_local_image(X_train[i], 71, False)
                 y_train_local = get_local_image(y_train[i], 71, True)
                 n_batches = int(len(X_train_local) / batch_size)
                 print("total batch number: {}".format(n_batches))
+
                 for i in range(n_batches):
-                    if i%100 == 0:
-                        print("step: {0}, batch: {1}".format(step, i))
                     startIndex = i * batch_size
                     endIndex = startIndex + batch_size
-                    train_step.run(feed_dict={X: X_train_local[startIndex:endIndex], y_: y_train_local[startIndex:endIndex]})
+                    if i%100 == 0:
+                        print("step: {0}, batch: {1}".format(step, i))
+                        train_loss = loss.eval(feed_dict={
+                                X: X_train_local[startIndex:endIndex],
+                                y_: y_train_local[startIndex:endIndex]})
+                        print("loss: {}".format(train_loss))
+
+                    train_step.run(feed_dict={
+                        X: X_train_local[startIndex:endIndex],
+                        y_: y_train_local[startIndex:endIndex]})
+        # test
+        test_loss = loss.eval(feed_dict={X: X_val, y_: y_val})
+        print("test accuracy {}".format(test_loss))
         saver.save(sess, "model.ckpt")
-        
+
+
     sess.close()
 
 if __name__ == "__main__":
-    X_train, X_val, y_train, y_val = load_data("../image/original")
+    X_train, X_val, y_train, y_val = load_data("../image/original/tmp")
     # tmp variable (NOT WORK)
     main(X_train, X_val, y_train, y_val)
