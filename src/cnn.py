@@ -155,6 +155,9 @@ def main(X_train, X_val, y_train, y_val):
         train_step = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 
 
+    # save weight
+    saver = tf.train.Sever()
+
     # learning
     startTime = time.time()
     n_steps = 10
@@ -176,11 +179,13 @@ def main(X_train, X_val, y_train, y_val):
                 n_batches = int(len(X_train_local) / batch_size)
                 print("total batch number: {}".format(n_batches))
                 for i in range(n_batches):
-                    print("step: {0}, batch: {1}".format(step, i))
+                    if i%100 == 0:
+                        print("step: {0}, batch: {1}".format(step, i))
                     startIndex = i * batch_size
                     endIndex = startIndex + batch_size
                     train_step.run(feed_dict={X: X_train_local[startIndex:endIndex], y_: y_train_local[startIndex:endIndex]})
-
+        saver.save(sess, "model.ckpt")
+        
     sess.close()
 
 if __name__ == "__main__":
