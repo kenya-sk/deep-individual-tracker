@@ -31,6 +31,29 @@ def load_data(inputDirPath):
     return X_train, X_val, y_train, y_val
 
 
+def get_local_image(image, localImgSize, resize):
+    height = image.shpae[0]
+    width = iamge.shape[1]
+    pad = localImgSize - 1
+    if image.shpape == 3:
+        padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]))
+        localImg = np.zeros((localImgSize, localImgSize, image.shape[2]))
+    else:
+        padImg = np.zeros((height + pad * 2, width + pad * 2))
+        localImg = np.zeros((localImgSize, localImgSize))
+
+    padImg[pad:heigh+pad, pad:width+pad] = image
+    localImg_lst = []
+    for h in range(pad,height+pad):
+        for w in range(pad,width+pad):
+            localImg = padImg
+            if resize == True:
+                # resize answer data 
+                cv2.resize(localImg, (18, 18))
+            localImg_lst.append(localImg)
+    return localImg_lst
+
+
 
 # initialize weight by normal distribution (standard deviation: 0.1)
 def weight_variable(shape):
@@ -143,7 +166,7 @@ def main():
     startTime = time.time()
     n_steps = 20000
     batch_size = 50
-    n_batches = int(x.shape[0] / batch_size)
+    n_batches = int(len(X_train) / batch_size)
     for step in range(n_steps):
         if step % 100 == 0:
             print("step: {0}".format(i))
@@ -152,7 +175,7 @@ def main():
         for i in range(n_batches):
             startIndex = i * batch_size
             endIndex = startIndex + batch_size
-            train_step.run(feed_dict={X: X[startIndex:endIndex], y_: y_[startIndex:endIndex]})
+            train_step.run(feed_dict={X: X_train[startIndex:endIndex], y_: y_train[startIndex:endIndex]})
 
     sess.close()
 
