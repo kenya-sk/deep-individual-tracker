@@ -44,8 +44,8 @@ def get_local_image(image, localImgSize, resize):
 
     padImg[pad:height+pad, pad:width+pad] = image
     localImg_lst = []
-    for h in range(pad,height+pad):
-        for w in range(pad,width+pad):
+    for h in range(pad,height+pad,localImgSize):
+        for w in range(pad,width+pad, localImgSize):
             tmpLocalImg = np.array(localImg)
             tmpLocalImg = padImg[h-pad:h+pad+1, w-pad:w+pad+1]
             if resize == True:
