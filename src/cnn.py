@@ -161,7 +161,7 @@ def main(X_train, X_val, y_train, y_val):
     # learning
     startTime = time.time()
     n_steps = 10
-    batch_size = 50
+    batchSize = 5
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         # variable of TensorBoard
@@ -170,20 +170,19 @@ def main(X_train, X_val, y_train, y_val):
             merged = tf.summary.merge_all()
             writer = tf.summary.FileWriter("./logs", sess.graph)
 
+        print("Original Traning data size: {}".format(len(X_train)))
         for step in range(n_steps):
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
-
             for i in range(len(X_train)):
                 X_train_local = get_local_image(X_train[i], 71, False)
                 y_train_local = get_local_image(y_train[i], 71, True)
-                n_batches = int(len(X_train_local) / batch_size)
-                print("total batch number: {}".format(n_batches))
+                n_batches = int(len(X_train_local) / batchSize)
 
                 for i in range(n_batches):
-                    startIndex = i * batch_size
-                    endIndex = startIndex + batch_size
-                    if i%100 == 0:
-                        print("step: {0}, batch: {1}".format(step, i))
+                    startIndex = i * batchSize
+                    endIndex = startIndex + batchSize
+                    if i%batchSize == 0:
+                        print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
                         train_loss = loss.eval(feed_dict={
                                 X: X_train_local[startIndex:endIndex],
                                 y_: y_train_local[startIndex:endIndex]})
