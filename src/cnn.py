@@ -160,6 +160,7 @@ def main(X_train, X_val, y_train, y_val):
 
     # learning
     startTime = time.time()
+    loss_lst = []
     n_steps = 10
     batchSize = 5
     with tf.Session() as sess:
@@ -191,11 +192,11 @@ def main(X_train, X_val, y_train, y_val):
                     train_step.run(feed_dict={
                         X: X_train_local[startIndex:endIndex],
                         y_: y_train_local[startIndex:endIndex]})
-        # test
-        test_loss = loss.eval(feed_dict={X: X_val, y_: y_val})
-        print("test accuracy {}".format(test_loss))
-        saver.save(sess, "model.ckpt")
 
+            # test (every step)
+            test_loss = loss.eval(feed_dict={X: X_val, y_: y_val})
+            loss_lst.append(test_loss)
+            print("test accuracy {}".format(test_loss))
 
     sess.close()
 
