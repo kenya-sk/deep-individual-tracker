@@ -6,6 +6,7 @@ import re
 import time
 import cv2
 import numpy as np
+from math import floor
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
@@ -34,7 +35,7 @@ def load_data(inputDirPath):
 def get_local_image(image, localImgSize, resize):
     height = image.shape[0]
     width = image.shape[1]
-    pad = int((localImgSize - 1)/2)
+    pad = floor(localImgSize/2)
     if len(image.shape) == 3:
         padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]))
         localImg = np.zeros((localImgSize, localImgSize, image.shape[2]))
@@ -94,7 +95,6 @@ def main(X_train, X_test, y_train, y_test):
         #7x7x3 filter
         W_conv1 = weight_variable([7,7,3,32])
         b_conv1 = bias_variable([32])
-        #x_image = tf.reshape(x, [-1, 72, 72, 3])
         h_conv1 = tf.nn.relu(conv2d(X, W_conv1) + b_conv1)
 
     with tf.name_scope("pool1"):
@@ -162,7 +162,7 @@ def main(X_train, X_test, y_train, y_test):
     startTime = time.time()
     loss_lst = []
     n_steps = 10
-    batchSize = 5
+    batchSize = 50
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         # variable of TensorBoard
@@ -172,36 +172,33 @@ def main(X_train, X_test, y_train, y_test):
             writer = tf.summary.FileWriter("./logs", sess.graph)
 
         print("Original Traning data size: {}".format(len(X_train)))
-        # use 4 GPU
-        for d in ["/gpu:0", "/gpu:1", "/gpu:2", "/gpu:3"]:
-            with tf.device(d):
-                for step in range(n_steps):
-                    print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
-                    for i in range(len(X_train)):
-                        X_train_local = get_local_image(X_train[i], 71, False)
-                        y_train_local = get_local_image(y_train[i], 71, True)
-                        n_batches = int(len(X_train_local) / batchSize)
+        for step in range(n_steps):
+            print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
+            for i in range(len(X_train)):
+                X_train_local = get_local_image(X_train[i], 71, False)
+                y_train_local = get_local_image(y_train[i], 71, True)
+                n_batches = int(len(X_train_local) / batchSize)
 
-                        for i in range(n_batches):
-                            startIndex = i * batchSize
-                            endIndex = startIndex + batchSize
-                            if i%batchSize == 0:
-                                print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
-                                train_loss = loss.eval(feed_dict={
-                                        X: X_train_local[startIndex:endIndex],
-                                        y_: y_train_local[startIndex:endIndex]})
-                                print("loss: {}".format(train_loss))
-
-                            train_step.run(feed_dict={
+                for i in range(n_batches):
+                    startIndex = i * batchSize
+                    endIndex = startIndex + batchSize
+                    if i%batchSize == 0:
+                        print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
+                        train_loss = loss.eval(feed_dict={
                                 X: X_train_local[startIndex:endIndex],
                                 y_: y_train_local[startIndex:endIndex]})
+                        print("loss: {}".format(train_loss))
 
-                    # test (every step)
-                    X_test_local = get_local_image(X_test[i], 71, False)
-                    y_test_local = get_local_image(y_test[i], 71, True)
-                    test_loss = loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
-                    loss_lst.append(test_loss)
-                    print("test accuracy {}".format(test_loss))
+                    train_step.run(feed_dict={
+                        X: X_train_local[startIndex:endIndex],
+                        y_: y_train_local[startIndex:endIndex]})
+
+            # test (every step)
+            X_test_local = get_local_image(X_test[0], 71, False)
+            y_test_local = get_local_image(y_test[0], 71, True)
+            test_loss = loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
+            loss_lst.append(test_loss)
+            print("test accuracy {}".format(test_loss))
 
     sess.close()
 
