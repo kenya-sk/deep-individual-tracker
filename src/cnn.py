@@ -88,6 +88,7 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("y_"):
         y_ = tf.placeholder(tf.float32, [None, 18*18])
 
+
     # first layer
     # convlution -> ReLU -> max pooling
     # input 72x72x3 -> output 36x36x32
@@ -154,7 +155,6 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("train"):
         train_step = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 
-
     # save weight
     saver = tf.train.Saver()
 
@@ -162,7 +162,7 @@ def main(X_train, X_test, y_train, y_test):
     startTime = time.time()
     loss_lst = []
     n_steps = 10
-    batchSize = 50
+    batchSize = 5
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         # variable of TensorBoard
@@ -170,7 +170,6 @@ def main(X_train, X_test, y_train, y_test):
             tf.summary.scalar("loss", loss)
             merged = tf.summary.merge_all()
             writer = tf.summary.FileWriter("./logs", sess.graph)
-
         print("Original Traning data size: {}".format(len(X_train)))
         for step in range(n_steps):
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
@@ -188,6 +187,7 @@ def main(X_train, X_test, y_train, y_test):
                                 X: X_train_local[startIndex:endIndex],
                                 y_: y_train_local[startIndex:endIndex]})
                         print("loss: {}".format(train_loss))
+                        loss_lst.append(train_loss)
 
                     train_step.run(feed_dict={
                         X: X_train_local[startIndex:endIndex],
@@ -197,7 +197,6 @@ def main(X_train, X_test, y_train, y_test):
             X_test_local = get_local_image(X_test[0], 71, False)
             y_test_local = get_local_image(y_test[0], 71, True)
             test_loss = loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
-            loss_lst.append(test_loss)
             print("test accuracy {}".format(test_loss))
 
     sess.close()
