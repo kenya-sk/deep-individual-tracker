@@ -27,8 +27,8 @@ def load_data(inputDirPath):
         y.append(np.load("../data/dens/tmp/" + densPath))
     X = np.array(X)
     y = np.array(y)
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=1)
-    return X_train, X_val, y_train, y_val
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+    return X_train, X_test, y_train, y_test
 
 
 def get_local_image(image, localImgSize, resize):
@@ -79,7 +79,7 @@ def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
 
-def main(X_train, X_val, y_train, y_val):
+def main(X_train, X_test, y_train, y_test):
     # input
     with tf.name_scope("X"):
         X = tf.placeholder(tf.float32, [None, 71, 71, 3])
@@ -197,13 +197,15 @@ def main(X_train, X_val, y_train, y_val):
                                 y_: y_train_local[startIndex:endIndex]})
 
                     # test (every step)
-                    test_loss = loss.eval(feed_dict={X: X_val, y_: y_val})
+                    X_test_local = get_local_image(X_test[i], 71, False)
+                    y_test_local = get_local_image(y_test[i], 71, True)
+                    test_loss = loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
                     loss_lst.append(test_loss)
                     print("test accuracy {}".format(test_loss))
 
     sess.close()
 
 if __name__ == "__main__":
-    X_train, X_val, y_train, y_val = load_data("../image/original/tmp")
+    X_train, X_test, y_train, y_test = load_data("../image/original/tmp")
     # tmp variable (NOT WORK)
-    main(X_train, X_val, y_train, y_val)
+    main(X_train, X_test, y_train, y_test)
