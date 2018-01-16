@@ -172,31 +172,34 @@ def main(X_train, X_val, y_train, y_val):
             writer = tf.summary.FileWriter("./logs", sess.graph)
 
         print("Original Traning data size: {}".format(len(X_train)))
-        for step in range(n_steps):
-            print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
-            for i in range(len(X_train)):
-                X_train_local = get_local_image(X_train[i], 71, False)
-                y_train_local = get_local_image(y_train[i], 71, True)
-                n_batches = int(len(X_train_local) / batchSize)
+        # use 4 GPU
+        for d in ["/gpu:0", "/gpu:1", "/gpu:2", "/gpu:3"]:
+            with tf.device(d):
+                for step in range(n_steps):
+                    print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
+                    for i in range(len(X_train)):
+                        X_train_local = get_local_image(X_train[i], 71, False)
+                        y_train_local = get_local_image(y_train[i], 71, True)
+                        n_batches = int(len(X_train_local) / batchSize)
 
-                for i in range(n_batches):
-                    startIndex = i * batchSize
-                    endIndex = startIndex + batchSize
-                    if i%batchSize == 0:
-                        print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
-                        train_loss = loss.eval(feed_dict={
+                        for i in range(n_batches):
+                            startIndex = i * batchSize
+                            endIndex = startIndex + batchSize
+                            if i%batchSize == 0:
+                                print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
+                                train_loss = loss.eval(feed_dict={
+                                        X: X_train_local[startIndex:endIndex],
+                                        y_: y_train_local[startIndex:endIndex]})
+                                print("loss: {}".format(train_loss))
+
+                            train_step.run(feed_dict={
                                 X: X_train_local[startIndex:endIndex],
                                 y_: y_train_local[startIndex:endIndex]})
-                        print("loss: {}".format(train_loss))
 
-                    train_step.run(feed_dict={
-                        X: X_train_local[startIndex:endIndex],
-                        y_: y_train_local[startIndex:endIndex]})
-
-            # test (every step)
-            test_loss = loss.eval(feed_dict={X: X_val, y_: y_val})
-            loss_lst.append(test_loss)
-            print("test accuracy {}".format(test_loss))
+                    # test (every step)
+                    test_loss = loss.eval(feed_dict={X: X_val, y_: y_val})
+                    loss_lst.append(test_loss)
+                    print("test accuracy {}".format(test_loss))
 
     sess.close()
 
