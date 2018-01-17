@@ -235,9 +235,10 @@ def main(X_train, X_test, y_train, y_test):
         np.save("../loss.npy", np.array(loss_lst))
         sess.close()
 
-    test()
+
 
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = load_data("../image/original/tmp")
     # tmp variable (NOT WORK)
     main(X_train, X_test, y_train, y_test)
+    test()
