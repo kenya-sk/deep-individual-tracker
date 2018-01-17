@@ -205,11 +205,12 @@ def main(X_train, X_test, y_train, y_test):
                     #    X: X_train_local[startIndex:endIndex],
                     #    y_: y_train_local[startIndex:endIndex]})
 
-            # test (every step)
+        # test (every step)
+        for i in range(len(X_test)):
             X_test_local = get_local_image(X_test[0], 71, False)
             y_test_local = get_local_image(y_test[0], 71, True)
-            test_loss = loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
-            print("test accuracy {}".format(test_loss))
+            test_loss += loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
+        print("test accuracy {}".format(test_loss/len(X_test)))
 
         np.save("../loss.npy", np.array(loss_lst))
         sess.close()
