@@ -161,9 +161,6 @@ def main(X_train, X_test, y_train, y_test):
         tf.summary.scalar("loss", loss)
         merged = tf.summary.merge_all()
 
-    # save weight
-    saver = tf.train.Saver()
-
     # learning
     startTime = time.time()
     loss_lst = []
@@ -174,6 +171,8 @@ def main(X_train, X_test, y_train, y_test):
     with tf.Session() as sess:
         writer = tf.summary.FileWriter("./logs", sess.graph)
         sess.run(tf.global_variables_initializer())
+        # save weight
+        saver = tf.train.Saver()
 
         print("Original Traning data size: {}".format(len(X_train)))
         for step in range(n_steps):
@@ -205,7 +204,10 @@ def main(X_train, X_test, y_train, y_test):
                     #    X: X_train_local[startIndex:endIndex],
                     #    y_: y_train_local[startIndex:endIndex]})
 
+        saver.save(sess, "./model.ckpt")
+
         # test (every step)
+        test_loss = 0.0
         for i in range(len(X_test)):
             X_test_local = get_local_image(X_test[0], 71, False)
             y_test_local = get_local_image(y_test[0], 71, True)
