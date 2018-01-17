@@ -33,6 +33,7 @@ def load_data(inputDirPath):
 
 
 def get_local_image(image, localImgSize, resize):
+    # local image size is even number
     height = image.shape[0]
     width = image.shape[1]
     pad = floor(localImgSize/2)
@@ -48,7 +49,7 @@ def get_local_image(image, localImgSize, resize):
     for h in range(pad,height+pad,localImgSize):
         for w in range(pad,width+pad, localImgSize):
             tmpLocalImg = np.array(localImg)
-            tmpLocalImg = padImg[h-pad:h+pad+1, w-pad:w+pad+1]
+            tmpLocalImg = padImg[h-pad:h+pad, w-pad:w+pad]
             if resize == True:
                 # resize answer data and flat
                 tmpLocalImg = cv2.resize(tmpLocalImg, (18, 18))
@@ -83,7 +84,7 @@ def max_pool_2x2(x):
 def main(X_train, X_test, y_train, y_test):
     # input
     with tf.name_scope("X"):
-        X = tf.placeholder(tf.float32, [None, 71, 71, 3])
+        X = tf.placeholder(tf.float32, [None, 72, 72, 3])
     # answer data
     with tf.name_scope("y_"):
         y_ = tf.placeholder(tf.float32, [None, 18*18])
@@ -178,8 +179,8 @@ def main(X_train, X_test, y_train, y_test):
         for step in range(n_steps):
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
             for i in range(len(X_train)):
-                X_train_local = get_local_image(X_train[i], 71, False)
-                y_train_local = get_local_image(y_train[i], 71, True)
+                X_train_local = get_local_image(X_train[i], 72, False)
+                y_train_local = get_local_image(y_train[i], 72, True)
                 n_batches = int(len(X_train_local) / batchSize)
 
                 for i in range(n_batches):
@@ -204,13 +205,13 @@ def main(X_train, X_test, y_train, y_test):
                     #    X: X_train_local[startIndex:endIndex],
                     #    y_: y_train_local[startIndex:endIndex]})
 
-        saver.save(sess, "./model.ckpt")
+        saver.save(sess, "./model/model.ckpt")
 
         # test (every step)
         test_loss = 0.0
         for i in range(len(X_test)):
-            X_test_local = get_local_image(X_test[0], 71, False)
-            y_test_local = get_local_image(y_test[0], 71, True)
+            X_test_local = get_local_image(X_test[0], 72, False)
+            y_test_local = get_local_image(y_test[0], 72, True)
             test_loss += loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
         print("test accuracy {}".format(test_loss/len(X_test)))
 
