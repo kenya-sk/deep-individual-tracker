@@ -53,11 +53,15 @@ def batch_processing(inputDirPath):
     file_lst = os.listdir(inputDirPath)
     pattern = r"^(?!._).*(.png)$"
     repattern = re.compile(pattern)
+    print("Number of total file: {}".format(len(file_lst)))
+
+    fileNum = 1
     for fileName in file_lst:
         if re.search(repattern, fileName):
             filePath = inputDirPath + "/" + fileName
-            print("File name: {}".format(filePath))
+            print("Number: {0}, File name: {1}".format(fileNum, filePath))
             ImgMotion(filePath).run()
+            fileNum += 1
 
 
 if __name__ == "__main__":
