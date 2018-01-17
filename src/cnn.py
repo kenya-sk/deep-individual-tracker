@@ -172,7 +172,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # start session and initialize
     with tf.Session() as sess:
-        writer = tf.summary.FileWriter("./logs", graph_def=sess.graph_def)
+        writer = tf.summary.FileWriter("./logs", sess.graph)
         sess.run(tf.global_variables_initializer())
 
         print("Original Traning data size: {}".format(len(X_train)))
@@ -211,8 +211,8 @@ def main(X_train, X_test, y_train, y_test):
             test_loss = loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
             print("test accuracy {}".format(test_loss))
 
-            np.save("../loss.npy", np.array(loss_lst))
-            sess.close()
+        np.save("../loss.npy", np.array(loss_lst))
+        sess.close()
 
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = load_data("../image/original/tmp")
