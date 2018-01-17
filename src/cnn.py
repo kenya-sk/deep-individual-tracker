@@ -211,6 +211,7 @@ def main(X_train, X_test, y_train, y_test):
             test_loss = loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
             print("test accuracy {}".format(test_loss))
 
+            np.save("../loss.npy", np.array(loss_lst))
             sess.close()
 
 if __name__ == "__main__":
