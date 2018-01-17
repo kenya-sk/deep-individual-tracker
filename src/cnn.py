@@ -80,6 +80,23 @@ def conv2d(x, W):
 def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
+def test():
+    image = cv2.imread("../image/original/10_1740.png")
+    dens = np.load("../data/dens/10_1740.npy")
+
+    image_lst = cnn.get_local_image(image, 72, False)
+    dens_lst = cnn.get_local_image(dens, 72, True)
+
+    sess = tf.Session()
+    saver = tf.train.import_meta_graph("./model/model.ckpt.meta")
+    saver.restore(sess, "./model/model.ckpt")
+
+    for i in range(len(image_lst)):
+        cv2.imwrite("../test/input/{}.png".format(i), image_lst[i])
+        cv2.imwrite("../test/ans/{}.png".format(i), dens_lst[i])
+        output = sess.run(h_fc6, feed_dict={X: image_lst[i], y_: dens_lst[i]})
+        cv2.imwrite("../test/est/out_{}.png".format(i), output)
+
 
 def main(X_train, X_test, y_train, y_test):
     # input
@@ -217,6 +234,8 @@ def main(X_train, X_test, y_train, y_test):
 
         np.save("../loss.npy", np.array(loss_lst))
         sess.close()
+
+    test()
 
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = load_data("../image/original/tmp")
