@@ -57,7 +57,18 @@ def get_local_image(image, localImgSize, resize):
             localImg_lst.append(tmpLocalImg)
     return localImg_lst
 
-
+# processing variables and it output tensorboard
+def variable_summaries(var):
+    # output scalar (mean, stddev, max, min, histogram)
+    with tf.name_scope('summaries'):
+        mean = tf.reduce_mean(var)
+        tf.summary.scalar('mean', mean)
+        with tf.name_scope('stddev'):
+            stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+        tf.summary.scalar('stddev', stddev)
+        tf.summary.scalar('max', tf.reduce_max(var))
+        tf.summary.scalar('min', tf.reduce_min(var))
+        tf.summary.histogram('histogram', var)
 
 # initialize weight by normal distribution (standard deviation: 0.1)
 def weight_variable(shape):
@@ -80,161 +91,207 @@ def conv2d(x, W):
 def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
-def test():
-    image = cv2.imread("../image/original/10_1740.png")
-    dens = np.load("../data/dens/10_1740.npy")
-
-    image_lst = get_local_image(image, 72, False)
-    dens_lst = get_local_image(dens, 72, True)
-
-    sess = tf.Session()
-    saver = tf.train.import_meta_graph("./model/model.ckpt.meta")
-    saver.restore(sess, "./model/model.ckpt")
-
-    for i in range(len(image_lst)):
-        cv2.imwrite("../test/input/{}.png".format(i), image_lst[i])
-        cv2.imwrite("../test/ans/{}.png".format(i), dens_lst[i])
-        output = sess.run(h_fc6, feed_dict={X: image_lst[i], y_: dens_lst[i]})
-        cv2.imwrite("../test/est/out_{}.png".format(i), output)
-
 
 def main(X_train, X_test, y_train, y_test):
-    # input
-    with tf.name_scope("X"):
-        X = tf.placeholder(tf.float32, [None, 72, 72, 3])
-    # answer data
-    with tf.name_scope("y_"):
-        y_ = tf.placeholder(tf.float32, [None, 18*18])
+    # delete the specified directory if it exists, recreate it
+    log_dir = "./logs"
+    if tf.gfile.Exists(log_dir):
+        tf.gfile.DeleteRecursively(log_dir)
+    tf.gfile.MakeDirs(log_dir)
+
+    # start session
+    sess = tf.InteractiveSession()
+
+    with tf.name_scope("input"):
+        # input image
+        with tf.name_scope("X"):
+            X = tf.placeholder(tf.float32, [None, 72, 72, 3])
+        # answer image
+        with tf.name_scope("y_"):
+            y_ = tf.placeholder(tf.float32, [None, 18*18])
 
 
     # first layer
     # convlution -> ReLU -> max pooling
     # input 72x72x3 -> output 36x36x32
-    with tf.name_scope("conv1"):
-        #7x7x3 filter
-        W_conv1 = weight_variable([7,7,3,32])
-        b_conv1 = bias_variable([32])
-        h_conv1 = tf.nn.relu(conv2d(X, W_conv1) + b_conv1)
+    with tf.name_scope("layer1"):
+        with tf.name_scope("conv1"):
+            #7x7x3 filter
+            with tf.name_scope("weight1"):
+                W_conv1 = weight_variable([7,7,3,32])
+                variable_summaries(W_conv1)
+            with tf.name_scope("biases1"):
+                b_conv1 = bias_variable([32])
+                variable_summaries(b_conv1)
+            with tf.name_scope("relu1"):
+                h_conv1 = tf.nn.relu(conv2d(X, W_conv1) + b_conv1)
+                variable_summaries(h_conv1)
 
-    with tf.name_scope("pool1"):
-        h_pool1 = max_pool_2x2(h_conv1)
+        with tf.name_scope("pool1"):
+            h_pool1 = max_pool_2x2(h_conv1)
+            variable_summaries(h_pool1)
+
 
     # second layer
     # convlution -> ReLU -> max pooling
     # input 36x36x32 -> output 18x18x32
-    with tf.name_scope("conv2"):
-        # 7x7x32 filter
-        W_conv2 = weight_variable([7,7,32,32])
-        b_conv2 = bias_variable([32])
-        h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+    with tf.name_scope("layer2"):
+        with tf.name_scope("conv2"):
+            # 7x7x32 filter
+            with tf.name_scope("weights2"):
+                W_conv2 = weight_variable([7,7,32,32])
+                variable_summaries(W_conv2)
+            with tf.name_scope("biass2"):
+                b_conv2 = bias_variable([32])
+                variable_summaries(b_conv2)
+            with tf.name_scope("relu2"):
+                h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+                variable_summaries(h_conv2)
 
-    with tf.name_scope("pool2"):
-        h_pool2 = max_pool_2x2(h_conv2)
+        with tf.name_scope("pool2"):
+            h_pool2 = max_pool_2x2(h_conv2)
+            variable_summaries(h_pool2)
 
     # third layer
     # convolution -> ReLU
     # input 18x18x32 -> output 18x18x64
-    with tf.name_scope("conv3"):
-        # 5x5x32 filter
-        W_conv3 = weight_variable([5,5,32,64])
-        b_conv3 = bias_variable([64])
-        h_conv3 = tf.nn.relu(conv2d(h_pool2, W_conv3) + b_conv3)
+    with tf.name_scope("layer3"):
+        with tf.name_scope("conv3"):
+            # 5x5x32 filter
+            with tf.name_scope("weight3"):
+                W_conv3 = weight_variable([5,5,32,64])
+                variable_summaries(W_conv3)
+            with tf.name_scope("biass3"):
+                b_conv3 = bias_variable([64])
+                variable_summaries(b_conv3)
+            with tf.name_scope("relu3"):
+                h_conv3 = tf.nn.relu(conv2d(h_pool2, W_conv3) + b_conv3)
+                variable_summaries(h_conv3)
 
     # fourth layer
     # fully connected layer
     # input 18x18x64 -> output 1000
-    with tf.name_scope("fc4"):
-        W_fc4 = weight_variable([18*18*64, 1000])
-        b_fc4 = bias_variable([1000])
-        h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
-        h_fc4 = tf.nn.relu(tf.matmul(h_conv3_flat, W_fc4) + b_fc4)
+    with tf.name_scope("layer4"):
+        with tf.name_scope("fc4"):
+            with tf.name_scope("weight4"):
+                W_fc4 = weight_variable([18*18*64, 1000])
+                variable_summaries(W_fc4)
+            with tf.name_scope("biass4"):
+                b_fc4 = bias_variable([1000])
+                variable_summaries(b_fc4)
+            with tf.name_scope("flat4"):
+                h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
+                h_fc4 = tf.nn.relu(tf.matmul(h_conv3_flat, W_fc4) + b_fc4)
+                variable_summaries(h_fc4)
 
     # fifth layer
     # fully connected layer
     # input 1000 -> output 400
-    with tf.name_scope("fc5"):
-        W_fc5 = weight_variable([1000, 400])
-        b_fc5 = bias_variable([400])
-        h_fc5 = tf.nn.relu(tf.matmul(h_fc4, W_fc5) + b_fc5)
+    with tf.name_scope("layer5"):
+        with tf.name_scope("fc5"):
+            with tf.name_scope("weight5"):
+                W_fc5 = weight_variable([1000, 400])
+                variable_summaries(W_fc5)
+            with tf.name_scope("biass5"):
+                b_fc5 = bias_variable([400])
+                variable_summaries(b_fc5)
+            with tf.name_scope("flat5"):
+                h_fc5 = tf.nn.relu(tf.matmul(h_fc4, W_fc5) + b_fc5)
+                variable_summaries(h_fc5)
 
     # sixth layer
     # fully connected layer
     # input 400 -> output 324
-    with tf.name_scope("fc6"):
-        W_fc6 = weight_variable([400, 324])
-        b_fc6 = bias_variable([324])
-        h_fc6 = tf.nn.relu(tf.matmul(h_fc5, W_fc6) + b_fc6)
+    with tf.name_scope("layer6"):
+        with tf.name_scope("fc6"):
+            with tf.name_scope("weight6"):
+                W_fc6 = weight_variable([400, 324])
+                variable_summaries(W_fc6)
+            with tf.name_scope("biass6"):
+                b_fc6 = bias_variable([324])
+                variable_summaries(b_fc6)
+            with tf.name_scope("flat6"):
+                h_fc6 = tf.nn.relu(tf.matmul(h_fc5, W_fc6) + b_fc6)
+                variable_summaries(h_fc6)
+
+    with tf.name_scope("y"):
+        h_fc6_flat = tf.reshape(h_fc6, [-1, 18*18])
+        tf.summary.histogram("y", h_fc6_flat)
 
     # loss function
-    h_fc6_flat = tf.reshape(h_fc6, [-1, 18*18])
     with tf.name_scope("loss"):
         loss = tf.reduce_mean(tf.square(y_ - h_fc6_flat))
+        tf.summary.scalar("loss", loss)
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
         train_step = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 
     # variable of TensorBoard
-    with tf.name_scope("summary"):
-        tf.summary.scalar("loss", loss)
-        merged = tf.summary.merge_all()
+    merged = tf.summary.merge_all()
+    train_writer = tf.summary.FileWriter(log_dir + "/train", sess.graph)
+    test_writer = tf.summary.FileWriter(log_dir + "/test")
 
     # learning
     startTime = time.time()
-    loss_lst = []
     n_steps = 10
     batchSize = 5
+    tf.global_variables_initializer().run() # initialize all variable
+    saver = tf.train.Saver() # save weight
 
-    # start session and initialize
-    with tf.Session() as sess:
-        writer = tf.summary.FileWriter("./logs", sess.graph)
-        sess.run(tf.global_variables_initializer())
-        # save weight
-        saver = tf.train.Saver()
 
-        print("Original Traning data size: {}".format(len(X_train)))
-        for step in range(n_steps):
-            print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
-            for i in range(len(X_train)):
-                X_train_local = get_local_image(X_train[i], 72, False)
-                y_train_local = get_local_image(y_train[i], 72, True)
-                n_batches = int(len(X_train_local) / batchSize)
+    print("Original traning data size: {}".format(len(X_train)))
+    for step in range(n_steps):
+        print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
+        for i in range(len(X_train)):
+            X_train_local = get_local_image(X_train[i], 72, False)
+            y_train_local = get_local_image(y_train[i], 72, True)
+            n_batches = int(len(X_train_local) / batchSize)
 
-                for i in range(n_batches):
-                    startIndex = i * batchSize
-                    endIndex = startIndex + batchSize
-                    if i%100 == 0:
-                        print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
-                        train_loss = loss.eval(feed_dict={
-                                X: X_train_local[startIndex:endIndex],
-                                y_: y_train_local[startIndex:endIndex]})
-                        print("loss: {}".format(train_loss))
-                        loss_lst.append(train_loss)
+            for i in range(n_batches):
+                startIndex = i * batchSize
+                endIndex = startIndex + batchSize
+                if i%100 == 0:
+                    print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
+                    summary, train_loss = sess.run([merged, loss], feed_dict={
+                            X: X_train_local[startIndex:endIndex],
+                            y_: y_train_local[startIndex:endIndex]})
+                    train_writer.add_summary(summary, i)
+                    print("loss: {}".format(train_loss))
 
-                    train_step.run(feed_dict={
-                        X: X_train_local[startIndex:endIndex],
-                        y_:
-                        y_train_local[startIndex:endIndex]})
+                    # output detail data
+                    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                    run_metadata = tf.RunMetadata()
+                    summary, _ = sess.run([merged, train_step], feed_dict={
+                                    X: X_train_local[startIndex:endIndex],
+                                    y_: y_train_local[startIndex:endIndex]},
+                                    options=run_options,
+                                    run_metadata=run_metadata)
+                    train_writer.add_run_metadata(run_metadata, "step{0:03d}, batch{1:03d}".format(step, i))
+                    train_writer.add_summary(summary, i)
+                else:
+                    summary, _ = sess.run([merged, train_step], feed_dict={
+                                    X: X_train_local[startIndex:endIndex],
+                                    y_: y_train_local[startIndex:endIndex]})
+                    train_witer.add_summary(summary, i)
 
-        saver.save(sess, "./model/model.ckpt")
+    saver.save(sess, "./model/model.ckpt")
 
-        # test (every step)
-        test_loss = 0.0
-        for i in range(len(X_test)):
-            X_test_local = get_local_image(X_test[0], 72, False)
-            y_test_local = get_local_image(y_test[0], 72, True)
-            test_loss += loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
-            output = h_fc6.eval(feed_dict={
-                X: X_train_local[startIndex:endIndex],
-                y_:
-                y_train_local[startIndex:endIndex]})
-            cv2.imwrite("../output/out_{0}.png".format(i), output)
-        print("test accuracy {}".format(test_loss/len(X_test)))
+    # test data
+    test_loss = 0.0
+    for i in range(len(X_test)):
+        X_test_local = get_local_image(X_test[0], 72, False)
+        y_test_local = get_local_image(y_test[0], 72, True)
+        summary, tmp_loss = sess.run([merged, loss], feed_dict={X: X_test_local, y_: y_test_local})
+        test_writer.add_summary(summary, i)
+        test_loss += tmp_loss
+    print("test accuracy {}".format(test_loss/len(X_test)))
 
-        np.save("../loss.npy", np.array(loss_lst))
-        sess.close()
+    # end processing
+    train_witer.close()
+    test_writer.close()
+    sess.close()
 
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = load_data("../image/original/tmp")
-    # tmp variable (NOT WORK)
     main(X_train, X_test, y_train, y_test)
