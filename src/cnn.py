@@ -84,8 +84,8 @@ def test():
     image = cv2.imread("../image/original/10_1740.png")
     dens = np.load("../data/dens/10_1740.npy")
 
-    image_lst = cnn.get_local_image(image, 72, False)
-    dens_lst = cnn.get_local_image(dens, 72, True)
+    image_lst = get_local_image(image, 72, False)
+    dens_lst = get_local_image(dens, 72, True)
 
     sess = tf.Session()
     saver = tf.train.import_meta_graph("./model/model.ckpt.meta")
@@ -203,14 +203,11 @@ def main(X_train, X_test, y_train, y_test):
                 for i in range(n_batches):
                     startIndex = i * batchSize
                     endIndex = startIndex + batchSize
-                    if i%batchSize == 0:
+                    if i%100 == 0:
                         print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
                         train_loss = loss.eval(feed_dict={
                                 X: X_train_local[startIndex:endIndex],
                                 y_: y_train_local[startIndex:endIndex]})
-                        #sess.run(loss, feed_dict={
-                        #        X: X_train_local[startIndex:endIndex],
-                        #        y_: y_train_local[startIndex:endIndex]})
                         print("loss: {}".format(train_loss))
                         loss_lst.append(train_loss)
 
@@ -218,9 +215,6 @@ def main(X_train, X_test, y_train, y_test):
                         X: X_train_local[startIndex:endIndex],
                         y_:
                         y_train_local[startIndex:endIndex]})
-                    #sess.run(train_step, feed_dict={
-                    #    X: X_train_local[startIndex:endIndex],
-                    #    y_: y_train_local[startIndex:endIndex]})
 
         saver.save(sess, "./model/model.ckpt")
 
@@ -230,15 +224,17 @@ def main(X_train, X_test, y_train, y_test):
             X_test_local = get_local_image(X_test[0], 72, False)
             y_test_local = get_local_image(y_test[0], 72, True)
             test_loss += loss.eval(feed_dict={X: X_test_local, y_: y_test_local})
+            output = h_fc6.eval(feed_dict={
+                X: X_train_local[startIndex:endIndex],
+                y_:
+                y_train_local[startIndex:endIndex]})
+            cv2.imwrite("../output/out_{0}.png".format(i), output)
         print("test accuracy {}".format(test_loss/len(X_test)))
 
         np.save("../loss.npy", np.array(loss_lst))
         sess.close()
 
-
-
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = load_data("../image/original/tmp")
     # tmp variable (NOT WORK)
     main(X_train, X_test, y_train, y_test)
-    test()
