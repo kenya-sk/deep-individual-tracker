@@ -120,6 +120,7 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("weight1"):
                 W_conv1 = weight_variable([7,7,3,32])
                 variable_summaries(W_conv1)
+                _ = tf.summary.image("image1", tf.reshape(W_conv1, [-1, 7, 7, 1]))
             with tf.name_scope("biases1"):
                 b_conv1 = bias_variable([32])
                 variable_summaries(b_conv1)
@@ -141,6 +142,7 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("weights2"):
                 W_conv2 = weight_variable([7,7,32,32])
                 variable_summaries(W_conv2)
+                _ = tf.summary.image("image2", tf.reshape(W_conv2, [-1, 7, 7, 1]))
             with tf.name_scope("biass2"):
                 b_conv2 = bias_variable([32])
                 variable_summaries(b_conv2)
@@ -161,6 +163,7 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("weight3"):
                 W_conv3 = weight_variable([5,5,32,64])
                 variable_summaries(W_conv3)
+                _ = tf.summary.image("image3", tf.reshape(W_conv3, [-1, 5, 5, 1]))
             with tf.name_scope("biass3"):
                 b_conv3 = bias_variable([64])
                 variable_summaries(b_conv3)
