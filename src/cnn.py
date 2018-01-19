@@ -68,7 +68,7 @@ def variable_summaries(var):
         tf.summary.scalar('stddev', stddev)
         tf.summary.scalar('max', tf.reduce_max(var))
         tf.summary.scalar('min', tf.reduce_min(var))
-        tf.summary.histogram('histogram', var)
+        #tf.summary.histogram('histogram', var)
 
 # initialize weight by normal distribution (standard deviation: 0.1)
 def weight_variable(shape):
@@ -251,14 +251,14 @@ def main(X_train, X_test, y_train, y_test):
             for i in range(n_batches):
                 startIndex = i * batchSize
                 endIndex = startIndex + batchSize
-                if i%100 == 0:
+                if i%(n_batches-1) == 0:
                     print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
                             X: X_train_local[startIndex:endIndex],
                             y_: y_train_local[startIndex:endIndex]})
                     train_writer.add_summary(summary, i)
                     print("loss: {}".format(train_loss))
-
+                    """
                     # output detail data
                     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
                     run_metadata = tf.RunMetadata()
@@ -267,13 +267,14 @@ def main(X_train, X_test, y_train, y_test):
                                     y_: y_train_local[startIndex:endIndex]},
                                     options=run_options,
                                     run_metadata=run_metadata)
-                    train_writer.add_run_metadata(run_metadata, "step{0:03d}, batch{1:03d}".format(step, i))
+                    train_writer.add_run_metadata(run_metadata, "batch{0:04d}".format(i))
                     train_writer.add_summary(summary, i)
-                else:
-                    summary, _ = sess.run([merged, train_step], feed_dict={
+                    """
+                #else:
+                summary, _ = sess.run([merged, train_step], feed_dict={
                                     X: X_train_local[startIndex:endIndex],
                                     y_: y_train_local[startIndex:endIndex]})
-                    train_witer.add_summary(summary, i)
+                train_writer.add_summary(summary, i)
 
     saver.save(sess, "./model/model.ckpt")
 
@@ -288,7 +289,7 @@ def main(X_train, X_test, y_train, y_test):
     print("test accuracy {}".format(test_loss/len(X_test)))
 
     # end processing
-    train_witer.close()
+    train_writer.close()
     test_writer.close()
     sess.close()
 
