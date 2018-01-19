@@ -256,12 +256,12 @@ def main(X_train, X_test, y_train, y_test):
                 endIndex = startIndex + batchSize
                 if batch%(n_batches) == 0:
                     print("traning data: {0} / {1}".format(i, len(X_train)))
-                    print("step: {0}, batch: {1} / {2}\n".format(step, batch, n_batches))
+                    print("step: {0}, batch: {1} / {2}".format(step, batch, n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
                             X: X_train_local[startIndex:endIndex],
                             y_: y_train_local[startIndex:endIndex]})
                     train_writer.add_summary(summary, i)
-                    print("loss: {}".format(train_loss))
+                    print("loss: {}\n".format(train_loss))
                     """
                     # output detail data
                     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
