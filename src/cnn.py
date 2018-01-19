@@ -120,7 +120,7 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("weight1"):
                 W_conv1 = weight_variable([7,7,3,32])
                 variable_summaries(W_conv1)
-                _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2]))
+                _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1])
             with tf.name_scope("biases1"):
                 b_conv1 = bias_variable([32])
                 variable_summaries(b_conv1)
@@ -142,7 +142,7 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("weights2"):
                 W_conv2 = weight_variable([7,7,32,32])
                 variable_summaries(W_conv2)
-                _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,:3])
+                _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1])
             with tf.name_scope("biass2"):
                 b_conv2 = bias_variable([32])
                 variable_summaries(b_conv2)
@@ -163,7 +163,7 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("weight3"):
                 W_conv3 = weight_variable([5,5,32,64])
                 variable_summaries(W_conv3)
-                _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,:3])
+                _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1])
             with tf.name_scope("biass3"):
                 b_conv3 = bias_variable([64])
                 variable_summaries(b_conv3)
@@ -251,11 +251,12 @@ def main(X_train, X_test, y_train, y_test):
             y_train_local = get_local_image(y_train[i], 72, True)
             n_batches = int(len(X_train_local) / batchSize)
 
-            for i in range(n_batches):
-                startIndex = i * batchSize
+            for batch in range(n_batches):
+                startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
-                if i%(n_batches-1) == 0:
-                    print("step: {0}, batch: {1} / {2}".format(step, i, n_batches))
+                if batch%(n_batches) == 0:
+                    print("traning data: {0} / {1}".format(i, len(X_train)))
+                    print("step: {0}, batch: {1} / {2}\n".format(step, batch, n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
                             X: X_train_local[startIndex:endIndex],
                             y_: y_train_local[startIndex:endIndex]})
