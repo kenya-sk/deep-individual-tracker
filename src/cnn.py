@@ -219,7 +219,7 @@ def main(X_train, X_test, y_train, y_test):
 
     with tf.name_scope("y"):
         h_fc6_flat = tf.reshape(h_fc6, [-1, 18*18])
-        tf.summary.histogram("y", h_fc6_flat)
+        #tf.summary.histogram("y", h_fc6_flat)
 
     # loss function
     with tf.name_scope("loss"):
