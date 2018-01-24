@@ -123,15 +123,19 @@ def main(X_train, X_test, y_train, y_test):
                 W_conv1 = weight_variable([7,7,3,32])
                 variable_summaries(W_conv1)
                 _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
+            """
             with tf.name_scope("biass1"):
                 b_conv1 = bias_variable([32])
                 variable_summaries(b_conv1)
             with tf.name_scope("relu1"):
                 h_conv1 = tf.nn.relu(conv2d(X, W_conv1) + b_conv1)
                 variable_summaries(h_conv1)
-
+            """
+        with tf.name_scope("batch norm1"):
+            h_conv1 = conv2d(X, W_conv1)
+            h_conv1_bn = tf.nn.batch_normalizetion(h_conv1, 0, 1, 0, 1, 1e-5)
         with tf.name_scope("pool1"):
-            h_pool1 = max_pool_2x2(h_conv1)
+            h_pool1 = max_pool_2x2(h_conv1_bn)
             variable_summaries(h_pool1)
 
 
@@ -145,15 +149,21 @@ def main(X_train, X_test, y_train, y_test):
                 W_conv2 = weight_variable([7,7,32,32])
                 variable_summaries(W_conv2)
                 _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
+            """
             with tf.name_scope("biass2"):
                 b_conv2 = bias_variable([32])
                 variable_summaries(b_conv2)
             with tf.name_scope("relu2"):
                 h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
                 variable_summaries(h_conv2)
+            """
+
+        with tf.name_scope("batch norm2"):
+            h_conv2 = conv2d(h_pool1, W_conv2)
+            h_conv2_bn = tf.nn.batch_normalizetion(h_conv2, 0, 1, 0, 1, 1e-5)
 
         with tf.name_scope("pool2"):
-            h_pool2 = max_pool_2x2(h_conv2)
+            h_pool2 = max_pool_2x2(h_conv2_bn)
             variable_summaries(h_pool2)
 
     # third layer
@@ -166,12 +176,18 @@ def main(X_train, X_test, y_train, y_test):
                 W_conv3 = weight_variable([5,5,32,64])
                 variable_summaries(W_conv3)
                 _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=64)
+            """
             with tf.name_scope("biass3"):
                 b_conv3 = bias_variable([64])
                 variable_summaries(b_conv3)
             with tf.name_scope("relu3"):
                 h_conv3 = tf.nn.relu(conv2d(h_pool2, W_conv3) + b_conv3)
                 variable_summaries(h_conv3)
+            """
+
+        with tf.name_scope("batch norm3"):
+            h_conv3 = conv2d(h_pool2, W_conv3)
+            h_conv3_bn = tf.nn.batch_normalizetion(h_conv3, 0, 1, 0, 1, 1e-5)
 
     # fourth layer
     # fully connected layer
@@ -181,13 +197,16 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("weight4"):
                 W_fc4 = weight_variable([18*18*64, 1000])
                 variable_summaries(W_fc4)
+            """
             with tf.name_scope("biass4"):
                 b_fc4 = bias_variable([1000])
                 variable_summaries(b_fc4)
+            """
             with tf.name_scope("flat4"):
-                h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
-                h_fc4 = tf.nn.relu(tf.matmul(h_conv3_flat, W_fc4) + b_fc4)
-                variable_summaries(h_fc4)
+                h_conv3_flat = tf.reshape(h_conv3_bn, [-1, 18*18*64])
+                h_fc4 = tf.matmul(h_conv3_flat, W_fc4)
+                h_fc4_bn = tf.nn.batch_normalizetion(h_fc4, 0, 1, 0, 1, 1e-5)
+                variable_summaries(h_fc4_bn)
 
     # fifth layer
     # fully connected layer
@@ -197,12 +216,15 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("weight5"):
                 W_fc5 = weight_variable([1000, 400])
                 variable_summaries(W_fc5)
+            """
             with tf.name_scope("biass5"):
                 b_fc5 = bias_variable([400])
                 variable_summaries(b_fc5)
+            """
             with tf.name_scope("flat5"):
-                h_fc5 = tf.nn.relu(tf.matmul(h_fc4, W_fc5) + b_fc5)
-                variable_summaries(h_fc5)
+                h_fc5 = tf.matmul(h_fc4, W_fc5)
+                h_fc5_bn = tf.nn.batch_normalizetion(h_fc5, 0, 1, 0, 1, 1e-5)
+                variable_summaries(h_fc5_bn)
 
     # sixth layer
     # fully connected layer
@@ -212,15 +234,18 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("weight6"):
                 W_fc6 = weight_variable([400, 324])
                 variable_summaries(W_fc6)
+            """
             with tf.name_scope("biass6"):
                 b_fc6 = bias_variable([324])
                 variable_summaries(b_fc6)
+            """
             with tf.name_scope("flat6"):
-                h_fc6 = tf.nn.relu(tf.matmul(h_fc5, W_fc6) + b_fc6)
-                variable_summaries(h_fc6)
+                h_fc6 = tf.matmul(h_fc5, W_fc6)
+                h_fc6_bn = tf.nn.batch_normalizetion(h_fc6, 0, 1, 0, 1, 1e-5)
+                variable_summaries(h_fc6_bn)
 
     with tf.name_scope("y"):
-        h_fc6_flat = tf.reshape(h_fc6, [-1, 18*18])
+        h_fc6_flat = tf.reshape(h_fc6_bn, [-1, 18*18])
         #tf.summary.histogram("y", h_fc6_flat)
 
     # loss function
