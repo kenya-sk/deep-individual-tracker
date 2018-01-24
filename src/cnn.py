@@ -70,7 +70,7 @@ def variable_summaries(var):
         tf.summary.scalar('stddev', stddev)
         tf.summary.scalar('max', tf.reduce_max(var))
         tf.summary.scalar('min', tf.reduce_min(var))
-        tf.summary.histogram('histogram', var)
+        #tf.summary.histogram('histogram', var)
 
 # initialize weight by normal distribution (standard deviation: 0.1)
 def weight_variable(shape):
@@ -233,20 +233,22 @@ def main(X_train, X_test, y_train, y_test):
         train_step = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 
     # variable of TensorBoard
+    lossStep = 0
+    step = 0
     merged = tf.summary.merge_all()
     train_writer = tf.summary.FileWriter(log_dir + "/train", sess.graph)
     test_writer = tf.summary.FileWriter(log_dir + "/test")
 
     # learning
     startTime = time.time()
-    n_steps = 10
+    n_epochs = 10
     batchSize = 5
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
 
     print("Original traning data size: {}".format(len(X_train)))
-    for step in range(n_steps):
+    for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
             X_train_local = get_local_image(X_train[i], 72, False)
@@ -257,12 +259,13 @@ def main(X_train, X_test, y_train, y_test):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
                 if batch%(n_batches) == 0:
+                    lossStep += 1
                     print("traning data: {0} / {1}".format(i, len(X_train)))
-                    print("step: {0}, batch: {1} / {2}".format(step, batch, n_batches))
+                    print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
                             X: X_train_local[startIndex:endIndex],
                             y_: y_train_local[startIndex:endIndex]})
-                    train_writer.add_summary(summary, i)
+                    train_writer.add_summary(summary, lossStep)
                     print("loss: {}\n".format(train_loss))
                     """
                     # output detail data
@@ -277,10 +280,11 @@ def main(X_train, X_test, y_train, y_test):
                     train_writer.add_summary(summary, i)
                     """
                 #else:
+                step += 1
                 summary, _ = sess.run([merged, train_step], feed_dict={
                                     X: X_train_local[startIndex:endIndex],
                                     y_: y_train_local[startIndex:endIndex]})
-                train_writer.add_summary(summary, i)
+                train_writer.add_summary(summary, step)
 
     saver.save(sess, "./model/model.ckpt")
 
