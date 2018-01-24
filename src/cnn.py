@@ -33,6 +33,8 @@ def load_data(inputDirPath):
 
 
 def get_local_image(image, localImgSize, resize):
+    # trimming original image(there are many unnecessary parts)
+    image = image[:470, :]
     # local image size is even number
     height = image.shape[0]
     width = image.shape[1]
