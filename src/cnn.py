@@ -70,7 +70,7 @@ def variable_summaries(var):
         tf.summary.scalar('stddev', stddev)
         tf.summary.scalar('max', tf.reduce_max(var))
         tf.summary.scalar('min', tf.reduce_min(var))
-        tf.summary.histogram('histogram', var)
+        #tf.summary.histogram('histogram', var)
 
 # initialize weight by normal distribution (standard deviation: 0.1)
 def weight_variable(shape):
@@ -131,9 +131,9 @@ def main(X_train, X_test, y_train, y_test):
                 h_conv1 = tf.nn.relu(conv2d(X, W_conv1) + b_conv1)
                 variable_summaries(h_conv1)
             """
-        with tf.name_scope("batch norm1"):
+        with tf.name_scope("batchNorm1"):
             h_conv1 = conv2d(X, W_conv1)
-            h_conv1_bn = tf.nn.batch_normalizetion(h_conv1, 0, 1, 0, 1, 1e-5)
+            h_conv1_bn = tf.nn.batch_normalization(h_conv1, 0, 1, 0, 1, 1e-5)
         with tf.name_scope("pool1"):
             h_pool1 = max_pool_2x2(h_conv1_bn)
             variable_summaries(h_pool1)
@@ -158,9 +158,9 @@ def main(X_train, X_test, y_train, y_test):
                 variable_summaries(h_conv2)
             """
 
-        with tf.name_scope("batch norm2"):
+        with tf.name_scope("batchNorm2"):
             h_conv2 = conv2d(h_pool1, W_conv2)
-            h_conv2_bn = tf.nn.batch_normalizetion(h_conv2, 0, 1, 0, 1, 1e-5)
+            h_conv2_bn = tf.nn.batch_normalization(h_conv2, 0, 1, 0, 1, 1e-5)
 
         with tf.name_scope("pool2"):
             h_pool2 = max_pool_2x2(h_conv2_bn)
@@ -185,9 +185,9 @@ def main(X_train, X_test, y_train, y_test):
                 variable_summaries(h_conv3)
             """
 
-        with tf.name_scope("batch norm3"):
+        with tf.name_scope("batchNorm3"):
             h_conv3 = conv2d(h_pool2, W_conv3)
-            h_conv3_bn = tf.nn.batch_normalizetion(h_conv3, 0, 1, 0, 1, 1e-5)
+            h_conv3_bn = tf.nn.batch_normalization(h_conv3, 0, 1, 0, 1, 1e-5)
 
     # fourth layer
     # fully connected layer
@@ -205,7 +205,7 @@ def main(X_train, X_test, y_train, y_test):
             with tf.name_scope("flat4"):
                 h_conv3_flat = tf.reshape(h_conv3_bn, [-1, 18*18*64])
                 h_fc4 = tf.matmul(h_conv3_flat, W_fc4)
-                h_fc4_bn = tf.nn.batch_normalizetion(h_fc4, 0, 1, 0, 1, 1e-5)
+                h_fc4_bn = tf.nn.batch_normalization(h_fc4, 0, 1, 0, 1, 1e-5)
                 variable_summaries(h_fc4_bn)
 
     # fifth layer
@@ -222,8 +222,8 @@ def main(X_train, X_test, y_train, y_test):
                 variable_summaries(b_fc5)
             """
             with tf.name_scope("flat5"):
-                h_fc5 = tf.matmul(h_fc4, W_fc5)
-                h_fc5_bn = tf.nn.batch_normalizetion(h_fc5, 0, 1, 0, 1, 1e-5)
+                h_fc5 = tf.matmul(h_fc4_bn, W_fc5)
+                h_fc5_bn = tf.nn.batch_normalization(h_fc5, 0, 1, 0, 1, 1e-5)
                 variable_summaries(h_fc5_bn)
 
     # sixth layer
@@ -240,8 +240,8 @@ def main(X_train, X_test, y_train, y_test):
                 variable_summaries(b_fc6)
             """
             with tf.name_scope("flat6"):
-                h_fc6 = tf.matmul(h_fc5, W_fc6)
-                h_fc6_bn = tf.nn.batch_normalizetion(h_fc6, 0, 1, 0, 1, 1e-5)
+                h_fc6 = tf.matmul(h_fc5_bn, W_fc6)
+                h_fc6_bn = tf.nn.batch_normalization(h_fc6, 0, 1, 0, 1, 1e-5)
                 variable_summaries(h_fc6_bn)
 
     with tf.name_scope("y"):
