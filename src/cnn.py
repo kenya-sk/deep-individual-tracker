@@ -233,7 +233,6 @@ def main(X_train, X_test, y_train, y_test):
         train_step = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
 
     # variable of TensorBoard
-    lossStep = 0
     step = 0
     merged = tf.summary.merge_all()
     train_writer = tf.summary.FileWriter(log_dir + "/train", sess.graph)
@@ -254,18 +253,17 @@ def main(X_train, X_test, y_train, y_test):
             X_train_local = get_local_image(X_train[i], 72, False)
             y_train_local = get_local_image(y_train[i], 72, True)
             n_batches = int(len(X_train_local) / batchSize)
-
+            step += 1
             for batch in range(n_batches):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
                 if batch%(n_batches) == 0:
-                    lossStep += 1
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
                             X: X_train_local[startIndex:endIndex],
                             y_: y_train_local[startIndex:endIndex]})
-                    train_writer.add_summary(summary, lossStep)
+                    train_writer.add_summary(summary, step)
                     print("loss: {}\n".format(train_loss))
                     """
                     # output detail data
@@ -280,7 +278,6 @@ def main(X_train, X_test, y_train, y_test):
                     train_writer.add_summary(summary, i)
                     """
                 #else:
-                step += 1
                 summary, _ = sess.run([merged, train_step], feed_dict={
                                     X: X_train_local[startIndex:endIndex],
                                     y_: y_train_local[startIndex:endIndex]})
