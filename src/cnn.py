@@ -6,9 +6,9 @@ import re
 import time
 import cv2
 import numpy as np
-from math import floor
-from sklearn.model_selection import train_test_split
+import math
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 
 
 def load_data(inputDirPath):
@@ -38,7 +38,7 @@ def get_local_image(image, localImgSize, resize):
     # local image size is even number
     height = image.shape[0]
     width = image.shape[1]
-    pad = floor(localImgSize/2)
+    pad = math.floor(localImgSize/2)
     if len(image.shape) == 3:
         padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]))
         localImg = np.zeros((localImgSize, localImgSize, image.shape[2]))
@@ -72,9 +72,20 @@ def variable_summaries(var):
         tf.summary.scalar('min', tf.reduce_min(var))
         #tf.summary.histogram('histogram', var)
 
-# initialize weight by normal distribution (standard deviation: 0.1)
+# initialize weight by He initialization
 def weight_variable(shape):
-    initial = tf.truncated_normal(shape, stddev=0.1, dtype=tf.float32)
+    #initial = tf.truncated_normal(shape, stddev=0.1, dtype=tf.float32)
+
+    # He initialization
+    if len(shape) == 4:
+        n = shape[1] * shape[2] * shape[3]
+    elif len(shape) == 2:
+        n = shape[0]
+    else:
+        print("Error: shape size is not correct !")
+        sys.exit(1)
+    stddev = math.sqrt(2/n)
+    initial = tf.random_normal(shape, stddev=stddev, dtype=tf.float32)
     return tf.Variable(initial)
 
 
@@ -108,9 +119,11 @@ def main(X_train, X_test, y_train, y_test):
         # input image
         with tf.name_scope("X"):
             X = tf.placeholder(tf.float32, [None, 72, 72, 3])
+            _ = tf.summary.image("input", X[:, :, :, 0:1], 5)
         # answer image
         with tf.name_scope("y_"):
             y_ = tf.placeholder(tf.float32, [None, 18*18])
+            _ = tf.summary.image("label", tf.reshape(y_, [-1, 18, 18, 1]), 5)
 
 
     # first layer
@@ -220,17 +233,17 @@ def main(X_train, X_test, y_train, y_test):
                 variable_summaries(h_fc6)
 
     with tf.name_scope("y"):
-        h_fc6_flat = tf.reshape(h_fc6, [-1, 18*18])
-        #tf.summary.histogram("y", h_fc6_flat)
+        tf.summary.histogram("y", h_fc6)
+        _ = tf.summary.image("output", tf.reshape(h_fc6, [-1, 18, 18, 1]), 5)
 
     # loss function
     with tf.name_scope("loss"):
-        loss = tf.reduce_mean(tf.square(y_ - h_fc6_flat))
+        loss = tf.reduce_mean(tf.square(y_ - h_fc6))
         tf.summary.scalar("loss", loss)
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(0.001).minimize(loss)
 
     # variable of TensorBoard
     step = 0
