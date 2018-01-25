@@ -119,11 +119,13 @@ def main(X_train, X_test, y_train, y_test):
         # input image
         with tf.name_scope("X"):
             X = tf.placeholder(tf.float32, [None, 72, 72, 3])
-            _ = tf.summary.image("input", X[:, :, :, 0:1], 5)
         # answer image
         with tf.name_scope("y_"):
             y_ = tf.placeholder(tf.float32, [None, 18*18])
-            _ = tf.summary.image("label", tf.reshape(y_, [-1, 18, 18, 1]), 5)
+                
+    # summary of input image
+     _ = tf.summary.image("input", X[:, :, :, 0:1], 5)
+     _ = tf.summary.image("label", tf.reshape(y_, [-1, 18, 18, 1]), 5)
 
 
     # first layer
