@@ -23,9 +23,9 @@ def load_data(inputDirPath):
     y = []
     file_lst = get_file_path(inputDirPath)
     for path in file_lst:
-        X.append(cv2.imread("../image/original/test2/" + path))
+        X.append(cv2.imread("../image/original/test/" + path))
         densPath = path.replace(".png", ".npy")
-        y.append(np.load("../data/dens/test2/" + densPath))
+        y.append(np.load("../data/dens/test/" + densPath))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -284,7 +284,7 @@ def main(X_train, X_test, y_train, y_test):
                 #record loss data
                 if batch%100 == 0:
                     print("traning data: {0} / {1}".format(i, len(X_train)))
-                    print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, n_batches))
+                    print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
                             X: X_train_local[startIndex:endIndex],
                             y_: y_train_label[startIndex:endIndex]})
@@ -300,7 +300,7 @@ def main(X_train, X_test, y_train, y_test):
     saver.save(sess, "./model/model.ckpt")
 
     # test data
-    print("TEST: epoch {}".format(epoch))
+    print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
         X_test_local = get_local_image(X_test[i], 72)
@@ -325,5 +325,5 @@ def main(X_train, X_test, y_train, y_test):
     sess.close()
 
 if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = load_data("../image/original/test2")
+    X_train, X_test, y_train, y_test = load_data("../image/original/test")
     main(X_train, X_test, y_train, y_test)
