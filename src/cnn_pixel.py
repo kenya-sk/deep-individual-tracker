@@ -263,7 +263,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 15
+    n_epochs = 10
     batchSize = 5
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
@@ -282,7 +282,7 @@ def main(X_train, X_test, y_train, y_test):
                 endIndex = startIndex + batchSize
 
                 #record loss data
-                if batch%(n_batches) == 0:
+                if batch%(n_batches) == 100:
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
