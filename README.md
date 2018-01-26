@@ -12,5 +12,8 @@
     * input the directory path, select feature points with a mouse for all image file,
     and output the coordinate of density map.
 
-4. cnn.py
+4. cord2dens.py
+    * input the directory path of cordinate file(.csv), output density map of various kernel size.
+
+5. cnn.py
     * 6 layer CNN (In Development).
