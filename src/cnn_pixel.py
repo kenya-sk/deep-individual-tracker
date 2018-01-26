@@ -296,27 +296,28 @@ def main(X_train, X_test, y_train, y_test):
                                     y_: y_train_label[startIndex:endIndex]})
                 train_writer.add_summary(summary, trainStep)
 
-        # test data
-        print("TEST: epoch {}".format(epoch))
-        test_loss = 0.0
-        for i in range(len(X_test)):
-            X_test_local = get_local_image(X_test[i], 72)
-            y_test_label = get_local_label(y_test[i])
-            test_n_batches = int(len(X_test_local) / batchSize)
-            for batch in range(test_n_batches):
-                startIndex = batch * batchSize
-                endIndex = startIndex + batchSize
-
-                summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                        X: X_test_local[startIndex:endIndex],
-                                        y_: y_test_label[startIndex:endIndex]})
-                test_writer.add_summary(summary, testStep)
-                test_loss += tmp_loss
-                testStep += 1
-        print("test loss {}\n".format(test_loss/len(X_test)))
 
     saver.save(sess, "./model/model.ckpt")
 
+    # test data
+    print("TEST: epoch {}".format(epoch))
+    test_loss = 0.0
+    for i in range(len(X_test)):
+        X_test_local = get_local_image(X_test[i], 72)
+        y_test_label = get_local_label(y_test[i])
+        test_n_batches = int(len(X_test_local) / batchSize)
+        for batch in range(test_n_batches):
+            startIndex = batch * batchSize
+            endIndex = startIndex + batchSize
+
+            summary, tmp_loss = sess.run([merged, loss], feed_dict={
+                                    X: X_test_local[startIndex:endIndex],
+                                    y_: y_test_label[startIndex:endIndex]})
+            test_writer.add_summary(summary, testStep)
+            test_loss += tmp_loss
+            testStep += 1
+            
+    print("test loss {}\n".format(test_loss/len(X_test)*test_n_batches))
 
     # end processing
     train_writer.close()
