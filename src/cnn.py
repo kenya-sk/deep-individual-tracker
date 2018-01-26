@@ -282,28 +282,19 @@ def main(X_train, X_test, y_train, y_test):
                 train_writer.add_summary(summary, trainStep)
 
         # test data
-        print("TEST")
+        print("TEST: epoch {}".format(epoch))
         test_loss = 0.0
         for i in range(len(X_test)):
-            X_test_local = get_local_image(X_test[0], 72, False)
-            y_test_local = get_local_image(y_test[0], 72, True)
+            X_test_local = get_local_image(X_test[i], 72, False)
+            y_test_local = get_local_image(y_test[i], 72, True)
             summary, tmp_loss = sess.run([merged, loss], feed_dict={X: X_test_local, y_: y_test_local})
             test_writer.add_summary(summary, testStep)
             test_loss += tmp_loss
             testStep += 1
-        print("test loss {}".format(test_loss/len(X_test)))
+        print("test loss {}\n".format(test_loss/len(X_test)))
 
     saver.save(sess, "./model/model.ckpt")
 
-    # test data
-    test_loss = 0.0
-    for i in range(len(X_test)):
-        X_test_local = get_local_image(X_test[0], 72, False)
-        y_test_local = get_local_image(y_test[0], 72, True)
-        summary, tmp_loss = sess.run([merged, loss], feed_dict={X: X_test_local, y_: y_test_local})
-        test_writer.add_summary(summary, i)
-        test_loss += tmp_loss
-    print("test loss {}".format(test_loss/len(X_test)))
 
     # end processing
     train_writer.close()
