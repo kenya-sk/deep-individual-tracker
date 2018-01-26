@@ -70,7 +70,6 @@ def variable_summaries(var):
         tf.summary.scalar('stddev', stddev)
         tf.summary.scalar('max', tf.reduce_max(var))
         tf.summary.scalar('min', tf.reduce_min(var))
-        #tf.summary.histogram('histogram', var)
 
 # initialize weight by He initialization
 def weight_variable(shape):
@@ -248,7 +247,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 10
+    n_epochs = 15
     batchSize = 5
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
