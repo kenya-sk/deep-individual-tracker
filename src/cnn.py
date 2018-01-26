@@ -119,13 +119,11 @@ def main(X_train, X_test, y_train, y_test):
         # input image
         with tf.name_scope("X"):
             X = tf.placeholder(tf.float32, [None, 72, 72, 3])
+            _ = tf.summary.image("X(input)", X[:, :, :, 0:1], 5)
         # answer image
         with tf.name_scope("y_"):
             y_ = tf.placeholder(tf.float32, [None, 18*18])
-
-    # summary of input image
-    _ = tf.summary.image("input", X[:, :, :, 0:1], 5)
-    _ = tf.summary.image("label", tf.reshape(y_, [-1, 18, 18, 1]), 5)
+            _ = tf.summary.image("y_(label)", tf.reshape(y_, [-1, 18, 18, 1]), 5)
 
 
     # first layer
@@ -272,6 +270,8 @@ def main(X_train, X_test, y_train, y_test):
             for batch in range(n_batches):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
+
+                #record loss data
                 if batch%(n_batches) == 0:
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, n_batches))
@@ -280,19 +280,7 @@ def main(X_train, X_test, y_train, y_test):
                             y_: y_train_local[startIndex:endIndex]})
                     train_writer.add_summary(summary, step)
                     print("loss: {}\n".format(train_loss))
-                    """
-                    # output detail data
-                    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-                    run_metadata = tf.RunMetadata()
-                    summary, _ = sess.run([merged, train_step], feed_dict={
-                                    X: X_train_local[startIndex:endIndex],
-                                    y_: y_train_local[startIndex:endIndex]},
-                                    options=run_options,
-                                    run_metadata=run_metadata)
-                    train_writer.add_run_metadata(run_metadata, "batch{0:04d}".format(i))
-                    train_writer.add_summary(summary, i)
-                    """
-                #else:
+
                 summary, _ = sess.run([merged, train_step], feed_dict={
                                     X: X_train_local[startIndex:endIndex],
                                     y_: y_train_local[startIndex:endIndex]})
