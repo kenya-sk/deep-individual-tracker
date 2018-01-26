@@ -23,9 +23,9 @@ def load_data(inputDirPath):
     y = []
     file_lst = get_file_path(inputDirPath)
     for path in file_lst:
-        X.append(cv2.imread("../image/original/tmp/" + path))
+        X.append(cv2.imread("../image/original/test2/" + path))
         densPath = path.replace(".png", ".npy")
-        y.append(np.load("../data/dens/tmp/" + densPath))
+        y.append(np.load("../data/dens/test2/" + densPath))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -275,9 +275,9 @@ def main(X_train, X_test, y_train, y_test):
         for i in range(len(X_train)):
             X_train_local = get_local_image(X_train[i], 72)
             y_train_label = get_local_label(y_train[i])
-            n_batches = int(len(X_train_local) / batchSize)
+            train_n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
-            for batch in range(n_batches):
+            for batch in range(train_n_batches):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
 
@@ -300,12 +300,13 @@ def main(X_train, X_test, y_train, y_test):
         print("TEST: epoch {}".format(epoch))
         test_loss = 0.0
         for i in range(len(X_test)):
-            for batch in range(n_batches):
+            X_test_local = get_local_image(X_test[i], 72)
+            y_test_label = get_local_label(y_test[i])
+            test_n_batches = int(len(X_test_local) / batchSize)
+            for batch in range(test_n_batches):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
 
-                X_test_local = get_local_image(X_test[i], 72)
-                y_test_label = get_local_label(y_test[i])
                 summary, tmp_loss = sess.run([merged, loss], feed_dict={
                                         X: X_test_local[startIndex:endIndex],
                                         y_: y_test_label[startIndex:endIndex]})
@@ -323,5 +324,5 @@ def main(X_train, X_test, y_train, y_test):
     sess.close()
 
 if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = load_data("../image/original/tmp")
+    X_train, X_test, y_train, y_test = load_data("../image/original/test2")
     main(X_train, X_test, y_train, y_test)
