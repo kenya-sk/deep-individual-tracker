@@ -48,12 +48,23 @@ def get_local_image(image, localImgSize):
 
     padImg[pad:height+pad, pad:width+pad] = image
     localImg_lst = []
+    for h in range(pad, height+pad):
+        for w in range(pad, width+pad):
+            tmpLocalImg = np.array(localImg)
+            tmpLocalImg = padImg[h-pad:h+pad, w-pad:w+pad]
+            localImg_lst.append(tmpLocalImg)
+
+    return localImg_lst
+
+def get_local_label(densMap):
+    densMap = densMap[:470, :]
+    height = densMap.shape[0]
+    width = densMap.shape[1]
+    label_lst = []
     for h in range(height):
         for w in range(width):
-            tmpLocalImg = np.array(localImg)
-            tmpLocalImg = padImg[h-pad:h+pad-1, w-pad:w+pad-1]
-    localImg_lst.append(tmpLocalImg)
-    return localImg_lst
+            label_lst.append(densMap[h][w])
+    return label_lst
 
 # processing variables and it output tensorboard
 def variable_summaries(var):
@@ -117,8 +128,7 @@ def main(X_train, X_test, y_train, y_test):
             _ = tf.summary.image("X(input)", X[:, :, :, 0:1], 5)
         # answer image
         with tf.name_scope("y_"):
-            y_ = tf.placeholder(tf.float32, [None, 18*18])
-            _ = tf.summary.image("y_(label)", tf.reshape(y_, [-1, 18, 18, 1]), 5)
+            y_ = tf.placeholder(tf.float32, [None])
 
 
     # first layer
@@ -264,7 +274,7 @@ def main(X_train, X_test, y_train, y_test):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
             X_train_local = get_local_image(X_train[i], 72)
-            y_train_local = y_train[i]
+            y_train_label = get_local_label(y_train[i])
             n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
             for batch in range(n_batches):
@@ -291,7 +301,7 @@ def main(X_train, X_test, y_train, y_test):
         test_loss = 0.0
         for i in range(len(X_test)):
             X_test_local = get_local_image(X_test[i], 72)
-            y_test_label = y_test[i]
+            y_test_label = get_local_label(y_test[i])
             summary, tmp_loss = sess.run([merged, loss], feed_dict={X: X_test_local, y_: y_test_label})
             test_writer.add_summary(summary, testStep)
             test_loss += tmp_loss
