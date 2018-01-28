@@ -113,7 +113,7 @@ def max_pool_2x2(x):
 
 def main(X_train, X_test, y_train, y_test):
     # delete the specified directory if it exists, recreate it
-    log_dir = "./logs"
+    log_dir = "./logs_pixel"
     if tf.gfile.Exists(log_dir):
         tf.gfile.DeleteRecursively(log_dir)
     tf.gfile.MakeDirs(log_dir)
@@ -297,7 +297,7 @@ def main(X_train, X_test, y_train, y_test):
                 train_writer.add_summary(summary, trainStep)
 
 
-    saver.save(sess, "./model/model.ckpt")
+    saver.save(sess, "./model_pixel/model.ckpt")
 
     # test data
     print("TEST")
