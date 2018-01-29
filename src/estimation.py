@@ -54,12 +54,10 @@ def main():
         answer = np.load("../data/dens/tmp/90.npy")
         answer_lst = cnn.get_local_image(answer, 72, True)
 
-        testLoss = 0.0
         for i in range(len(test_lst)):
-            testLoss += sess.run(loss, feed_dict={
-                                        X: test_lst[i].reshape(1, 72, 72, 3),
-                                        y_: np.max(answer_lst[i]).reshape(1)})
-        print(testLoss/ len(test_lst))
+            output = sess.run(h_fc7, feed_dict={
+                                        X: test_lst[i].reshape(1, 72, 72, 3)})
+            print(output)
 
 
 if __name__ == "__main__":
