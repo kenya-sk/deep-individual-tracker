@@ -79,7 +79,7 @@ def variable_summaries(var):
         tf.summary.scalar('min', tf.reduce_min(var))
 
 # initialize weight by He initialization
-def weight_variable(shape):
+def weight_variable(shape, name=None):
     #initial = tf.truncated_normal(shape, stddev=0.1, dtype=tf.float32)
 
     # He initialization
@@ -92,14 +92,19 @@ def weight_variable(shape):
         sys.exit(1)
     stddev = math.sqrt(2/n)
     initial = tf.random_normal(shape, stddev=stddev, dtype=tf.float32)
-    return tf.Variable(initial)
+    if name is None:
+        return tf.Variable(initial)
+    else:
+        return tf.Variable(initial, name=name)
 
 
 # initialize bias by normal distribution (standard deviation: 0.1)
-def bias_variable(shape):
+def bias_variable(shape, name=None):
     initial = tf.constant(0.1, shape=shape)
-    return tf.Variable(initial)
-
+    if name is None:
+        return tf.Variable(initial)
+    else:
+        return tf.Variable(initial, name=name)
 
 # convolutional layer
 def conv2d(x, W):
