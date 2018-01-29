@@ -1,11 +1,36 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import math
 import numpy as np
 import tensorflow as tf
 import cv2
 
 import cnn
+
+def get_local_image(image, localImgSize):
+    # trimming original image(there are many unnecessary parts)
+    image = image[:470, :]
+    # local image size is even number
+    height = image.shape[0]
+    width = image.shape[1]
+    pad = math.floor(localImgSize/2)
+    if len(image.shape) == 3:
+        padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]))
+        localImg = np.zeros((localImgSize, localImgSize, image.shape[2]))
+    else:
+        padImg = np.zeros((height + pad * 2, width + pad * 2))
+        localImg = np.zeros((localImgSize, localImgSize))
+
+    padImg[pad:height+pad, pad:width+pad] = image
+    localImg_lst = []
+    for h in range(pad, height+pad):
+        for w in range(pad, width+pad):
+            tmpLocalImg = np.array(localImg)
+            tmpLocalImg = padImg[h-pad:h+pad, w-pad:w+pad]
+            localImg_lst.append(tmpLocalImg)
+
+    return localImg_lst
 
 
 def main():
@@ -49,15 +74,22 @@ def main():
     with tf.Session() as sess:
         saver.restore(sess, "./model_pixel/model.ckpt")
 
-        test = cv2.imread("../image/original/tmp/90.png")
-        test_lst = cnn.get_local_image(test, 72, False)
-        answer = np.load("../data/dens/tmp/90.npy")
-        answer_lst = cnn.get_local_image(answer, 72, True)
+        img = cv2.imread("../image/original/tmp/90.png")
+        height = img.shape[0]
+        width = img.shape[1]
+        img_lst = get_local_image(img, 72)
+        assert len(img_lst) == height*width
+        estImg = np.zeros((height, width))
 
-        for i in range(len(test_lst)):
-            output = sess.run(h_fc7, feed_dict={
-                                        X: test_lst[i].reshape(1, 72, 72, 3)})
-            print(output)
+        i = 0
+        for h in range(height):
+            for w in range(width):
+                output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 72, 72, 3)})
+                estImg[h][w] = output
+                i += 1
+
+        cv2.imwrite("./estimation.png", estImg)
+        print("save estimation image")
 
 
 if __name__ == "__main__":
