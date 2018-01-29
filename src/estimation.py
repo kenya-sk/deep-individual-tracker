@@ -74,7 +74,8 @@ def main():
     with tf.Session() as sess:
         saver.restore(sess, "./model_pixel/model.ckpt")
 
-        img = cv2.imread("../image/original/tmp/90.png")
+        img = cv2.imread("../image/original/11_20880.png")
+        img = img[:470, :]
         height = img.shape[0]
         width = img.shape[1]
         img_lst = get_local_image(img, 72)
@@ -87,6 +88,8 @@ def main():
                 output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 72, 72, 3)})
                 estImg[h][w] = output
                 i += 1
+                if i%300 == 0:
+                    print(i)
 
         cv2.imwrite("./estimation.png", estImg)
         print("save estimation image")
