@@ -124,11 +124,11 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("input"):
         # input image
         with tf.name_scope("X"):
-            X = tf.placeholder(tf.float32, [None, 72, 72, 3])
+            X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
             _ = tf.summary.image("X(input)", X[:, :, :, 0:1], 5)
         # answer image
         with tf.name_scope("y_"):
-            y_ = tf.placeholder(tf.float32, [None])
+            y_ = tf.placeholder(tf.float32, [None], name="label")
 
 
     # first layer
@@ -137,11 +137,11 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("conv1"):
         #7x7x3 filter
         with tf.name_scope("weight1"):
-            W_conv1 = weight_variable([7,7,3,32])
+            W_conv1 = weight_variable([7,7,3,32], name="weight1")
             variable_summaries(W_conv1)
             _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
-        with tf.name_scope("biass1"):
-            b_conv1 = bias_variable([32])
+        with tf.name_scope("bias1"):
+            b_conv1 = bias_variable([32], name="bias1")
             variable_summaries(b_conv1)
         with tf.name_scope("relu1"):
             h_conv1 = tf.nn.relu(conv2d(X, W_conv1) + b_conv1)
@@ -157,12 +157,12 @@ def main(X_train, X_test, y_train, y_test):
     # input 36x36x32 -> output 18x18x32
     with tf.name_scope("conv2"):
         # 7x7x32 filter
-        with tf.name_scope("weights2"):
-            W_conv2 = weight_variable([7,7,32,32])
+        with tf.name_scope("weight2"):
+            W_conv2 = weight_variable([7,7,32,32], name="weight2")
             variable_summaries(W_conv2)
             _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
-        with tf.name_scope("biass2"):
-            b_conv2 = bias_variable([32])
+        with tf.name_scope("bias2"):
+            b_conv2 = bias_variable([32], name="bias2")
             variable_summaries(b_conv2)
         with tf.name_scope("relu2"):
             h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
@@ -178,11 +178,11 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("conv3"):
         # 5x5x32 filter
         with tf.name_scope("weight3"):
-            W_conv3 = weight_variable([5,5,32,64])
+            W_conv3 = weight_variable([5,5,32,64], name="weight3")
             variable_summaries(W_conv3)
             _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=64)
-        with tf.name_scope("biass3"):
-            b_conv3 = bias_variable([64])
+        with tf.name_scope("bias3"):
+            b_conv3 = bias_variable([64], name="bias3")
             variable_summaries(b_conv3)
         with tf.name_scope("relu3"):
             h_conv3 = tf.nn.relu(conv2d(h_pool2, W_conv3) + b_conv3)
@@ -193,10 +193,10 @@ def main(X_train, X_test, y_train, y_test):
     # input 18x18x64 -> output 1000
     with tf.name_scope("fc4"):
         with tf.name_scope("weight4"):
-            W_fc4 = weight_variable([18*18*64, 1000])
+            W_fc4 = weight_variable([18*18*64, 1000], name="weight4")
             variable_summaries(W_fc4)
-        with tf.name_scope("biass4"):
-            b_fc4 = bias_variable([1000])
+        with tf.name_scope("bias4"):
+            b_fc4 = bias_variable([1000], name="bias4")
             variable_summaries(b_fc4)
         with tf.name_scope("flat4"):
             h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
@@ -208,10 +208,10 @@ def main(X_train, X_test, y_train, y_test):
     # input 1000 -> output 400
     with tf.name_scope("fc5"):
         with tf.name_scope("weight5"):
-            W_fc5 = weight_variable([1000, 400])
+            W_fc5 = weight_variable([1000, 400], name="weight5")
             variable_summaries(W_fc5)
-        with tf.name_scope("biass5"):
-            b_fc5 = bias_variable([400])
+        with tf.name_scope("bias5"):
+            b_fc5 = bias_variable([400], name="bias5")
             variable_summaries(b_fc5)
         with tf.name_scope("flat5"):
             h_fc5 = tf.nn.relu(tf.matmul(h_fc4, W_fc5) + b_fc5)
@@ -222,10 +222,10 @@ def main(X_train, X_test, y_train, y_test):
     # input 400 -> output 324
     with tf.name_scope("fc6"):
         with tf.name_scope("weight6"):
-            W_fc6 = weight_variable([400, 324])
+            W_fc6 = weight_variable([400, 324], name="weight6")
             variable_summaries(W_fc6)
-        with tf.name_scope("biass6"):
-            b_fc6 = bias_variable([324])
+        with tf.name_scope("bias6"):
+            b_fc6 = bias_variable([324], name="bias6")
             variable_summaries(b_fc6)
         with tf.name_scope("flat6"):
             h_fc6 = tf.nn.relu(tf.matmul(h_fc5, W_fc6) + b_fc6)
@@ -233,13 +233,13 @@ def main(X_train, X_test, y_train, y_test):
 
     with tf.name_scope("fc7"):
         with tf.name_scope("weight7"):
-            W_fc7 = weight_variable([324, 1])
+            W_fc7 = weight_variable([324, 1], name="weight7")
             variable_summaries(W_fc7)
-        with tf.name_scope("biass7"):
-            b_fc7 = bias_variable([1])
+        with tf.name_scope("bias7"):
+            b_fc7 = bias_variable([1], name="bias7")
             variable_summaries(b_fc7)
         with tf.name_scope("flat7"):
-            h_fc7 = tf.nn.relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
+            h_fc7 = tf.nn.relu(tf.matmul(h_fc6, W_fc7) + b_fc7, name="output")
             variable_summaries(h_fc7)
 
     # output
@@ -316,7 +316,7 @@ def main(X_train, X_test, y_train, y_test):
             test_writer.add_summary(summary, testStep)
             test_loss += tmp_loss
             testStep += 1
-            
+
     print("test loss {}\n".format(test_loss/len(X_test)*test_n_batches))
 
     # end processing
