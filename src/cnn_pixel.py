@@ -25,7 +25,7 @@ def load_data(inputDirPath):
     for path in file_lst:
         X.append(cv2.imread("../image/original/test/" + path))
         densPath = path.replace(".png", ".npy")
-        y.append(np.load("../data/dens/test/" + densPath))
+        y.append(np.load("../data/dens/20/test/" + densPath))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -257,7 +257,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(0.001).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(0.0001).minimize(loss)
 
     # variable of TensorBoard
     trainStep = 0
@@ -268,8 +268,8 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 10
-    batchSize = 100
+    n_epochs = 5
+    batchSize = 200
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
@@ -287,7 +287,7 @@ def main(X_train, X_test, y_train, y_test):
                 endIndex = startIndex + batchSize
 
                 #record loss data
-                if batch%100 == 0:
+                if batch%500 == 0:
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
@@ -322,7 +322,7 @@ def main(X_train, X_test, y_train, y_test):
             test_loss += tmp_loss
             testStep += 1
 
-    print("test loss {}\n".format(test_loss/len(X_test)*test_n_batches))
+    print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
 
     # end processing
     train_writer.close()
