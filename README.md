@@ -16,9 +16,13 @@
     * input the directory path of cordinate file(.csv), output density map of various kernel size (.npy).
 
 5. cnn.py
-    * 6 layer CNN.this model learn the equation to convert the input image to
-    the density map **per local image**.
+    * 6 layer CNN. this model learn the equation that converts **each local image** of
+    input image into a density map.
 
 6. cnn_pixel.py
-    * 7 layer CNN. this model learn the equation to convert the input image to
-    the density map **per pixel**.
+    * 7 layer CNN. this model learns an equation that converts **each pixel** of input
+    image into a density map.
+
+7. estimation_pixel.py
+    * using the learned model(cnn_pixel.py), estimate the value of
+    the density map for each pixel.
