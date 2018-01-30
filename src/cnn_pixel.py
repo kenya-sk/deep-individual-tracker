@@ -32,7 +32,7 @@ def load_data(inputDirPath):
     return X_train, X_test, y_train, y_test
 
 
-def get_local_image(image, localImgSize):
+def get_local_data(image, densMap, localImgSize):
     # trimming original image(there are many unnecessary parts)
     image = image[:470, :]
     # local image size is even number
@@ -48,23 +48,15 @@ def get_local_image(image, localImgSize):
 
     padImg[pad:height+pad, pad:width+pad] = image
     localImg_lst = []
-    for h in range(pad, height+pad):
-        for w in range(pad, width+pad):
-            tmpLocalImg = np.array(localImg)
-            tmpLocalImg = padImg[h-pad:h+pad, w-pad:w+pad]
-            localImg_lst.append(tmpLocalImg)
-
-    return localImg_lst
-
-def get_local_label(densMap):
-    densMap = densMap[:470, :]
-    height = densMap.shape[0]
-    width = densMap.shape[1]
     label_lst = []
     for h in range(height):
         for w in range(width):
+            tmpLocalImg = np.array(localImg)
+            tmpLocalImg = padImg[h:h+2*pad, w:w+2*pad]
+            localImg_lst.append(tmpLocalImg)
             label_lst.append(densMap[h][w])
-    return label_lst
+
+    return localImg_lst, label_lst
 
 # processing variables and it output tensorboard
 def variable_summaries(var):
@@ -278,8 +270,7 @@ def main(X_train, X_test, y_train, y_test):
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
-            X_train_local = get_local_image(X_train[i], 72)
-            y_train_label = get_local_label(y_train[i])
+            X_train_local, y_train_label = get_local_data(X_train[i], y_train[i], 72)
             train_n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
             for batch in range(train_n_batches):
@@ -308,8 +299,7 @@ def main(X_train, X_test, y_train, y_test):
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
-        X_test_local = get_local_image(X_test[i], 72)
-        y_test_label = get_local_label(y_test[i])
+        X_test_local, y_test_label = get_local_data(X_test[i], y_test[i], 72)
         test_n_batches = int(len(X_test_local) / batchSize)
         for batch in range(test_n_batches):
             startIndex = batch * batchSize
