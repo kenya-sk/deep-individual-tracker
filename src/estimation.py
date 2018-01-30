@@ -80,7 +80,7 @@ def main():
         width = img.shape[1]
         img_lst = get_local_image(img, 72)
         assert len(img_lst) == height*width
-        estImg = np.zeros((height, width))
+        estImg = np.zeros((height, width), dtype="float64")
 
         i = 0
         for h in range(height):
@@ -91,8 +91,8 @@ def main():
                 if i%300 == 0:
                     print(i)
 
-        cv2.imwrite("./estimation.png", estImg)
-        print("save estimation image")
+        np.save("./estimation.npy", estImg)
+        print("save estimation data")
 
 
 if __name__ == "__main__":
