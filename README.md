@@ -17,8 +17,8 @@
 
 5. cnn.py
     * 6 layer CNN.this model learn the equation to convert the input image to
-    the density map '''per local image'''.
+    the density map **per local image**.
 
 6. cnn_pixel.py
     * 7 layer CNN. this model learn the equation to convert the input image to
-    the density map '''per pixel'''. 
+    the density map **per pixel**.
