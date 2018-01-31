@@ -57,7 +57,21 @@ def get_local_data(image, densMap, localImgSize):
             localImg_lst.append(tmpLocalImg)
             label_lst.append(densMap[h][w])
 
-    return localImg_lst, label_lst
+    localImg_arr = np.array(localImg_lst)
+    label_arr = np.array(label_lst)
+
+    return localImg_arr, label_arr
+
+
+def balance(X_train, y_train, thresh=0.001):
+    smallIndex = np.where(y_train <= thresh)
+    largeIndex = np.where(y_train > thresh)
+    X_train_balance = X_train[smallIndex][:len(largeIndex[0])] + X_train[largeIndex]
+    y_train_balance = y_train[smallIndex][:len(largeIndex[0])] + y_train[largeIndex]
+    X_train_balance, y_train_balance = shuffle(X_train_balance, y_train_balance)
+
+    return X_train_balance, y_train_balance
+
 
 # processing variables and it output tensorboard
 def variable_summaries(var):
@@ -70,6 +84,7 @@ def variable_summaries(var):
         tf.summary.scalar('stddev', stddev)
         tf.summary.scalar('max', tf.reduce_max(var))
         tf.summary.scalar('min', tf.reduce_min(var))
+
 
 # initialize weight by He initialization
 def weight_variable(shape, name=None):
@@ -98,6 +113,7 @@ def bias_variable(shape, name=None):
         return tf.Variable(initial)
     else:
         return tf.Variable(initial, name=name)
+
 
 # convolutional layer
 def conv2d(x, W):
@@ -273,6 +289,9 @@ def main(X_train, X_test, y_train, y_test):
         for i in range(len(X_train)):
             X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72)
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
+            X_train_local, y_train_local = balance(X_train_local, y_train_local, thresh=0.001)
+            print("length of X_train: {}".format(len(X_train_local)))
+            print("length of y_train: {}".format(len(y_train_local)))
             train_n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
             for batch in range(train_n_batches):
