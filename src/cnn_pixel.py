@@ -9,6 +9,7 @@ import numpy as np
 import math
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 
 
 def load_data(inputDirPath):
@@ -270,7 +271,8 @@ def main(X_train, X_test, y_train, y_test):
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
-            X_train_local, y_train_label = get_local_data(X_train[i], y_train[i], 72)
+            X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72)
+            X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
             train_n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
             for batch in range(train_n_batches):
@@ -283,13 +285,13 @@ def main(X_train, X_test, y_train, y_test):
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
                             X: X_train_local[startIndex:endIndex],
-                            y_: y_train_label[startIndex:endIndex]})
+                            y_: y_train_local[startIndex:endIndex]})
                     train_writer.add_summary(summary, trainStep)
                     print("loss: {}\n".format(train_loss))
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
                                     X: X_train_local[startIndex:endIndex],
-                                    y_: y_train_label[startIndex:endIndex]})
+                                    y_: y_train_local[startIndex:endIndex]})
                 train_writer.add_summary(summary, trainStep)
 
 
@@ -299,7 +301,7 @@ def main(X_train, X_test, y_train, y_test):
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
-        X_test_local, y_test_label = get_local_data(X_test[i], y_test[i], 72)
+        X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72)
         test_n_batches = int(len(X_test_local) / batchSize)
         for batch in range(test_n_batches):
             startIndex = batch * batchSize
@@ -307,7 +309,7 @@ def main(X_train, X_test, y_train, y_test):
 
             summary, tmp_loss = sess.run([merged, loss], feed_dict={
                                     X: X_test_local[startIndex:endIndex],
-                                    y_: y_test_label[startIndex:endIndex]})
+                                    y_: y_test_local[startIndex:endIndex]})
             test_writer.add_summary(summary, testStep)
             test_loss += tmp_loss
             testStep += 1
