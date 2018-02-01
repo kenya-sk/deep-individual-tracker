@@ -56,7 +56,7 @@ def get_local_data(image, densMap, localImgSize):
             tmpLocalImg = np.array(localImg)
             tmpLocalImg = padImg[h:h+2*pad, w:w+2*pad]
             img_lst.append(tmpLocalImg)
-    df = pd.DataFrame({"img_arr":img_lst, "label":densMap.reshape(-1).astype(np.float32)})
+    df = pd.DataFrame({"img_arr":img_lst, "label":np.ravel(densMap).astype(np.float32)})
 
     return df
 
@@ -279,29 +279,24 @@ def main(X_train, X_test, y_train, y_test):
             X_train_local = df_train["img_arr"]
             y_train_local = df_train["label"]
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
-            print("get local image")
             train_n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
             for batch in range(train_n_batches):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
-
-                print("shape X: ", X_train_local[startIndex:endIndex][0].shape)
-                print("shape y: ", y_train_local[startIndex:endIndex][1].shape)
-
                 #record loss data
                 if batch%500 == 0:
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
-                            X: X_train_local[startIndex:endIndex],
-                            y_: y_train_local[startIndex:endIndex]})
+                            X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
+                            y_: y_train_local[startIndex:endIndex].values})
                     train_writer.add_summary(summary, trainStep)
                     print("loss: {}\n".format(train_loss))
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
-                                    X: X_train_local[startIndex:endIndex],
-                                    y_: y_train_local[startIndex:endIndex]})
+                                    X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
+                                    y_: y_train_local[startIndex:endIndex].values})
                 train_writer.add_summary(summary, trainStep)
 
 
@@ -320,8 +315,8 @@ def main(X_train, X_test, y_train, y_test):
             endIndex = startIndex + batchSize
 
             summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                    X: X_test_local[startIndex:endIndex],
-                                    y_: y_test_local[startIndex:endIndex]})
+                                    X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
+                                    y_: y_test_local[startIndex:endIndex].values})
             test_writer.add_summary(summary, testStep)
             test_loss += tmp_loss
             testStep += 1
