@@ -60,6 +60,19 @@ def get_local_data(image, densMap, localImgSize):
 
     return df
 
+# under sampling to data frame
+#low frequently data: value of label is below thresh
+def under_sampling(data_df, thresh):
+    low_frequently_data = data_df[data_df["label"] > 0.001]
+    high_frequently_index = data_df[data_df["label"] <=0.001].index
+    random_indices = np.random.choice(high_frequently_index,  len(low_frequently_data), replace=False)
+    high_frequently_data = data_df.loc[random_indices]
+    pd.DataFrame(high_frequently_data)
+    merged_data = pd.concat([high_frequently_data, low_frequently_data], ignore_index=True)
+    balanced_data = pd.DataFrame(merged_data)
+
+    return balanced_data
+
 
 # processing variables and it output tensorboard
 def variable_summaries(var):
@@ -265,7 +278,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 5
+    n_epochs = 8
     batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
@@ -275,9 +288,10 @@ def main(X_train, X_test, y_train, y_test):
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
-            df_train = get_local_data(X_train[i], y_train[i], 72)
-            X_train_local = df_train["img_arr"]
-            y_train_local = df_train["label"]
+            train_df = get_local_data(X_train[i], y_train[i], 72)
+            train_df = under_sampling(train_df, thresh=0.001)
+            X_train_local = train_df["img_arr"]
+            y_train_local = train_df["label"]
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
             train_n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
@@ -306,9 +320,9 @@ def main(X_train, X_test, y_train, y_test):
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
-        df_test = get_local_data(X_test[i], y_test[i], 72)
-        X_test_local = np.array(df_test["img_arr"])
-        y_test_local = np.array(df_test["label"])
+        test_df = get_local_data(X_test[i], y_test[i], 72)
+        X_test_local = np.array(test_df["img_arr"])
+        y_test_local = np.array(test_df["label"])
         test_n_batches = int(len(X_test_local) / batchSize)
         for batch in range(test_n_batches):
             startIndex = batch * batchSize
