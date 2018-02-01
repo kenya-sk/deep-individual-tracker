@@ -64,10 +64,12 @@ def get_local_data(image, densMap, localImgSize):
 def under_sampling(data_df, thresh):
     # low frequently data: value of label is below thresh
     low_frequently_data = data_df[data_df["label"] > 0.001]
+
     high_frequently_index = data_df[data_df["label"] <=0.001].index
     random_indices = np.random.choice(high_frequently_index,  len(low_frequently_data), replace=False)
     high_frequently_data = data_df.loc[random_indices]
     pd.DataFrame(high_frequently_data)
+    
     merged_data = pd.concat([high_frequently_data, low_frequently_data], ignore_index=True)
     balanced_data = pd.DataFrame(merged_data)
 
