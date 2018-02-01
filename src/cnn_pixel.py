@@ -61,16 +61,6 @@ def get_local_data(image, densMap, localImgSize):
     return df
 
 
-def balance(X_train, y_train, thresh=0.001):
-    smallIndex = np.where(y_train <= thresh)
-    largeIndex = np.where(y_train > thresh)
-    X_train_balance = X_train[smallIndex][:len(largeIndex[0])] + X_train[largeIndex]
-    y_train_balance = y_train[smallIndex][:len(largeIndex[0])] + y_train[largeIndex]
-    X_train_balance, y_train_balance = shuffle(X_train_balance, y_train_balance)
-
-    return X_train_balance, y_train_balance
-
-
 # processing variables and it output tensorboard
 def variable_summaries(var):
     # output scalar (mean, stddev, max, min, histogram)
@@ -276,7 +266,7 @@ def main(X_train, X_test, y_train, y_test):
     # learning
     startTime = time.time()
     n_epochs = 5
-    batchSize = 200
+    batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
@@ -285,20 +275,19 @@ def main(X_train, X_test, y_train, y_test):
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
-            print("start")
             df_train = get_local_data(X_train[i], y_train[i], 72)
-            print("end pandas")
             X_train_local = df_train["img_arr"]
             y_train_local = df_train["label"]
-            print("shape;", y_train_local_shape)
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
-            #X_train_local, y_train_local = balance(X_train_local, y_train_local, thresh=0.001)
             print("get local image")
             train_n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
             for batch in range(train_n_batches):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
+
+                print("shape X: ", X_train_local[startIndex:endIndex][0].shape)
+                print("shape y: ", y_train_local[startIndex:endIndex][1].shape)
 
                 #record loss data
                 if batch%500 == 0:
@@ -323,8 +312,8 @@ def main(X_train, X_test, y_train, y_test):
     test_loss = 0.0
     for i in range(len(X_test)):
         df_test = get_local_data(X_test[i], y_test[i], 72)
-        X_test_local = df_test["img_arr"]
-        y_test_local = df_test["label"]
+        X_test_local = np.array(df_test["img_arr"])
+        y_test_local = np.array(df_test["label"])
         test_n_batches = int(len(X_test_local) / batchSize)
         for batch in range(test_n_batches):
             startIndex = batch * batchSize
