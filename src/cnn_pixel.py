@@ -60,9 +60,9 @@ def get_local_data(image, densMap, localImgSize):
 
     return df
 
-# under sampling to data frame
-#low frequently data: value of label is below thresh
+
 def under_sampling(data_df, thresh):
+    # low frequently data: value of label is below thresh
     low_frequently_data = data_df[data_df["label"] > 0.001]
     high_frequently_index = data_df[data_df["label"] <=0.001].index
     random_indices = np.random.choice(high_frequently_index,  len(low_frequently_data), replace=False)
@@ -89,7 +89,7 @@ def variable_summaries(var):
 
 # initialize weight by He initialization
 def weight_variable(shape, name=None):
-    #initial = tf.truncated_normal(shape, stddev=0.1, dtype=tf.float32)
+    # initial = tf.truncated_normal(shape, stddev=0.1, dtype=tf.float32)
 
     # He initialization
     if len(shape) == 4:
@@ -150,7 +150,7 @@ def main(X_train, X_test, y_train, y_test):
     # convlution -> ReLU -> max pooling
     # input 72x72x3 -> output 36x36x32
     with tf.name_scope("conv1"):
-        #7x7x3 filter
+        # 7x7x3 filter
         with tf.name_scope("weight1"):
             W_conv1 = weight_variable([7,7,3,32], name="weight1")
             variable_summaries(W_conv1)
