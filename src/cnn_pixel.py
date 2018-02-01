@@ -37,6 +37,7 @@ def load_data(inputDirPath):
 def get_local_data(image, densMap, localImgSize):
     # trimming original image(there are many unnecessary parts)
     image = image[:470, :]
+    densMap = densMap[:470, :]
     # local image size is even number
     height = image.shape[0]
     width = image.shape[1]
@@ -49,13 +50,13 @@ def get_local_data(image, densMap, localImgSize):
         localImg = np.zeros((localImgSize, localImgSize))
 
     padImg[pad:height+pad, pad:width+pad] = image
-    df = pd.DataFrame(index=[], columns=["img_arr", "label"])
+    img_lst = []
     for h in range(height):
         for w in range(width):
             tmpLocalImg = np.array(localImg)
             tmpLocalImg = padImg[h:h+2*pad, w:w+2*pad]
-            df = df.append(pd.Series([tmpLocalImg, densMap[h][w]], index=df.columns), ignore_index=True)
-
+            img_lst.append(tmpLocalImg)
+    df = pd.DataFrame({"img_arr":img_lst, "label":densMap.reshape(-1).astype(np.float32)})
 
     return df
 
@@ -284,13 +285,15 @@ def main(X_train, X_test, y_train, y_test):
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
+            print("start")
             df_train = get_local_data(X_train[i], y_train[i], 72)
+            print("end pandas")
             X_train_local = df_train["img_arr"]
             y_train_local = df_train["label"]
+            print("shape;", y_train_local_shape)
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
             #X_train_local, y_train_local = balance(X_train_local, y_train_local, thresh=0.001)
-            print("length of X_train: {}".format(len(X_train_local)))
-            print("length of y_train: {}".format(len(y_train_local)))
+            print("get local image")
             train_n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
             for batch in range(train_n_batches):
