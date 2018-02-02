@@ -138,7 +138,7 @@ def max_pool_2x2(x):
 def main(X_train, X_test, y_train, y_test):
     date = datetime.now()
     # delete the specified directory if it exists, recreate it
-    log_dir = "./logs_pixel/" + "{0}_{1}_{2}_{3}_{4}_{5}".format(date.year, date.month, date.day, date.hour, date.minute)
+    log_dir = "./logs_pixel/" + "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
     if tf.gfile.Exists(log_dir):
         tf.gfile.DeleteRecursively(log_dir)
     tf.gfile.MakeDirs(log_dir)
