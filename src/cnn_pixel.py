@@ -277,7 +277,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-3).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(1e-7).minimize(loss)
 
     # variable of TensorBoard
     trainStep = 0
