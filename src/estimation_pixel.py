@@ -59,10 +59,10 @@ def main():
         assert len(img_lst) == height*width
         #estImg = np.zeros((height, width), dtype="float32")
 
-        i = 0
         print("start estimation")
         estImg = (sess.run(h_fc7, feed_dict={X: np.vstack(img_local).reshape(-1, 72, 72, 3)})).reshape(height, width)
 
+        i = 0
         """
         for h in range(height):
             for w in range(width):
