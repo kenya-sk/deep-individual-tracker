@@ -4,11 +4,13 @@
 import os
 import re
 import time
+import sys
 import cv2
 import numpy as np
 import pandas as pd
 import math
 import tensorflow as tf
+from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
@@ -25,7 +27,12 @@ def load_data(inputDirPath):
     y = []
     file_lst = get_file_path(inputDirPath)
     for path in file_lst:
-        X.append(cv2.imread("../image/original/test/" + path))
+        img = cv2.imread("../image/original/test/" + path)
+        if img is None:
+            print("Error: can not read image")
+            sys.exit(1)
+        else:
+            X.append(img)
         densPath = path.replace(".png", ".npy")
         y.append(np.load("../data/dens/20/test/" + densPath))
     X = np.array(X)
@@ -129,8 +136,9 @@ def max_pool_2x2(x):
 
 
 def main(X_train, X_test, y_train, y_test):
+    date = datetime.now()
     # delete the specified directory if it exists, recreate it
-    log_dir = "./logs_pixel"
+    log_dir = "./logs_pixel/" + "{0}_{1}_{2}_{3}_{4}_{5}".format(date.year, date.month, date.day, date.hour, date.minute)
     if tf.gfile.Exists(log_dir):
         tf.gfile.DeleteRecursively(log_dir)
     tf.gfile.MakeDirs(log_dir)
