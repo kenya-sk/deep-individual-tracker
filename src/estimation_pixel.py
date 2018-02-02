@@ -51,13 +51,15 @@ def main():
         saver.restore(sess, "./model_pixel/model.ckpt")
 
         img = cv2.imread("../image/original/11_20880.png")
-        dens = np.load("../data/dens/20/11_20880.png")
+        dens = np.load("../data/dens/20/11_20880.npy")
         local_df = cnn_pixel.get_local_data(img, dens, 72)
         img_local = np.array(local_df["img_arr"])
+        """
         height = img_local[0].shape[0]
         width = img_local[0].shape[1]
-        assert len(img_lst) == height*width
+        assert len(img_local) == height*width
         #estImg = np.zeros((height, width), dtype="float32")
+        """
 
         print("start estimation")
         estImg = (sess.run(h_fc7, feed_dict={X: np.vstack(img_local).reshape(-1, 72, 72, 3)})).reshape(height, width)
