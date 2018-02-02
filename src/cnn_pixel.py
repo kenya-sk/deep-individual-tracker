@@ -6,9 +6,11 @@ import re
 import time
 import cv2
 import numpy as np
+import pandas as pd
 import math
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 
 
 def load_data(inputDirPath):
@@ -35,6 +37,7 @@ def load_data(inputDirPath):
 def get_local_data(image, densMap, localImgSize):
     # trimming original image(there are many unnecessary parts)
     image = image[:470, :]
+    densMap = densMap[:470, :]
     # local image size is even number
     height = image.shape[0]
     width = image.shape[1]
@@ -47,16 +50,31 @@ def get_local_data(image, densMap, localImgSize):
         localImg = np.zeros((localImgSize, localImgSize))
 
     padImg[pad:height+pad, pad:width+pad] = image
-    localImg_lst = []
-    label_lst = []
+    img_lst = []
     for h in range(height):
         for w in range(width):
             tmpLocalImg = np.array(localImg)
             tmpLocalImg = padImg[h:h+2*pad, w:w+2*pad]
-            localImg_lst.append(tmpLocalImg)
-            label_lst.append(densMap[h][w])
+            img_lst.append(tmpLocalImg)
+    df = pd.DataFrame({"img_arr":img_lst, "label":np.ravel(densMap).astype(np.float32)})
 
-    return localImg_lst, label_lst
+    return df
+
+
+def under_sampling(data_df, thresh):
+    # low frequently data: value of label is below thresh
+    low_frequently_data = data_df[data_df["label"] > 0.001]
+
+    high_frequently_index = data_df[data_df["label"] <=0.001].index
+    random_indices = np.random.choice(high_frequently_index,  len(low_frequently_data), replace=False)
+    high_frequently_data = data_df.loc[random_indices]
+    pd.DataFrame(high_frequently_data)
+    
+    merged_data = pd.concat([high_frequently_data, low_frequently_data], ignore_index=True)
+    balanced_data = pd.DataFrame(merged_data)
+
+    return balanced_data
+
 
 # processing variables and it output tensorboard
 def variable_summaries(var):
@@ -70,9 +88,10 @@ def variable_summaries(var):
         tf.summary.scalar('max', tf.reduce_max(var))
         tf.summary.scalar('min', tf.reduce_min(var))
 
+
 # initialize weight by He initialization
 def weight_variable(shape, name=None):
-    #initial = tf.truncated_normal(shape, stddev=0.1, dtype=tf.float32)
+    # initial = tf.truncated_normal(shape, stddev=0.1, dtype=tf.float32)
 
     # He initialization
     if len(shape) == 4:
@@ -97,6 +116,7 @@ def bias_variable(shape, name=None):
         return tf.Variable(initial)
     else:
         return tf.Variable(initial, name=name)
+
 
 # convolutional layer
 def conv2d(x, W):
@@ -132,7 +152,7 @@ def main(X_train, X_test, y_train, y_test):
     # convlution -> ReLU -> max pooling
     # input 72x72x3 -> output 36x36x32
     with tf.name_scope("conv1"):
-        #7x7x3 filter
+        # 7x7x3 filter
         with tf.name_scope("weight1"):
             W_conv1 = weight_variable([7,7,3,32], name="weight1")
             variable_summaries(W_conv1)
@@ -260,8 +280,8 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 5
-    batchSize = 200
+    n_epochs = 8
+    batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
@@ -270,26 +290,29 @@ def main(X_train, X_test, y_train, y_test):
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
-            X_train_local, y_train_label = get_local_data(X_train[i], y_train[i], 72)
+            train_df = get_local_data(X_train[i], y_train[i], 72)
+            train_df = under_sampling(train_df, thresh=0.001)
+            X_train_local = train_df["img_arr"]
+            y_train_local = train_df["label"]
+            X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
             train_n_batches = int(len(X_train_local) / batchSize)
             trainStep += 1
             for batch in range(train_n_batches):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
-
                 #record loss data
                 if batch%500 == 0:
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
-                            X: X_train_local[startIndex:endIndex],
-                            y_: y_train_label[startIndex:endIndex]})
+                            X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
+                            y_: y_train_local[startIndex:endIndex].values})
                     train_writer.add_summary(summary, trainStep)
                     print("loss: {}\n".format(train_loss))
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
-                                    X: X_train_local[startIndex:endIndex],
-                                    y_: y_train_label[startIndex:endIndex]})
+                                    X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
+                                    y_: y_train_local[startIndex:endIndex].values})
                 train_writer.add_summary(summary, trainStep)
 
 
@@ -299,15 +322,17 @@ def main(X_train, X_test, y_train, y_test):
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
-        X_test_local, y_test_label = get_local_data(X_test[i], y_test[i], 72)
+        test_df = get_local_data(X_test[i], y_test[i], 72)
+        X_test_local = np.array(test_df["img_arr"])
+        y_test_local = np.array(test_df["label"])
         test_n_batches = int(len(X_test_local) / batchSize)
         for batch in range(test_n_batches):
             startIndex = batch * batchSize
             endIndex = startIndex + batchSize
 
             summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                    X: X_test_local[startIndex:endIndex],
-                                    y_: y_test_label[startIndex:endIndex]})
+                                    X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
+                                    y_: y_test_local[startIndex:endIndex].values})
             test_writer.add_summary(summary, testStep)
             test_loss += tmp_loss
             testStep += 1
