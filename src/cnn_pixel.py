@@ -269,7 +269,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-5).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
 
     # variable of TensorBoard
     trainStep = 0
@@ -280,7 +280,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 8
+    n_epochs = 5
     batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
@@ -291,7 +291,7 @@ def main(X_train, X_test, y_train, y_test):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
             train_df = get_local_data(X_train[i], y_train[i], 72)
-            train_df = under_sampling(train_df, thresh=0.01)
+            train_df = under_sampling(train_df, thresh=0.001)
             X_train_local = train_df["img_arr"]
             y_train_local = train_df["label"]
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
@@ -301,7 +301,7 @@ def main(X_train, X_test, y_train, y_test):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
                 #record loss data
-                if batch%500 == 0:
+                if batch%100 == 0:
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
