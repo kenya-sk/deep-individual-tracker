@@ -277,7 +277,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-7).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(1e-6).minimize(loss)
 
     # variable of TensorBoard
     trainStep = 0
@@ -288,7 +288,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 5
+    n_epochs = 30
     batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
@@ -299,7 +299,7 @@ def main(X_train, X_test, y_train, y_test):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
             train_df = get_local_data(X_train[i], y_train[i], 72)
-            train_df = under_sampling(train_df, thresh=0.3)
+            train_df = under_sampling(train_df, thresh=0.1)
             X_train_local = train_df["img_arr"]
             y_train_local = train_df["label"]
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
