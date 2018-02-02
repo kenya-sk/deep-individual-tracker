@@ -59,13 +59,13 @@ def main():
         estImg = []
         batchSize = 200
         n_batches = int(len(img_local) / batchSize)
-        for batch in range(n_baches):
-            print("batch: {0}/{1}".format(batch, n_baches))
+        for batch in range(n_batches):
+            print("batch: {0}/{1}".format(batch, n_batches))
             startIndex = batch * batchSize
             endIndex = startIndex + batchSize
             estImg.append(sess.run(h_fc7, feed_dict={X: np.vstack(img_local[startIndex:endIndex]).reshape(-1, 72, 72, 3)}))
 
-        estImg = np.array(estImg).reshape(470, 720)
+        estImg = np.array(estImg).reshape(470, 1280)
         np.save("./estimation.npy", estImg)
         print("save estimation data")
 
