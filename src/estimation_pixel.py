@@ -54,27 +54,18 @@ def main():
         dens = np.load("../data/dens/20/11_20880.npy")
         local_df = cnn_pixel.get_local_data(img, dens, 72)
         img_local = np.array(local_df["img_arr"])
-        """
-        height = img_local[0].shape[0]
-        width = img_local[0].shape[1]
-        assert len(img_local) == height*width
-        #estImg = np.zeros((height, width), dtype="float32")
-        """
 
         print("start estimation")
-        estImg = (sess.run(h_fc7, feed_dict={X: np.vstack(img_local).reshape(-1, 72, 72, 3)})).reshape(height, width)
+        estImg = []
+        batchSize = 200
+        n_batches = int(len(img_local) / batchSize)
+        for batch in range(n_baches):
+            print("batch: {0}/{1}".format(batch, n_baches))
+            startIndex = batch * batchSize
+            endIndex = startIndex + batchSize
+            estImg.append(sess.run(h_fc7, feed_dict={X: np.vstack(img_local[startIndex:endIndex]).reshape(-1, 72, 72, 3)}))
 
-        i = 0
-        """
-        for h in range(height):
-            for w in range(width):
-                output = sess.run(h_fc7, feed_dict={X: np.vstack(img_local).reshape(-1, 72, 72, 3)})
-                estImg[h][w] = output
-                i += 1
-                if i%300 == 0:
-                    print(i)
-        """
-
+        estImg = np.array(estImg).reshape(470, 720)
         np.save("./estimation.npy", estImg)
         print("save estimation data")
 
