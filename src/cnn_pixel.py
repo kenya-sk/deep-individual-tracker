@@ -137,8 +137,9 @@ def max_pool_2x2(x):
 
 def main(X_train, X_test, y_train, y_test):
     date = datetime.now()
+    date_dir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
+    log_dir = "./logs_pixel/" + date_dir
     # delete the specified directory if it exists, recreate it
-    log_dir = "./logs_pixel/" + "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
     if tf.gfile.Exists(log_dir):
         tf.gfile.DeleteRecursively(log_dir)
     tf.gfile.MakeDirs(log_dir)
@@ -347,7 +348,7 @@ def main(X_train, X_test, y_train, y_test):
         print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
 
     # end processing
-    saver.save(sess, "./model_pixel/model.ckpt")
+    saver.save(sess, "./model_pixel/" + date_dir + "/model.ckpt")
     train_writer.close()
     test_writer.close()
     sess.close()
