@@ -74,29 +74,36 @@ def estimate():
 
     return estDensMap
 
-def clustering(densMap):
+
+def clustering(densMap, bandwidth):
+    def plot_cluster(X, cluster_centers, labels, n_clusters):
+        plt.figure()
+        plt.scatter(X[:, 0],X[:,1], c=labels)
+        for k in range(n_clusters):
+            cluster_center = cluster_centers[k]
+            plt.plot(cluster_center[0], cluster_center[1], "*", markersize=5, c="red")
+        plt.title("Estimated number of clusters: {}".format(n_clusters))
+        plt.savefig("./estimateMap.png")
+        print("save estimateMap.png")
+
     point = np.where(densMap > 0)
     X = np.vstack((point[1], point[0])).T
-
     # MeanShift
-    ms = MeanShift(bandwidth=5, seeds=X)
+    ms = MeanShift(bandwidth=bandwidth, seeds=X)
     ms.fit(X)
     labels = ms.labels_
     cluster_centers = ms.cluster_centers_
     labels_unique = np.unique(labels)
     n_clusters = len(labels_unique)
-
-    plt.figure()
-    plt.scatter(X[:, 0],X[:,1], c=labels)
+    centroid_arr = np.zeros((n_clusters, 2))
     for k in range(n_clusters):
-        my_members = labels == k
-        cluster_center = cluster_centers[k]
-        plt.plot(cluster_center[0], cluster_center[1], "o", markersize=5, c="red")
-    plt.title("Estimated number of clusters: {}".format(n_clusters))
-    plt.savefig("./estimateMap.png")
+        centroid_arr[k] = cluster_centers[k]
     print("DONE: clustering")
 
+    return centroid_arr
+
+
 if __name__ == "__main__":
-    estDensMap = estimate()
-    #estDensMap = np.load("./estimation.npy")
-    clustering(estDensMap)
+    #estDensMap = estimate()
+    estDensMap = np.load("./estimation.npy")
+    clustering(estDensMap, 5)
