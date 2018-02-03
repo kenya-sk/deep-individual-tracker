@@ -23,6 +23,6 @@
     * 7 layer CNN. this model learns an equation that converts **each pixel** of input
     image into a density map.
 
-7. estimation_pixel.py
+7. estimate_pixel.py
     * using the learned model(cnn_pixel.py), estimate the value of
-    the density map for each pixel.
+    the density map for each pixel. after that, clustering by MeanShift.
