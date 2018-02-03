@@ -5,35 +5,12 @@ import math
 import numpy as np
 import tensorflow as tf
 import cv2
+from sklearn.cluster import MeanShift
 
-import cnn
-
-def get_local_image(image, localImgSize):
-    # trimming original image(there are many unnecessary parts)
-    image = image[:470, :]
-    # local image size is even number
-    height = image.shape[0]
-    width = image.shape[1]
-    pad = math.floor(localImgSize/2)
-    if len(image.shape) == 3:
-        padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]))
-        localImg = np.zeros((localImgSize, localImgSize, image.shape[2]))
-    else:
-        padImg = np.zeros((height + pad * 2, width + pad * 2))
-        localImg = np.zeros((localImgSize, localImgSize))
-
-    padImg[pad:height+pad, pad:width+pad] = image
-    localImg_lst = []
-    for h in range(pad, height+pad):
-        for w in range(pad, width+pad):
-            tmpLocalImg = np.array(localImg)
-            tmpLocalImg = padImg[h-pad:h+pad, w-pad:w+pad]
-            localImg_lst.append(tmpLocalImg)
-
-    return localImg_lst
+import cnn_pixel
 
 
-def main():
+def estimate():
     X = tf.placeholder(tf.float32, [None, 72, 72, 3])
     y_ = tf.placeholder(tf.float32, [None])
 
@@ -41,17 +18,17 @@ def main():
     #layer1
     W_conv1 = tf.get_variable("conv1/weight1/weight1", [7,7,3,32])
     b_conv1 = tf.get_variable("conv1/bias1/bias1", [32])
-    h_conv1 = tf.nn.relu(cnn.conv2d(X, W_conv1) + b_conv1)
-    h_pool1 = cnn.max_pool_2x2(h_conv1)
+    h_conv1 = tf.nn.relu(cnn_pixel.conv2d(X, W_conv1) + b_conv1)
+    h_pool1 = cnn_pixel.max_pool_2x2(h_conv1)
     #layer2
     W_conv2 = tf.get_variable("conv2/weight2/weight2", [7,7,32,32])
     b_conv2 = tf.get_variable("conv2/bias2/bias2", [32])
-    h_conv2 = tf.nn.relu(cnn.conv2d(h_pool1, W_conv2) + b_conv2)
-    h_pool2 = cnn.max_pool_2x2(h_conv2)
+    h_conv2 = tf.nn.relu(cnn_pixel.conv2d(h_pool1, W_conv2) + b_conv2)
+    h_pool2 = cnn_pixel.max_pool_2x2(h_conv2)
     #layer3
     W_conv3 = tf.get_variable("conv3/weight3/weight3", [5,5,32,64])
     b_conv3 = tf.get_variable("conv3/bias3/bias3", [64])
-    h_conv3 = tf.nn.relu(cnn.conv2d(h_pool2, W_conv3) + b_conv3)
+    h_conv3 = tf.nn.relu(cnn_pixel.conv2d(h_pool2, W_conv3) + b_conv3)
     #layer4
     W_fc4 = tf.get_variable("fc4/weight4/weight4", [18*18*64, 1000])
     b_fc4 = tf.get_variable("fc4/bias4/bias4", [1000])
@@ -72,28 +49,50 @@ def main():
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        saver.restore(sess, "./model_pixel/model.ckpt")
+        saver.restore(sess, "./model_pixel/2018_2_2_20_43/model.ckpt")
 
         img = cv2.imread("../image/original/11_20880.png")
         img = img[:470, :]
         height = img.shape[0]
         width = img.shape[1]
-        img_lst = get_local_image(img, 72)
+        img_lst = cnn_pixel.get_local_data(img, None, 72)
         assert len(img_lst) == height*width
-        estImg = np.zeros((height, width), dtype="float64")
+        estDensMap = np.zeros((height, width), dtype="float64")
 
         i = 0
         for h in range(height):
             for w in range(width):
                 output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 72, 72, 3)})
-                estImg[h][w] = output
+                estDensMap[h][w] = output
                 i += 1
                 if i%300 == 0:
                     print(i)
+        print("DONE: estimate density map")
 
-        np.save("./estimation.npy", estImg)
-        print("save estimation data")
+    return estDensMap
 
+def clustering(densMap):
+    point = np.where(densMap > 0)
+    X = np.vstack((point[1], point[0])).T
+
+    # MeanShift
+    ms = cluster.MeanShift(bandwidth=5, seeds=X)
+    ms.fit(X)
+    labels = ms.labels_
+    cluster_centers = ms.cluster_centers_
+    labels_unique = np.unique(labels)
+    n_clusters = len(labels_unique)
+
+    plt.figure()
+    plt.scatter(X[:, 0],X[:,1], c=labels)
+    for k in range(n_clusters):
+        my_members = labels == k
+        cluster_center = cluster_centers[k]
+        plt.plot(cluster_center[0], cluster_center[1], '*', markersize=5, c="red")
+    plt.title('Estimated number of clusters: %d' % n_clusters_)
+    plt.savefig("./estimateMap.png")
+    print("DONE: clustering")
 
 if __name__ == "__main__":
-    main()
+    estDensMap = estimate()
+    clustering(estDensMap)

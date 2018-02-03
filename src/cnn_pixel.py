@@ -37,7 +37,6 @@ def load_data(inputDirPath):
 def get_local_data(image, densMap, localImgSize):
     # trimming original image(there are many unnecessary parts)
     image = image[:470, :]
-    densMap = densMap[:470, :]
     # local image size is even number
     height = image.shape[0]
     width = image.shape[1]
@@ -56,9 +55,12 @@ def get_local_data(image, densMap, localImgSize):
             tmpLocalImg = np.array(localImg)
             tmpLocalImg = padImg[h:h+2*pad, w:w+2*pad]
             img_lst.append(tmpLocalImg)
-    df = pd.DataFrame({"img_arr":img_lst, "label":np.ravel(densMap).astype(np.float32)})
-
-    return df
+    if densMap is not None:
+        densMap = densMap[:470, :]
+        df = pd.DataFrame({"img_arr":img_lst, "label":np.ravel(densMap).astype(np.float32)})
+        return df
+    else:
+        return np.array(img_lst)
 
 
 def under_sampling(data_df, thresh):
@@ -69,7 +71,7 @@ def under_sampling(data_df, thresh):
     random_indices = np.random.choice(high_frequently_index,  len(low_frequently_data), replace=False)
     high_frequently_data = data_df.loc[random_indices]
     pd.DataFrame(high_frequently_data)
-    
+
     merged_data = pd.concat([high_frequently_data, low_frequently_data], ignore_index=True)
     balanced_data = pd.DataFrame(merged_data)
 
