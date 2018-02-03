@@ -106,4 +106,4 @@ def clustering(densMap, bandwidth):
 if __name__ == "__main__":
     #estDensMap = estimate()
     estDensMap = np.load("./estimation.npy")
-    clustering(estDensMap, 5)
+    centroid_arr = clustering(estDensMap, 5)
