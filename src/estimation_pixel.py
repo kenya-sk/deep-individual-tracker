@@ -2,14 +2,18 @@
 # coding: utf-8
 
 import math
+import cv2
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import cv2
+from sklearn.cluster import MeanShift
 
 import cnn_pixel
 
 
-def main():
+def estimate():
     X = tf.placeholder(tf.float32, [None, 72, 72, 3])
     y_ = tf.placeholder(tf.float32, [None])
 
@@ -48,27 +52,58 @@ def main():
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        saver.restore(sess, "./model_pixel/model.ckpt")
+        saver.restore(sess, "./model_pixel/2018_2_2_20_43/model.ckpt")
 
         img = cv2.imread("../image/original/11_20880.png")
-        dens = np.load("../data/dens/20/11_20880.npy")
-        local_df = cnn_pixel.get_local_data(img, dens, 72)
-        img_local = np.array(local_df["img_arr"])
+        img = img[:470, :]
+        height = img.shape[0]
+        width = img.shape[1]
+        img_lst = cnn_pixel.get_local_data(img, None, 72)
+        assert len(img_lst) == height*width
+        estDensMap = np.zeros((height, width), dtype="float64")
 
-        print("start estimation")
-        estImg = []
-        batchSize = 200
-        n_batches = int(len(img_local) / batchSize)
-        for batch in range(n_batches):
-            print("batch: {0}/{1}".format(batch, n_batches))
-            startIndex = batch * batchSize
-            endIndex = startIndex + batchSize
-            estImg.append(sess.run(h_fc7, feed_dict={X: np.vstack(img_local[startIndex:endIndex]).reshape(-1, 72, 72, 3)}))
+        i = 0
+        for h in range(height):
+            for w in range(width):
+                output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 72, 72, 3)})
+                estDensMap[h][w] = output
+                i += 1
+                if i%300 == 0:
+                    print(i)
+        print("DONE: estimate density map")
 
-        estImg = np.array(estImg).reshape(470, 1280)
-        np.save("./estimation.npy", estImg)
-        print("save estimation data")
+    return estDensMap
+
+
+def clustering(densMap, bandwidth):
+    def plot_cluster(X, cluster_centers, labels, n_clusters):
+        plt.figure()
+        plt.scatter(X[:, 0],X[:,1], c=labels)
+        for k in range(n_clusters):
+            cluster_center = cluster_centers[k]
+            plt.plot(cluster_center[0], cluster_center[1], "*", markersize=5, c="red")
+        plt.title("Estimated number of clusters: {}".format(n_clusters))
+        plt.savefig("./estimateMap.png")
+        print("save estimateMap.png")
+
+    point = np.where(densMap > 0)
+    X = np.vstack((point[1], point[0])).T
+    # MeanShift
+    ms = MeanShift(bandwidth=bandwidth, seeds=X)
+    ms.fit(X)
+    labels = ms.labels_
+    cluster_centers = ms.cluster_centers_
+    labels_unique = np.unique(labels)
+    n_clusters = len(labels_unique)
+    centroid_arr = np.zeros((n_clusters, 2))
+    for k in range(n_clusters):
+        centroid_arr[k] = cluster_centers[k]
+    print("DONE: clustering")
+
+    return centroid_arr
 
 
 if __name__ == "__main__":
-    main()
+    #estDensMap = estimate()
+    estDensMap = np.load("./estimation.npy")
+    clustering(estDensMap, 5)
