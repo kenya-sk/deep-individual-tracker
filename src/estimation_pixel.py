@@ -2,9 +2,12 @@
 # coding: utf-8
 
 import math
+import cv2
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import cv2
 from sklearn.cluster import MeanShift
 
 import cnn_pixel
@@ -76,7 +79,7 @@ def clustering(densMap):
     X = np.vstack((point[1], point[0])).T
 
     # MeanShift
-    ms = cluster.MeanShift(bandwidth=5, seeds=X)
+    ms = MeanShift(bandwidth=5, seeds=X)
     ms.fit(X)
     labels = ms.labels_
     cluster_centers = ms.cluster_centers_
@@ -88,11 +91,12 @@ def clustering(densMap):
     for k in range(n_clusters):
         my_members = labels == k
         cluster_center = cluster_centers[k]
-        plt.plot(cluster_center[0], cluster_center[1], '*', markersize=5, c="red")
-    plt.title('Estimated number of clusters: %d' % n_clusters_)
+        plt.plot(cluster_center[0], cluster_center[1], "o", markersize=5, c="red")
+    plt.title("Estimated number of clusters: {}".format(n_clusters))
     plt.savefig("./estimateMap.png")
     print("DONE: clustering")
 
 if __name__ == "__main__":
     estDensMap = estimate()
+    #estDensMap = np.load("./estimation.npy")
     clustering(estDensMap)
