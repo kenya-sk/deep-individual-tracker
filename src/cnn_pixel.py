@@ -57,10 +57,10 @@ def get_local_data(image, densMap, localImgSize):
 
     padImg[pad:height+pad, pad:width+pad] = image
     img_lst = []
-    for h in range(height):
-        for w in range(width):
+    for h in range(pad, height+pad):
+        for w in range(pad, width+pad):
             tmpLocalImg = np.array(localImg)
-            tmpLocalImg = padImg[h:h+2*pad, w:w+2*pad]
+            tmpLocalImg = padImg[h-pad:h+pad, w-pad:w+pad]
             img_lst.append(tmpLocalImg)
     if densMap is not None:
         densMap = densMap[:470, :]
