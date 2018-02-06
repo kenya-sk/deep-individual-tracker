@@ -52,7 +52,7 @@ def estimate():
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        saver.restore(sess, "./model_pixel/2018_2_2_20_43/model.ckpt")
+        saver.restore(sess, "./model_pixel/2018_2_6_13_34/model.ckpt")
 
         img = cv2.imread("../image/original/11_20880.png")
         img = img[:470, :]
@@ -60,7 +60,7 @@ def estimate():
         width = img.shape[1]
         img_lst = cnn_pixel.get_local_data(img, None, 72)
         assert len(img_lst) == height*width
-        estDensMap = np.zeros((height, width), dtype="float64")
+        estDensMap = np.zeros((height, width), dtype="float32")
 
         i = 0
         for h in range(height):
@@ -106,6 +106,7 @@ def clustering(densMap, bandwidth, thresh=0):
 
 
 if __name__ == "__main__":
-    #estDensMap = estimate()
-    estDensMap = np.load("./estimation.npy")
-    centroid_arr = clustering(estDensMap, 5, 0)
+    estDensMap = estimate()
+    np.save("./estimation/2018_2_6_13_34/estimation.npy")
+    #estDensMap = np.load("./estimation.npy")
+    #centroid_arr = clustering(estDensMap, 5, 0)

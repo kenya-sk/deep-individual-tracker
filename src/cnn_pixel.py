@@ -34,7 +34,7 @@ def load_data(inputDirPath):
         else:
             X.append(img)
         densPath = path.replace(".png", ".npy")
-        y.append(np.load("../data/dens/20/test/" + densPath))
+        y.append(np.load("../data/dens/6/test/" + densPath))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -280,7 +280,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-6).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(1e-5).minimize(loss)
 
     # variable of TensorBoard
     trainStep = 0
@@ -291,7 +291,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 30
+    n_epochs = 10
     batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
@@ -302,7 +302,7 @@ def main(X_train, X_test, y_train, y_test):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
             train_df = get_local_data(X_train[i], y_train[i], 72)
-            train_df = under_sampling(train_df, thresh=0.1)
+            train_df = under_sampling(train_df, thresh=0.05)
             X_train_local = train_df["img_arr"]
             y_train_local = train_df["label"]
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
@@ -327,7 +327,7 @@ def main(X_train, X_test, y_train, y_test):
                                     y_: y_train_local[startIndex:endIndex].values})
                 #train_writer.add_summary(summary, trainStep)
 
-
+        """
         # test data
         print("TEST")
         test_loss = 0.0
@@ -348,7 +348,7 @@ def main(X_train, X_test, y_train, y_test):
                 testStep += 1
 
         print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
-
+    """
     # end processing
     saver.save(sess, "./model_pixel/" + date_dir + "/model.ckpt")
     train_writer.close()
