@@ -327,28 +327,27 @@ def main(X_train, X_test, y_train, y_test):
                                     y_: y_train_local[startIndex:endIndex].values})
                 #train_writer.add_summary(summary, trainStep)
 
-        """
-        # test data
-        print("TEST")
-        test_loss = 0.0
-        for i in range(len(X_test)):
-            test_df = get_local_data(X_test[i], y_test[i], 72)
-            X_test_local = test_df["img_arr"]
-            y_test_local = test_df["label"]
-            test_n_batches = int(len(X_test_local) / batchSize)
-            for batch in range(test_n_batches):
-                startIndex = batch * batchSize
-                endIndex = startIndex + batchSize
+    # test data
+    print("TEST")
+    test_loss = 0.0
+    for i in range(len(X_test)):
+        test_df = get_local_data(X_test[i], y_test[i], 72)
+        X_test_local = test_df["img_arr"]
+        y_test_local = test_df["label"]
+        test_n_batches = int(len(X_test_local) / batchSize)
+        for batch in range(test_n_batches):
+            startIndex = batch * batchSize
+            endIndex = startIndex + batchSize
 
-                summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                        X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
-                                        y_: y_test_local[startIndex:endIndex].values})
-                test_writer.add_summary(summary, testStep)
-                test_loss += tmp_loss
-                testStep += 1
+            summary, tmp_loss = sess.run([merged, loss], feed_dict={
+                                    X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
+                                    y_: y_test_local[startIndex:endIndex].values})
+            test_writer.add_summary(summary, testStep)
+            test_loss += tmp_loss
+            testStep += 1
 
-        print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
-    """
+    print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+
     # end processing
     saver.save(sess, "./model_pixel/" + date_dir + "/model.ckpt")
     train_writer.close()
