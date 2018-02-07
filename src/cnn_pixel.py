@@ -136,6 +136,16 @@ def conv2d(x, W):
 def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
+# batch normalization
+def batch_norm(X, axes, shape, is_training):
+    if is_training is False:
+        return X
+    epsilon  = 1e-5
+    mean, variance = tf.nn.moments(X, axes)
+    scale = tf.Variable(tf.ones([shape]))
+    offset = tf.Variable(tf.zeros([shape]))
+    return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
+
 
 def main(X_train, X_test, y_train, y_test):
     date = datetime.now()
@@ -158,6 +168,9 @@ def main(X_train, X_test, y_train, y_test):
         with tf.name_scope("y_"):
             y_ = tf.placeholder(tf.float32, [None], name="label")
 
+    # status: True(lerning) or False(test)
+    is_training = tf.placeholder(tf.bool)
+
 
     # first layer
     # convlution -> ReLU -> max pooling
@@ -168,11 +181,17 @@ def main(X_train, X_test, y_train, y_test):
             W_conv1 = weight_variable([7,7,3,32], name="weight1")
             variable_summaries(W_conv1)
             _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
+        """
         with tf.name_scope("bias1"):
             b_conv1 = bias_variable([32], name="bias1")
             variable_summaries(b_conv1)
-        with tf.name_scope("relu1"):
-            h_conv1 = tf.nn.leaky_relu(conv2d(X, W_conv1) + b_conv1)
+        """
+        with tf.name_scope("batchNorm1"):
+            conv1 = conv2d(X, W_conv1)
+            conv1_bn = batch_norm(conv1, [0, 1, 2], 32, is_training)
+        with tf.name_scope("leakyRelu1"):
+            #h_conv1 = tf.nn.leaky_relu(conv2d(X, W_conv1) + b_conv1)
+            h_conv1 = tf.nn.leaky_relu(conv1_bn)
             variable_summaries(h_conv1)
 
     with tf.name_scope("pool1"):
@@ -189,11 +208,17 @@ def main(X_train, X_test, y_train, y_test):
             W_conv2 = weight_variable([7,7,32,32], name="weight2")
             variable_summaries(W_conv2)
             _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
+        """
         with tf.name_scope("bias2"):
             b_conv2 = bias_variable([32], name="bias2")
             variable_summaries(b_conv2)
-        with tf.name_scope("relu2"):
-            h_conv2 = tf.nn.leaky_relu(conv2d(h_pool1, W_conv2) + b_conv2)
+        """
+        with name_scope("batchNorm2"):
+            conv2 = conv2d(h_pool1, W_conv2)
+            conv2_bn = batch_norm(conv2, [0, 1, 2], 32, is_training)
+        with tf.name_scope("leakyRelu2"):
+            #h_conv2 = tf.nn.leaky_relu(conv2d(h_pool1, W_conv2) + b_conv2)
+            h_conv2 = tf.nn.leaky_relu(conv2_bn)
             variable_summaries(h_conv2)
 
     with tf.name_scope("pool2"):
@@ -209,11 +234,17 @@ def main(X_train, X_test, y_train, y_test):
             W_conv3 = weight_variable([5,5,32,64], name="weight3")
             variable_summaries(W_conv3)
             _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=64)
+        """
         with tf.name_scope("bias3"):
             b_conv3 = bias_variable([64], name="bias3")
             variable_summaries(b_conv3)
-        with tf.name_scope("relu3"):
-            h_conv3 = tf.nn.leaky_relu(conv2d(h_pool2, W_conv3) + b_conv3)
+        """
+        with name_scope("batchNorm3"):
+            conv3 = conv2d(h_pool2, W_conv3)
+            conv3_bn = batch_norm(conv3, [0, 1, 2], 64, is_training)
+        with tf.name_scope("leakyRelu3"):
+            #h_conv3 = tf.nn.leaky_relu(conv2d(h_pool2, W_conv3) + b_conv3)
+            h_conv3 = tf.nn.leaky_relu(conv3_bn)
             variable_summaries(h_conv3)
 
     # fourth layer
@@ -223,12 +254,19 @@ def main(X_train, X_test, y_train, y_test):
         with tf.name_scope("weight4"):
             W_fc4 = weight_variable([18*18*64, 1000], name="weight4")
             variable_summaries(W_fc4)
+        """
         with tf.name_scope("bias4"):
             b_fc4 = bias_variable([1000], name="bias4")
             variable_summaries(b_fc4)
-        with tf.name_scope("flat4"):
+        """
+        with name_scope("batchNorm4"):
             h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
-            h_fc4 = tf.nn.leaky_relu(tf.matmul(h_conv3_flat, W_fc4) + b_fc4)
+            fc4 = tf.matmul(h_conv3_flat, W_fc4)
+            fc4_bn = batch_norm(fc4, [0], 1000, is_training)
+        with tf.name_scope("flat4"):
+            #h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
+            #h_fc4 = tf.nn.leaky_relu(tf.matmul(h_conv3_flat, W_fc4) + b_fc4)
+            h_fc4 = tf.nn.leaky_relu(fc4_bn)
             variable_summaries(h_fc4)
 
     # fifth layer
@@ -238,11 +276,17 @@ def main(X_train, X_test, y_train, y_test):
         with tf.name_scope("weight5"):
             W_fc5 = weight_variable([1000, 400], name="weight5")
             variable_summaries(W_fc5)
+        """
         with tf.name_scope("bias5"):
             b_fc5 = bias_variable([400], name="bias5")
             variable_summaries(b_fc5)
+        """
+        with tf.name_scope("batchNorm5"):
+            fc5 = tf.matmul(h_fc4, W_fc5)
+            fc5_bn = batch_norm(fc5, [0], 400, is_training)
         with tf.name_scope("flat5"):
-            h_fc5 = tf.nn.leaky_relu(tf.matmul(h_fc4, W_fc5) + b_fc5)
+            #h_fc5 = tf.nn.leaky_relu(tf.matmul(h_fc4, W_fc5) + b_fc5)
+            h_fc5 = tf.nn.leaky_relu(fc5_bn)
             variable_summaries(h_fc5)
 
     # sixth layer
@@ -252,11 +296,17 @@ def main(X_train, X_test, y_train, y_test):
         with tf.name_scope("weight6"):
             W_fc6 = weight_variable([400, 324], name="weight6")
             variable_summaries(W_fc6)
+        """
         with tf.name_scope("bias6"):
             b_fc6 = bias_variable([324], name="bias6")
             variable_summaries(b_fc6)
+        """
+        with tf.name_scope("batchNorm6"):
+            fc6 = tf.matmul(h_fc5, W_fc6)
+            fc6_bn = batch_norm(fc6, [0], 324, is_training)
         with tf.name_scope("flat6"):
-            h_fc6 = tf.nn.leaky_relu(tf.matmul(h_fc5, W_fc6) + b_fc6)
+            #h_fc6 = tf.nn.leaky_relu(tf.matmul(h_fc5, W_fc6) + b_fc6)
+            h_fc6 = tf.nn.leaky_relu(fc6_bn)
             variable_summaries(h_fc6)
 
     with tf.name_scope("fc7"):
@@ -280,7 +330,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-6).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(3e-4).minimize(loss)
 
     # variable of TensorBoard
     trainStep = 0
@@ -318,13 +368,15 @@ def main(X_train, X_test, y_train, y_test):
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
                             X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
-                            y_: y_train_local[startIndex:endIndex].values})
+                            y_: y_train_local[startIndex:endIndex].values,
+                            is_training:True})
                     train_writer.add_summary(summary, trainStep)
                     print("loss: {}\n".format(train_loss))
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
                                     X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
-                                    y_: y_train_local[startIndex:endIndex].values})
+                                    y_: y_train_local[startIndex:endIndex].values,
+                                    is_training:True})
                 #train_writer.add_summary(summary, trainStep)
 
     # test data
@@ -341,7 +393,8 @@ def main(X_train, X_test, y_train, y_test):
 
             summary, tmp_loss = sess.run([merged, loss], feed_dict={
                                     X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
-                                    y_: y_test_local[startIndex:endIndex].values})
+                                    y_: y_test_local[startIndex:endIndex].values,
+                                    is_training:False})
             test_writer.add_summary(summary, testStep)
             test_loss += tmp_loss
             testStep += 1
