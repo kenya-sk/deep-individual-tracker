@@ -64,6 +64,7 @@ def estimate():
                 i += 1
                 if i%300 == 0:
                     print(i)
+                    print("output: {}".format(output))
         print("DONE: estimate density map")
 
     return estDensMap
