@@ -202,7 +202,7 @@ def main(X_train, X_test, y_train, y_test):
             W_conv2 = weight_variable([7,7,32,32], name="weight2")
             variable_summaries(W_conv2)
             _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
-        with name_scope("batchNorm2"):
+        with tf.name_scope("batchNorm2"):
             conv2 = conv2d(h_pool1, W_conv2)
             conv2_bn = batch_norm(conv2, [0, 1, 2], 32, is_training)
         with tf.name_scope("leakyRelu2"):
@@ -222,7 +222,7 @@ def main(X_train, X_test, y_train, y_test):
             W_conv3 = weight_variable([5,5,32,64], name="weight3")
             variable_summaries(W_conv3)
             _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=64)
-        with name_scope("batchNorm3"):
+        with tf.name_scope("batchNorm3"):
             conv3 = conv2d(h_pool2, W_conv3)
             conv3_bn = batch_norm(conv3, [0, 1, 2], 64, is_training)
         with tf.name_scope("leakyRelu3"):
@@ -236,7 +236,7 @@ def main(X_train, X_test, y_train, y_test):
         with tf.name_scope("weight4"):
             W_fc4 = weight_variable([18*18*64, 1000], name="weight4")
             variable_summaries(W_fc4)
-        with name_scope("batchNorm4"):
+        with tf.name_scope("batchNorm4"):
             h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
             fc4 = tf.matmul(h_conv3_flat, W_fc4)
             fc4_bn = batch_norm(fc4, [0], 1000, is_training)
