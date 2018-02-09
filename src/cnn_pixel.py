@@ -27,14 +27,14 @@ def load_data(inputDirPath):
     y = []
     file_lst = get_file_path(inputDirPath)
     for path in file_lst:
-        img = cv2.imread("../image/original/test/" + path)
+        img = cv2.imread("../image/original/test2/" + path)
         if img is None:
             print("Error: can not read image")
             sys.exit(1)
         else:
             X.append(img)
         densPath = path.replace(".png", ".npy")
-        y.append(np.load("../data/dens/6/test/" + densPath))
+        y.append(np.load("../data/dens/4/test2/" + densPath))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -304,7 +304,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 1
+    n_epochs = 10
     batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
@@ -342,25 +342,25 @@ def main(X_train, X_test, y_train, y_test):
                                     is_training:True})
                 #train_writer.add_summary(summary, trainStep)
 
-    # test data
-    print("TEST")
-    test_loss = 0.0
-    for i in range(len(X_test)):
-        test_df = get_local_data(X_test[i], y_test[i], 36)
-        X_test_local = test_df["img_arr"]
-        y_test_local = test_df["label"]
-        test_n_batches = int(len(X_test_local) / batchSize)
-        for batch in range(test_n_batches):
-            startIndex = batch * batchSize
-            endIndex = startIndex + batchSize
+        # test data
+        print("TEST")
+        test_loss = 0.0
+        for i in range(len(X_test)):
+            test_df = get_local_data(X_test[i], y_test[i], 36)
+            X_test_local = test_df["img_arr"]
+            y_test_local = test_df["label"]
+            test_n_batches = int(len(X_test_local) / batchSize)
+            for batch in range(test_n_batches):
+                startIndex = batch * batchSize
+                endIndex = startIndex + batchSize
 
-            summary, tmp_loss = sess.run([merged, loss], feed_dict={
+                summary, tmp_loss = sess.run([merged, loss], feed_dict={
                                     X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 36, 36, 3),
                                     y_: y_test_local[startIndex:endIndex].values,
                                     is_training:False})
-            test_writer.add_summary(summary, testStep)
-            test_loss += tmp_loss
-            testStep += 1
+                test_writer.add_summary(summary, testStep)
+                test_loss += tmp_loss
+                testStep += 1
 
     print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
 
