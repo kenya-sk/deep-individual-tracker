@@ -46,7 +46,7 @@ def estimate():
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        saver.restore(sess, "./model_pixel/2018_2_6_13_34/model.ckpt")
+        saver.restore(sess, "./model_pixel/2018_2_9_17_31/model.ckpt")
 
         img = cv2.imread("../image/original/11_20880.png")
         img = img[:470, :]
@@ -59,7 +59,7 @@ def estimate():
         i = 0
         for h in range(height):
             for w in range(width):
-                output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 36, 36, 3), is_training:False})
+                output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 36, 36, 3)})
                 estDensMap[h][w] = output
                 i += 1
                 if i%300 == 0:
@@ -118,6 +118,6 @@ def plot_estimation_box(centroid_arr, boxSize=12):
 
 if __name__ == "__main__":
     estDensMap = estimate()
-    #np.save("./estimation/2018_2_6_13_34/estimation.npy")
+    np.save("./estimation/2018_2_9_17_31/estimation.npy")
     centroid_arr = clusterling(estDensMap, 5, 0)
     plot_estimation_box(centroid_arr, 12)
