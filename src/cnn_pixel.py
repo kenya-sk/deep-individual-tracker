@@ -162,7 +162,7 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("input"):
         # input image
         with tf.name_scope("X"):
-            X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
+            X = tf.placeholder(tf.float32, [None, 36, 36, 3], name="input")
             _ = tf.summary.image("X(input)", X[:, :, :, 0:1], 5)
         # answer image
         with tf.name_scope("y_"):
