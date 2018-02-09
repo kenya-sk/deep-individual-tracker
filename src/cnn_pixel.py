@@ -174,7 +174,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # first layer
     # convlution -> ReLU -> max pooling
-    # input 72x72x3 -> output 36x36x32
+    # input 36x36x3 -> output 36x36x32
     with tf.name_scope("conv1"):
         # 7x7x3 filter
         with tf.name_scope("weight1"):
@@ -314,7 +314,7 @@ def main(X_train, X_test, y_train, y_test):
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
-            train_df = get_local_data(X_train[i], y_train[i], 72)
+            train_df = get_local_data(X_train[i], y_train[i], 36)
             train_df = under_sampling(train_df, thresh=0.01)
             X_train_local = train_df["img_arr"]
             y_train_local = train_df["label"]
@@ -330,14 +330,14 @@ def main(X_train, X_test, y_train, y_test):
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
-                            X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
+                            X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 36, 36, 3),
                             y_: y_train_local[startIndex:endIndex].values,
                             is_training:True})
                     train_writer.add_summary(summary, trainStep)
                     print("loss: {}\n".format(train_loss))
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
-                                    X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
+                                    X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 36, 36, 3),
                                     y_: y_train_local[startIndex:endIndex].values,
                                     is_training:True})
                 #train_writer.add_summary(summary, trainStep)
@@ -346,7 +346,7 @@ def main(X_train, X_test, y_train, y_test):
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
-        test_df = get_local_data(X_test[i], y_test[i], 72)
+        test_df = get_local_data(X_test[i], y_test[i], 36)
         X_test_local = test_df["img_arr"]
         y_test_local = test_df["label"]
         test_n_batches = int(len(X_test_local) / batchSize)
@@ -355,7 +355,7 @@ def main(X_train, X_test, y_train, y_test):
             endIndex = startIndex + batchSize
 
             summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                    X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
+                                    X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 36, 36, 3),
                                     y_: y_test_local[startIndex:endIndex].values,
                                     is_training:False})
             test_writer.add_summary(summary, testStep)
