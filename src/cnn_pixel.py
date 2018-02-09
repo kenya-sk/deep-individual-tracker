@@ -174,7 +174,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # first layer
     # convlution -> ReLU -> max pooling
-    # input 36x36x3 -> output 36x36x32
+    # input 36x36x3 -> output 18x18x32
     with tf.name_scope("conv1"):
         # 7x7x3 filter
         with tf.name_scope("weight1"):
@@ -195,7 +195,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # second layer
     # convlution -> ReLU -> max pooling
-    # input 36x36x32 -> output 18x18x32
+    # input 18x18x32 -> output 9x9x32
     with tf.name_scope("conv2"):
         # 7x7x32 filter
         with tf.name_scope("weight2"):
@@ -215,7 +215,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # third layer
     # convolution -> ReLU
-    # input 18x18x32 -> output 18x18x64
+    # input 9x9x32 -> output 9x9x64
     with tf.name_scope("conv3"):
         # 5x5x32 filter
         with tf.name_scope("weight3"):
@@ -231,10 +231,10 @@ def main(X_train, X_test, y_train, y_test):
 
     # fourth layer
     # fully connected layer
-    # input 18x18x64 -> output 1000
+    # input 9x9x64 -> output 1000
     with tf.name_scope("fc4"):
         with tf.name_scope("weight4"):
-            W_fc4 = weight_variable([18*18*64, 1000], name="weight4")
+            W_fc4 = weight_variable([9*9*64, 1000], name="weight4")
             variable_summaries(W_fc4)
         with tf.name_scope("batchNorm4"):
             h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
