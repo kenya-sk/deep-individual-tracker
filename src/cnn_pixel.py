@@ -237,7 +237,7 @@ def main(X_train, X_test, y_train, y_test):
             W_fc4 = weight_variable([9*9*64, 1000], name="weight4")
             variable_summaries(W_fc4)
         with tf.name_scope("batchNorm4"):
-            h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
+            h_conv3_flat = tf.reshape(h_conv3, [-1, 9*9*64])
             fc4 = tf.matmul(h_conv3_flat, W_fc4)
             fc4_bn = batch_norm(fc4, [0], 1000, is_training)
         with tf.name_scope("flat4"):
@@ -304,7 +304,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 20
+    n_epochs = 1
     batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
