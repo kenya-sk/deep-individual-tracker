@@ -20,31 +20,25 @@ def estimate():
     #model
     #layer1
     W_conv1 = tf.get_variable("conv1/weight1/weight1", [7,7,3,32])
-    b_conv1 = tf.get_variable("conv1/bias1/bias1", [32])
-    h_conv1 = tf.nn.leaky_relu(cnn_pixel.conv2d(X, W_conv1) + b_conv1)
+    h_conv1 = tf.nn.leaky_relu(cnn_pixel.conv2d(X, W_conv1))
     h_pool1 = cnn_pixel.max_pool_2x2(h_conv1)
     #layer2
     W_conv2 = tf.get_variable("conv2/weight2/weight2", [7,7,32,32])
-    b_conv2 = tf.get_variable("conv2/bias2/bias2", [32])
-    h_conv2 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool1, W_conv2) + b_conv2)
+    h_conv2 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool1, W_conv2))
     h_pool2 = cnn_pixel.max_pool_2x2(h_conv2)
     #layer3
     W_conv3 = tf.get_variable("conv3/weight3/weight3", [5,5,32,64])
-    b_conv3 = tf.get_variable("conv3/bias3/bias3", [64])
-    h_conv3 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool2, W_conv3) + b_conv3)
+    h_conv3 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool2, W_conv3))
     #layer4
     W_fc4 = tf.get_variable("fc4/weight4/weight4", [18*18*64, 1000])
-    b_fc4 = tf.get_variable("fc4/bias4/bias4", [1000])
     h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
-    h_fc4 = tf.nn.leaky_relu(tf.matmul(h_conv3_flat, W_fc4) + b_fc4)
+    h_fc4 = tf.nn.leaky_relu(tf.matmul(h_conv3_flat, W_fc4))
     #layer5
     W_fc5 = tf.get_variable("fc5/weight5/weight5", [1000, 400])
-    b_fc5 = tf.get_variable("fc5/bias5/bias5", [400])
-    h_fc5 = tf.nn.leaky_relu(tf.matmul(h_fc4, W_fc5) + b_fc5)
+    h_fc5 = tf.nn.leaky_relu(tf.matmul(h_fc4, W_fc5))
     #layer6
     W_fc6 = tf.get_variable("fc6/weight6/weight6", [400, 324])
-    b_fc6 = tf.get_variable("fc6/bias6/bias6", [324])
-    h_fc6 = tf.nn.leaky_relu(tf.matmul(h_fc5, W_fc6) + b_fc6)
+    h_fc6 = tf.nn.leaky_relu(tf.matmul(h_fc5, W_fc6))
     #layer7
     W_fc7 = tf.get_variable("fc7/weight7/weight7", [324, 1])
     b_fc7 = tf.get_variable("fc7/bias7/bias7", [1])
@@ -120,9 +114,9 @@ def plot_estimation_box(centroid_arr, boxSize=12):
     plt.savefig("./estimateBox.png")
 
 
+
 if __name__ == "__main__":
     estDensMap = estimate()
-    np.save("./estimation/2018_2_6_13_34/estimation.npy")
-    #estDensMap = np.load("./estimation.npy")
-    centroid_arr = clustering(estDensMap, 5, 0)
+    #np.save("./estimation/2018_2_6_13_34/estimation.npy")
+    centroid_arr = clusterling(estDensMap, 5, 0)
     plot_estimation_box(centroid_arr, 12)
