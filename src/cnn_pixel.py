@@ -67,7 +67,7 @@ def get_local_data(image, densMap, localImgSize):
         df = pd.DataFrame({"img_arr":img_lst, "label":np.ravel(densMap).astype(np.float32)})
         return df
     else:
-        return np.array(img_lst)
+        return img_lst
 
 
 def under_sampling(data_df, thresh):
