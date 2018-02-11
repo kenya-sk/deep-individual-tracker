@@ -26,3 +26,7 @@
 7. estimate_pixel.py
     * using the learned model(cnn_pixel.py), estimate the value of
     the density map for each pixel. after that, clustering by MeanShift.
+
+8. accuracy.py
+    * calculate the accuracy. if the distance between the estimation and ground truth is
+    less than threshold(arg:distThreshold), it is regarded as the correct estimation.

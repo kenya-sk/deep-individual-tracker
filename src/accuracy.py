@@ -13,7 +13,7 @@ def get_groundTruth(groundTruthPath):
 
 
 def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
-# distance of estimation and groundtruth is less than distThreshold --> True
+# the distance between the estimation and groundtruth is less than distThreshold --> True
     def get_norm(x, y):
         return (x**2 + y**2)**0.5
 
