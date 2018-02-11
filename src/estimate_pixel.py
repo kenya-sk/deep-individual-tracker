@@ -16,6 +16,7 @@ import cnn_pixel
 def estimate():
     X = tf.placeholder(tf.float32, [None, 36, 36, 3])
     y_ = tf.placeholder(tf.float32, [None])
+    is_training = tf.placeholder(tf.bool)
 
     #model
     #layer1
@@ -59,7 +60,7 @@ def estimate():
         i = 0
         for h in range(height):
             for w in range(width):
-                output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 36, 36, 3)})
+                output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 36, 36, 3), is_training: False})
                 estDensMap[h][w] = output
                 i += 1
                 if i%300 == 0:
