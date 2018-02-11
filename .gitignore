@@ -19,4 +19,5 @@ data/
 !*.ipynb
 !CMakeLists.txt
 
+cnn.py
 .ipynb_checkpoints
