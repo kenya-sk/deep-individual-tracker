@@ -293,7 +293,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(5e-4).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(1e-3).minimize(loss)
 
     # variable of TensorBoard
     trainStep = 0
@@ -305,7 +305,7 @@ def main(X_train, X_test, y_train, y_test):
     # learning
     startTime = time.time()
     n_epochs = 10
-    batchSize = 100
+    batchSize = 50
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
@@ -342,25 +342,25 @@ def main(X_train, X_test, y_train, y_test):
                                     is_training:True})
                 #train_writer.add_summary(summary, trainStep)
 
-        # test data
-        print("TEST")
-        test_loss = 0.0
-        for i in range(len(X_test)):
-            test_df = get_local_data(X_test[i], y_test[i], 36)
-            X_test_local = test_df["img_arr"]
-            y_test_local = test_df["label"]
-            test_n_batches = int(len(X_test_local) / batchSize)
-            for batch in range(test_n_batches):
-                startIndex = batch * batchSize
-                endIndex = startIndex + batchSize
+    # test data
+    print("TEST")
+    test_loss = 0.0
+    for i in range(len(X_test)):
+        test_df = get_local_data(X_test[i], y_test[i], 36)
+        X_test_local = test_df["img_arr"]
+        y_test_local = test_df["label"]
+        test_n_batches = int(len(X_test_local) / batchSize)
+        for batch in range(test_n_batches):
+            startIndex = batch * batchSize
+            endIndex = startIndex + batchSize
 
-                summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                    X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 36, 36, 3),
-                                    y_: y_test_local[startIndex:endIndex].values,
-                                    is_training:False})
-                test_writer.add_summary(summary, testStep)
-                test_loss += tmp_loss
-                testStep += 1
+            summary, tmp_loss = sess.run([merged, loss], feed_dict={
+                                X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 36, 36, 3),
+                                y_: y_test_local[startIndex:endIndex].values,
+                                is_training:False})
+            test_writer.add_summary(summary, testStep)
+            test_loss += tmp_loss
+            testStep += 1
 
     print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
 
@@ -371,5 +371,5 @@ def main(X_train, X_test, y_train, y_test):
     sess.close()
 
 if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = load_data("../image/original/test")
+    X_train, X_test, y_train, y_test = load_data("../image/original/test2")
     main(X_train, X_test, y_train, y_test)
