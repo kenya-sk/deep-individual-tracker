@@ -34,7 +34,7 @@ def load_data(inputDirPath):
         else:
             X.append(img)
         densPath = path.replace(".png", ".npy")
-        y.append(np.load("../data/dens/4/test2/" + densPath))
+        y.append(np.load("../data/dens/10/" + densPath))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -315,7 +315,7 @@ def main(X_train, X_test, y_train, y_test):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
             train_df = get_local_data(X_train[i], y_train[i], 36)
-            train_df = under_sampling(train_df, thresh=0.01)
+            train_df = under_sampling(train_df, thresh=0.005)
             X_train_local = train_df["img_arr"]
             y_train_local = train_df["label"]
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
