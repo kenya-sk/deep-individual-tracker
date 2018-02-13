@@ -56,7 +56,7 @@ def estimate():
         width = img.shape[1]
         img_lst = cnn_pixel.get_local_data(img, None, 36)
         assert len(img_lst) == height*width
-        estDensMap = np.zeros((height,*width), dtype="float32")
+        estDensMap = np.zeros((height*width), dtype="float32")
         train_n_batches = int(len(train_n_batches) / batchSize)
 
         for batch in range(train_n_batches):
