@@ -65,25 +65,10 @@ def estimate():
             estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
                             X: np.array(img_lst[startIndex:endIndex]).reshape(-1, 36, 36, 3),
                             is_training: False}).reshape(batchSize)
-            print("DONE: batch:{}".format(batch))  
+            print("DONE: batch:{}".format(batch))
 
         estDensMap = estDensMap.reshape(height, width)
         print("DONE: estimate density map")
-
-        """
-        estDensMap = np.zeros((height, width), dtype="float32")
-
-        i = 0
-        for h in range(height):
-            for w in range(width):
-                output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 36, 36, 3), is_training: False})
-                estDensMap[h][w] = output
-                i += 1
-                if i%300 == 0:
-                    print(i)
-                    print("output: {}".format(output))
-        print("DONE: estimate density map")
-        """
 
     return estDensMap
 
