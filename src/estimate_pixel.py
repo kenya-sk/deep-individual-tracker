@@ -48,7 +48,7 @@ def estimate():
     batchSize = 150
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        saver.restore(sess, "./model_pixel/2018_2_12_15_15/model.ckpt")
+        saver.restore(sess, "./model_pixel/2018_2_12_16_58/model.ckpt")
 
         img = cv2.imread("../image/original/11_20880.png")
         img = img[:470, :]
@@ -57,13 +57,13 @@ def estimate():
         img_lst = cnn_pixel.get_local_data(img, None, 36)
         assert len(img_lst) == height*width
         estDensMap = np.zeros((height*width), dtype="float32")
-        train_n_batches = int(len(train_n_batches) / batchSize)
+        train_n_batches = int(len(img_lst) / batchSize)
 
         for batch in range(train_n_batches):
             startIndex = batch*batchSize
             endIndex = startIndex + batchSize
             batchOutput = sess.run(h_fc7, feed_dict={
-                            X: img_lst[startIndex:endIndex].reshape(-1, 36, 36, 3),
+                            X: np.array(img_lst[startIndex:endIndex]).reshape(-1, 36, 36, 3),
                             is_training: False})
             print(type(batchOutput))
             print(batchOutput)
