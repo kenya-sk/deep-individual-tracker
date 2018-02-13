@@ -45,6 +45,7 @@ def estimate():
     b_fc7 = tf.get_variable("fc7/bias7/bias7", [1])
     h_fc7 = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
 
+    batchSize = 150
     saver = tf.train.Saver()
     with tf.Session() as sess:
         saver.restore(sess, "./model_pixel/2018_2_12_15_15/model.ckpt")
@@ -55,6 +56,22 @@ def estimate():
         width = img.shape[1]
         img_lst = cnn_pixel.get_local_data(img, None, 36)
         assert len(img_lst) == height*width
+        estDensMap = np.zeros((height,*width), dtype="float32")
+        train_n_batches = int(len(train_n_batches) / batchSize)
+
+        for batch in range(train_n_batches):
+            startIndex = batch*batchSize
+            endIndex = startIndex + batchSize
+            batchOutput = sess.run(h_fc7, feed_dict={
+                            X: img_lst[startIndex:endIndex].reshape(-1, 36, 36, 3),
+                            is_training: False})
+            print(type(batchOutput))
+            print(batchOutput)
+
+        estDensMap = estDensMap.reshape(height, width)
+        print("DONE: estimate density map")
+
+        """
         estDensMap = np.zeros((height, width), dtype="float32")
 
         i = 0
@@ -67,6 +84,7 @@ def estimate():
                     print(i)
                     print("output: {}".format(output))
         print("DONE: estimate density map")
+        """
 
     return estDensMap
 
