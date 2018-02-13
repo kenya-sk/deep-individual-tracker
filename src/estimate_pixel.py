@@ -62,11 +62,10 @@ def estimate():
         for batch in range(train_n_batches):
             startIndex = batch*batchSize
             endIndex = startIndex + batchSize
-            batchOutput = sess.run(h_fc7, feed_dict={
+            estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
                             X: np.array(img_lst[startIndex:endIndex]).reshape(-1, 36, 36, 3),
-                            is_training: False})
-            print(type(batchOutput))
-            print(batchOutput)
+                            is_training: False}).reshape(batchSize)
+            print("DONE: batch:{}".format(batch))  
 
         estDensMap = estDensMap.reshape(height, width)
         print("DONE: estimate density map")
