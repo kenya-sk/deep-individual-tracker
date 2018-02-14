@@ -45,10 +45,10 @@ def estimate():
     b_fc7 = tf.get_variable("fc7/bias7/bias7", [1])
     h_fc7 = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
 
-    batchSize = 150
+    batchSize = 20000
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        saver.restore(sess, "./model_pixel/2018_2_12_16_58/model.ckpt")
+        saver.restore(sess, "./model_pixel/2018_2_14_13_12/model.ckpt")
 
         img = cv2.imread("../image/original/11_20880.png")
         img = img[:470, :]
