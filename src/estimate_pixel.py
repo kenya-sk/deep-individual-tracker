@@ -70,6 +70,11 @@ def estimate():
         estDensMap = estDensMap.reshape(height, width)
         print("DONE: estimate density map")
 
+        # calculate estimation loss
+        label = np.load("../data/dens/10/11_20880.npy")[:470, :]
+        loss = np.mean(label - estDensMap, dtype="float64")
+        print("estimation loss: {}".format(loss))
+
     return estDensMap
 
 
