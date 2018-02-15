@@ -14,8 +14,9 @@ import cnn_pixel
 
 
 def estimate():
-    X = tf.placeholder(tf.float32, [None, 72, 72, 3])
+    X = tf.placeholder(tf.float32, [None, 36, 36, 3])
     y_ = tf.placeholder(tf.float32, [None])
+    is_training = tf.placeholder(tf.bool)
 
     #model
     #layer1
@@ -30,8 +31,8 @@ def estimate():
     W_conv3 = tf.get_variable("conv3/weight3/weight3", [5,5,32,64])
     h_conv3 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool2, W_conv3))
     #layer4
-    W_fc4 = tf.get_variable("fc4/weight4/weight4", [18*18*64, 1000])
-    h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
+    W_fc4 = tf.get_variable("fc4/weight4/weight4", [9*9*64, 1000])
+    h_conv3_flat = tf.reshape(h_conv3, [-1, 9*9*64])
     h_fc4 = tf.nn.leaky_relu(tf.matmul(h_conv3_flat, W_fc4))
     #layer5
     W_fc5 = tf.get_variable("fc5/weight5/weight5", [1000, 400])
@@ -44,26 +45,29 @@ def estimate():
     b_fc7 = tf.get_variable("fc7/bias7/bias7", [1])
     h_fc7 = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
 
+    batchSize = 20000
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        saver.restore(sess, "./model_pixel/2018_2_6_13_34/model.ckpt")
+        saver.restore(sess, "./model_pixel/2018_2_14_13_12/model.ckpt")
 
         img = cv2.imread("../image/original/11_20880.png")
         img = img[:470, :]
         height = img.shape[0]
         width = img.shape[1]
-        img_lst = cnn_pixel.get_local_data(img, None, 72)
+        img_lst = cnn_pixel.get_local_data(img, None, 36)
         assert len(img_lst) == height*width
-        estDensMap = np.zeros((height, width), dtype="float32")
+        estDensMap = np.zeros((height*width), dtype="float32")
+        train_n_batches = int(len(img_lst) / batchSize)
 
-        i = 0
-        for h in range(height):
-            for w in range(width):
-                output = sess.run(h_fc7, feed_dict={X: img_lst[i].reshape(1, 72, 72, 3)})
-                estDensMap[h][w] = output
-                i += 1
-                if i%300 == 0:
-                    print(i)
+        for batch in range(train_n_batches):
+            startIndex = batch*batchSize
+            endIndex = startIndex + batchSize
+            estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
+                            X: np.array(img_lst[startIndex:endIndex]).reshape(-1, 36, 36, 3),
+                            is_training: False}).reshape(batchSize)
+            print("DONE: batch:{}".format(batch))
+
+        estDensMap = estDensMap.reshape(height, width)
         print("DONE: estimate density map")
 
     return estDensMap
@@ -117,6 +121,7 @@ def plot_estimation_box(centroid_arr, boxSize=12):
 
 if __name__ == "__main__":
     estDensMap = estimate()
-    #np.save("./estimation/2018_2_6_13_34/estimation.npy")
-    centroid_arr = clusterling(estDensMap, 5, 0)
-    plot_estimation_box(centroid_arr, 12)
+    np.save("./estimation/estimation.npy", estDensMap)
+    #estDensMap = np.load("./estimation/2018_2_9_17_31/estimation.npy")
+    #centroid_arr = clustering(estDensMap, 5, 0)
+    #plot_estimation_box(centroid_arr, 12)
