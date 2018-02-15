@@ -27,14 +27,14 @@ def load_data(inputDirPath):
     y = []
     file_lst = get_file_path(inputDirPath)
     for path in file_lst:
-        img = cv2.imread("../image/original/test/" + path)
+        img = cv2.imread("../image/original/test2/" + path)
         if img is None:
             print("Error: can not read image")
             sys.exit(1)
         else:
             X.append(img)
         densPath = path.replace(".png", ".npy")
-        y.append(np.load("../data/dens/6/test/" + densPath))
+        y.append(np.load("../data/dens/10/" + densPath))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -67,7 +67,7 @@ def get_local_data(image, densMap, localImgSize):
         df = pd.DataFrame({"img_arr":img_lst, "label":np.ravel(densMap).astype(np.float32)})
         return df
     else:
-        return np.array(img_lst)
+        return img_lst
 
 
 def under_sampling(data_df, thresh):
@@ -162,7 +162,7 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("input"):
         # input image
         with tf.name_scope("X"):
-            X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
+            X = tf.placeholder(tf.float32, [None, 36, 36, 3], name="input")
             _ = tf.summary.image("X(input)", X[:, :, :, 0:1], 5)
         # answer image
         with tf.name_scope("y_"):
@@ -174,7 +174,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # first layer
     # convlution -> ReLU -> max pooling
-    # input 72x72x3 -> output 36x36x32
+    # input 36x36x3 -> output 18x18x32
     with tf.name_scope("conv1"):
         # 7x7x3 filter
         with tf.name_scope("weight1"):
@@ -195,14 +195,14 @@ def main(X_train, X_test, y_train, y_test):
 
     # second layer
     # convlution -> ReLU -> max pooling
-    # input 36x36x32 -> output 18x18x32
+    # input 18x18x32 -> output 9x9x32
     with tf.name_scope("conv2"):
         # 7x7x32 filter
         with tf.name_scope("weight2"):
             W_conv2 = weight_variable([7,7,32,32], name="weight2")
             variable_summaries(W_conv2)
             _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
-        with name_scope("batchNorm2"):
+        with tf.name_scope("batchNorm2"):
             conv2 = conv2d(h_pool1, W_conv2)
             conv2_bn = batch_norm(conv2, [0, 1, 2], 32, is_training)
         with tf.name_scope("leakyRelu2"):
@@ -215,14 +215,14 @@ def main(X_train, X_test, y_train, y_test):
 
     # third layer
     # convolution -> ReLU
-    # input 18x18x32 -> output 18x18x64
+    # input 9x9x32 -> output 9x9x64
     with tf.name_scope("conv3"):
         # 5x5x32 filter
         with tf.name_scope("weight3"):
             W_conv3 = weight_variable([5,5,32,64], name="weight3")
             variable_summaries(W_conv3)
             _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=64)
-        with name_scope("batchNorm3"):
+        with tf.name_scope("batchNorm3"):
             conv3 = conv2d(h_pool2, W_conv3)
             conv3_bn = batch_norm(conv3, [0, 1, 2], 64, is_training)
         with tf.name_scope("leakyRelu3"):
@@ -231,13 +231,13 @@ def main(X_train, X_test, y_train, y_test):
 
     # fourth layer
     # fully connected layer
-    # input 18x18x64 -> output 1000
+    # input 9x9x64 -> output 1000
     with tf.name_scope("fc4"):
         with tf.name_scope("weight4"):
-            W_fc4 = weight_variable([18*18*64, 1000], name="weight4")
+            W_fc4 = weight_variable([9*9*64, 1000], name="weight4")
             variable_summaries(W_fc4)
-        with name_scope("batchNorm4"):
-            h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
+        with tf.name_scope("batchNorm4"):
+            h_conv3_flat = tf.reshape(h_conv3, [-1, 9*9*64])
             fc4 = tf.matmul(h_conv3_flat, W_fc4)
             fc4_bn = batch_norm(fc4, [0], 1000, is_training)
         with tf.name_scope("flat4"):
@@ -293,7 +293,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.01)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(5e-4).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
 
     # variable of TensorBoard
     trainStep = 0
@@ -304,8 +304,8 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 20
-    batchSize = 100
+    n_epochs = 3
+    batchSize = 50
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
@@ -314,8 +314,8 @@ def main(X_train, X_test, y_train, y_test):
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
-            train_df = get_local_data(X_train[i], y_train[i], 72)
-            train_df = under_sampling(train_df, thresh=0.01)
+            train_df = get_local_data(X_train[i], y_train[i], 36)
+            train_df = under_sampling(train_df, thresh=0.005)
             X_train_local = train_df["img_arr"]
             y_train_local = train_df["label"]
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
@@ -330,14 +330,14 @@ def main(X_train, X_test, y_train, y_test):
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
-                            X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
+                            X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 36, 36, 3),
                             y_: y_train_local[startIndex:endIndex].values,
                             is_training:True})
                     train_writer.add_summary(summary, trainStep)
                     print("loss: {}\n".format(train_loss))
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
-                                    X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
+                                    X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 36, 36, 3),
                                     y_: y_train_local[startIndex:endIndex].values,
                                     is_training:True})
                 #train_writer.add_summary(summary, trainStep)
@@ -346,7 +346,7 @@ def main(X_train, X_test, y_train, y_test):
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
-        test_df = get_local_data(X_test[i], y_test[i], 72)
+        test_df = get_local_data(X_test[i], y_test[i], 36)
         X_test_local = test_df["img_arr"]
         y_test_local = test_df["label"]
         test_n_batches = int(len(X_test_local) / batchSize)
@@ -355,9 +355,9 @@ def main(X_train, X_test, y_train, y_test):
             endIndex = startIndex + batchSize
 
             summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                    X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
-                                    y_: y_test_local[startIndex:endIndex].values,
-                                    is_training:False})
+                                X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 36, 36, 3),
+                                y_: y_test_local[startIndex:endIndex].values,
+                                is_training:False})
             test_writer.add_summary(summary, testStep)
             test_loss += tmp_loss
             testStep += 1
@@ -371,5 +371,5 @@ def main(X_train, X_test, y_train, y_test):
     sess.close()
 
 if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = load_data("../image/original/test")
+    X_train, X_test, y_train, y_test = load_data("../image/original/test2")
     main(X_train, X_test, y_train, y_test)
