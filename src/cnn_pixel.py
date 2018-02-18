@@ -167,9 +167,9 @@ def main(X_train, X_test, y_train, y_test):
         # answer image
         with tf.name_scope("y_"):
             y_ = tf.placeholder(tf.float32, [None], name="label")
-
-    # status: True(lerning) or False(test)
-    is_training = tf.placeholder(tf.bool)
+        # status: True(lerning) or False(test)
+        with tf.name_scope("is_training"):
+            is_training = tf.placeholder(tf.bool, name="is_training")
 
 
     # first layer
