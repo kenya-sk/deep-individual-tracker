@@ -395,10 +395,10 @@ def main(X_train, X_test, y_train, y_test):
     train_n_batches = int(len(X_local) / estBatchSize)
 
     for batch in range(train_n_batches):
-        estStartIndex = batch*estBatchSize
-        estEndIndex = startIndex + estBatchSize
+        StartIndex = batch*estBatchSize
+        EndIndex = startIndex + estBatchSize
         estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
-                        X: np.vstack(X_local[estStartIndex:estEndIndex]).reshape(-1, 72, 72, 3),
+                        X: np.vstack(X_local[StartIndex:EndIndex]).reshape(-1, 72, 72, 3),
                         is_training: False}).reshape(estBatchSize)
         print("DONE: batch:{}".format(batch))
 
