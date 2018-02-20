@@ -14,7 +14,7 @@ import cnn_pixel
 
 
 def estimate():
-    X = tf.placeholder(tf.float32, [None, 36, 36, 3])
+    X = tf.placeholder(tf.float32, [None, 72, 72, 3])
     y_ = tf.placeholder(tf.float32, [None])
     is_training = tf.placeholder(tf.bool)
 
@@ -54,7 +54,7 @@ def estimate():
         img = img[:470, :]
         height = img.shape[0]
         width = img.shape[1]
-        img_lst = cnn_pixel.get_local_data(img, None, 36)
+        img_lst = cnn_pixel.get_local_data(img, None, 72)
         assert len(img_lst) == height*width
         estDensMap = np.zeros((height*width), dtype="float32")
         train_n_batches = int(len(img_lst) / batchSize)
