@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 
-def load_data(inputDirPath):
+def load_data(inputImageDirPath, inputDensDirPath):
     def get_file_path(inputDirPath):
         file_lst = os.listdir(inputDirPath)
         pattern = r"^(?!._).*(.png)$"
@@ -25,16 +25,16 @@ def load_data(inputDirPath):
 
     X = []
     y = []
-    file_lst = get_file_path(inputDirPath)
+    file_lst = get_file_path(inputImageDirPath)
     for path in file_lst:
-        img = cv2.imread("../image/original/test2/" + path)
+        img = cv2.imread(inputImageDirPath + path)
         if img is None:
             print("Error: can not read image")
             sys.exit(1)
         else:
             X.append(img)
         densPath = path.replace(".png", ".npy")
-        y.append(np.load("../data/dens/10/" + densPath))
+        y.append(np.load(inputDensDirPath + densPath))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -72,14 +72,14 @@ def get_local_data(image, densMap, localImgSize):
 
 def under_sampling(data_df, thresh):
     # low frequently data: value of label is below thresh
-    low_frequently_data = data_df[data_df["label"] > thresh]
+    lowFrequentlyData = data_df[data_df["label"] > thresh]
 
-    high_frequently_index = data_df[data_df["label"] <= thresh].index
-    random_indices = np.random.choice(high_frequently_index,  len(low_frequently_data), replace=False)
-    high_frequently_data = data_df.loc[random_indices]
+    highFrequentlyIndex = data_df[data_df["label"] <= thresh].index
+    randomIndices = np.random.choice(highFrequentlyIndex,  len(lowFrequentlyData), replace=False)
+    highFrequentlyData = data_df.loc[randomIndices]
     pd.DataFrame(high_frequently_data)
 
-    merged_data = pd.concat([high_frequently_data, low_frequently_data], ignore_index=True)
+    merged_data = pd.concat([highFrequentlyData, lowFrequentlyData], ignore_index=True)
     balanced_data = pd.DataFrame(merged_data)
 
     return balanced_data
@@ -149,12 +149,12 @@ def batch_norm(X, axes, shape, is_training):
 
 def main(X_train, X_test, y_train, y_test):
     date = datetime.now()
-    date_dir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
-    log_dir = "./logs_pixel/" + date_dir
+    dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
+    logDir = "./logs_pixel/" + dateDir
     # delete the specified directory if it exists, recreate it
-    if tf.gfile.Exists(log_dir):
-        tf.gfile.DeleteRecursively(log_dir)
-    tf.gfile.MakeDirs(log_dir)
+    if tf.gfile.Exists(logDir):
+        tf.gfile.DeleteRecursively(logDir)
+    tf.gfile.MakeDirs(logDir)
 
     # start session
     sess = tf.InteractiveSession()
@@ -316,7 +316,6 @@ def main(X_train, X_test, y_train, y_test):
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
-
     print("Original traning data size: {}".format(len(X_train)))
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
@@ -397,7 +396,6 @@ def main(X_train, X_test, y_train, y_test):
                         is_training: False}).reshape(estBatchSize)
         print("DONE: batch:{}".format(batch))
 
-
     estDensMap = estDensMap.reshape(height, width)
     np.save("./estimation/estimation.npy", estDensMap)
     print("DONE: estimate density map")
@@ -410,12 +408,14 @@ def main(X_train, X_test, y_train, y_test):
 
 
     # --------------------------- END PROCESSING -------------------------------
-    saver.save(sess, "./model_pixel/" + date_dir + "/model.ckpt")
+    saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
     train_writer.close()
     test_writer.close()
     sess.close()
     # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = load_data("../image/original/test2")
+    inputImageDirPath = "../image/original/test2"
+    inputDensDirPath = "../data/dens/10/"
+    X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test)
