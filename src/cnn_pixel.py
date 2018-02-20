@@ -24,6 +24,7 @@ def load_data(inputImageDirPath, inputDensDirPath):
             file_lst = os.listdir(inputDirPath)
         except FileNotFoundError:
             sys.stderr.write("Error: not found directory")
+            sys.exit(1)
         pattern = r"^(?!._).*(.png)$"
         repattern = re.compile(pattern)
         file_lst = [name for name in file_lst if repattern.match(name)]
@@ -300,7 +301,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.00001)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-5).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
     # -------------------------------------------------------------------------
 
 
@@ -378,7 +379,7 @@ def main(X_train, X_test, y_train, y_test):
 
 
     # ------------------------ CHECK ESTIMATION MODEL -------------------------
-    estBatchSize = 10000
+    estBatchSize = 2000
     img = cv2.imread("../image/original/11_20880.png")
     label = np.load("../data/dens/10/11_20880.npy")
     img = img[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
