@@ -20,7 +20,10 @@ ANALYSIS_WIDTH = (0, 1280)
 
 def load_data(inputImageDirPath, inputDensDirPath):
     def get_file_path(inputDirPath):
-        file_lst = os.listdir(inputDirPath)
+        try:
+            file_lst = os.listdir(inputDirPath)
+        except FileNotFoundError:
+            sys.stderr.write("Error: not found directory")
         pattern = r"^(?!._).*(.png)$"
         repattern = re.compile(pattern)
         file_lst = [name for name in file_lst if repattern.match(name)]
@@ -32,7 +35,7 @@ def load_data(inputImageDirPath, inputDensDirPath):
     for path in file_lst:
         img = cv2.imread(inputImageDirPath + path)
         if img is None:
-            print("Error: can not read image")
+            sys.stderr.write("Error: can not read image")
             sys.exit(1)
         else:
             X.append(img)
@@ -108,7 +111,7 @@ def weight_variable(shape, name=None):
     elif len(shape) == 2:
         n = shape[0]
     else:
-        print("Error: shape size is not correct !")
+        sys.stderr.write("Error: shape size is not correct !")
         sys.exit(1)
     stddev = math.sqrt(2/n)
     initial = tf.random_normal(shape, stddev=stddev, dtype=tf.float32)
