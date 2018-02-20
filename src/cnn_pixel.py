@@ -77,12 +77,12 @@ def under_sampling(data_df, thresh):
     highFrequentlyIndex = data_df[data_df["label"] <= thresh].index
     randomIndices = np.random.choice(highFrequentlyIndex,  len(lowFrequentlyData), replace=False)
     highFrequentlyData = data_df.loc[randomIndices]
-    pd.DataFrame(high_frequently_data)
+    pd.DataFrame(highFrequentlyData)
 
-    merged_data = pd.concat([highFrequentlyData, lowFrequentlyData], ignore_index=True)
-    balanced_data = pd.DataFrame(merged_data)
+    mergedData = pd.concat([highFrequentlyData, lowFrequentlyData], ignore_index=True)
+    balancedData = pd.DataFrame(mergedData)
 
-    return balanced_data
+    return balancedData
 
 
 # processing variables and it output tensorboard
