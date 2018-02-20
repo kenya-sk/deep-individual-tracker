@@ -67,11 +67,11 @@ def get_local_data(image, densMap, localImgSize):
     localImg_mat = np.zeros((height * width, localImgSize, localImgSize, image.shape[2]))
     for h in range(pad, height+pad):
         for w in range(pad, width+pad):
-            idx = h * width + w
+            idx = (h - pad) * width + (w - pad)
             localImg_mat[idx] = padImg[h-pad:h+pad, w-pad:w+pad]
 
     densMap = densMap[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    density_ arr = np.ravel(densMap).astype(np.float32)
+    density_arr = np.ravel(densMap).astype(np.float32)
     return localImg_mat, density_arr
 
 
