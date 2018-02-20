@@ -164,15 +164,16 @@ def main(X_train, X_test, y_train, y_test):
 
     # ------------------------------- MODEL -----------------------------------
     # input image
-    with tf.name_scope("X"):
-        X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
-        _ = tf.summary.image("X(input)", X[:, :, :, :], 5)
-    # answer image
-    with tf.name_scope("y_"):
-        y_ = tf.placeholder(tf.float32, [None], name="label")
-    # status: True(lerning) or False(test)
-    with tf.name_scope("is_training"):
-        is_training = tf.placeholder(tf.bool, name="is_training")
+    with tf.name_scope("input"):
+        with tf.name_scope("X"):
+            X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
+            _ = tf.summary.image("X(input)", X[:, :, :, :], 5)
+        # answer image
+        with tf.name_scope("y_"):
+            y_ = tf.placeholder(tf.float32, [None], name="label")
+        # status: True(lerning) or False(test)
+        with tf.name_scope("is_training"):
+            is_training = tf.placeholder(tf.bool, name="is_training")
 
 
     # first layer
