@@ -61,10 +61,10 @@ def get_local_data(image, densMap, localImgSize):
     width = image.shape[1]
 
     pad = math.floor(localImgSize/2)
-    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]))
+    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="float32")
     padImg[pad:height+pad, pad:width+pad] = image
 
-    localImg_mat = np.zeros((height * width, localImgSize, localImgSize, image.shape[2]))
+    localImg_mat = np.zeros((height * width, localImgSize, localImgSize, image.shape[2]), dtype="float32")
     for h in range(pad, height+pad):
         for w in range(pad, width+pad):
             idx = (h - pad) * width + (w - pad)
@@ -345,15 +345,15 @@ def main(X_train, X_test, y_train, y_test):
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
-                            X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
-                            y_: y_train_local[startIndex:endIndex].values,
+                            X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                            y_: y_train_local[startIndex:endIndex],
                             is_training:True})
                     train_writer.add_summary(summary, trainStep)
                     print("loss: {}\n".format(train_loss))
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
-                                    X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
-                                    y_: y_train_local[startIndex:endIndex].values,
+                                    X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                    y_: y_train_local[startIndex:endIndex],
                                     is_training:True})
                 train_writer.add_summary(summary, trainStep)
     # --------------------------------------------------------------------------
@@ -364,17 +364,17 @@ def main(X_train, X_test, y_train, y_test):
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
-        test_df = get_local_data(X_test[i], y_test[i], 72)
-        X_test_local = test_df["img_arr"]
-        y_test_local = test_df["label"]
+        X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72)
+        X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thres = 0.005)
+        X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
         test_n_batches = int(len(X_test_local) / batchSize)
         for batch in range(test_n_batches):
             startIndex = batch * batchSize
             endIndex = startIndex + batchSize
 
             summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                X: np.vstack(X_test_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
-                                y_: y_test_local[startIndex:endIndex].values,
+                                X: X_test_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                y_: y_test_local[startIndex:endIndex],
                                 is_training:False})
             test_writer.add_summary(summary, testStep)
             test_loss += tmp_loss
@@ -393,9 +393,7 @@ def main(X_train, X_test, y_train, y_test):
     label = label[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     height = img.shape[0]
     width = img.shape[1]
-    df = get_local_data(img, label, 72)
-    X_local = df["img_arr"]
-    y_local = df["label"]
+    X_local, y_local = get_local_data(img, label, 72)
     estDensMap = np.zeros((height*width), dtype="float32")
     est_n_batches = int(len(X_local) / estBatchSize)
 
