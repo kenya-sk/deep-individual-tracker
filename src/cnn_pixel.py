@@ -159,10 +159,11 @@ def main(X_train, X_test, y_train, y_test):
     # start session
     sess = tf.InteractiveSession()
 
+    # ------------------------------- MODEL -----------------------------------
     with tf.name_scope("input"):
         # input image
         with tf.name_scope("X"):
-            X = tf.placeholder(tf.float32, [None, 36, 36, 3], name="input")
+            X = tf.placeholder(tf.float32, [None, 72, 2, 3], name="input")
             _ = tf.summary.image("X(input)", X[:, :, :, 0:1], 5)
         # answer image
         with tf.name_scope("y_"):
@@ -174,7 +175,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # first layer
     # convlution -> ReLU -> max pooling
-    # input 36x36x3 -> output 18x18x32
+    # input 72x72x3 -> output 36x36x32
     with tf.name_scope("conv1"):
         # 7x7x3 filter
         with tf.name_scope("weight1"):
@@ -195,7 +196,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # second layer
     # convlution -> ReLU -> max pooling
-    # input 18x18x32 -> output 9x9x32
+    # input 36x36x32 -> output 18x18x32
     with tf.name_scope("conv2"):
         # 7x7x32 filter
         with tf.name_scope("weight2"):
@@ -215,7 +216,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # third layer
     # convolution -> ReLU
-    # input 9x9x32 -> output 9x9x64
+    # input 18x18x32 -> output 18x18x64
     with tf.name_scope("conv3"):
         # 5x5x32 filter
         with tf.name_scope("weight3"):
@@ -231,7 +232,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # fourth layer
     # fully connected layer
-    # input 9x9x64 -> output 1000
+    # input 18x18x64 -> output 1000
     with tf.name_scope("fc4"):
         with tf.name_scope("weight4"):
             W_fc4 = weight_variable([9*9*64, 1000], name="weight4")
@@ -272,6 +273,9 @@ def main(X_train, X_test, y_train, y_test):
             h_fc6 = tf.nn.leaky_relu(fc6_bn)
             variable_summaries(h_fc6)
 
+    # seven layer
+    # fully connected layer
+    # input 324 -> output 1
     with tf.name_scope("fc7"):
         with tf.name_scope("weight7"):
             W_fc7 = weight_variable([324, 1], name="weight7")
@@ -291,10 +295,13 @@ def main(X_train, X_test, y_train, y_test):
         loss = tf.reduce_mean(tf.square(y_ - h_fc7))
         tf.summary.scalar("loss", loss)
 
-    # learning algorithm (learning rate: 0.01)
+    # learning algorithm (learning rate: 0.00001)
     with tf.name_scope("train"):
         train_step = tf.train.GradientDescentOptimizer(1e-5).minimize(loss)
+    # -------------------------------------------------------------------------
 
+
+    # -------------------------- LEARNING STEP --------------------------------
     # variable of TensorBoard
     trainStep = 0
     testStep = 0
@@ -340,9 +347,11 @@ def main(X_train, X_test, y_train, y_test):
                                     X: np.vstack(X_train_local[startIndex:endIndex].values).reshape(-1, 36, 36, 3),
                                     y_: y_train_local[startIndex:endIndex].values,
                                     is_training:True})
-                #train_writer.add_summary(summary, trainStep)
+                train_writer.add_summary(summary, trainStep)
+    # --------------------------------------------------------------------------
 
-    # test data
+
+    # -------------------------------- TEST ------------------------------------
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
@@ -363,12 +372,49 @@ def main(X_train, X_test, y_train, y_test):
             testStep += 1
 
     print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+    # --------------------------------------------------------------------------
 
-    # end processing
+
+    # ------------------------ CHECK ESTIMATION MODEL -------------------------
+    estBatchSize = 10000
+    img = cv2.imread("../image/original/11_20880.png")
+    label = np.load("../data/dens/10/11_20880.npy")
+    img = img[:470, :]
+    label = label[:470, :]
+    height = img.shape[0]
+    width = img.shape[1]
+    df = get_local_data(img, label, 36)
+    X_local = df["img_arr"]
+    y_local = df["label"]
+    estDensMap = np.zeros((height*width), dtype="float32")
+    train_n_batches = int(len(X_local) / estBatchSize)
+
+    for batch in range(train_n_batches):
+        startIndex = batch*estBatchSize
+        endIndex = startIndex + estBatchSize
+        estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
+                        X: np.vstack(X_local[startIndex:endIndex]).reshape(-1, 36, 36, 3),
+                        is_training: False}).reshape(estBatchSize)
+        print("DONE: batch:{}".format(batch))
+
+
+    estDensMap = estDensMap.reshape(height, width)
+    np.save("./estimation/estimation.npy", estDensMap)
+    print("DONE: estimate density map")
+
+    # calculate estimation loss
+    diff_square = np.square(label - estDensMap, dtype="float32")
+    loss = np.mean(diff_square)
+    print("estimation loss: {}".format(loss))
+    # --------------------------------------------------------------------------
+
+
+    # --------------------------- END PROCESSING -------------------------------
     saver.save(sess, "./model_pixel/" + date_dir + "/model.ckpt")
     train_writer.close()
     test_writer.close()
     sess.close()
+    # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
     X_train, X_test, y_train, y_test = load_data("../image/original/test2")
