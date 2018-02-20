@@ -316,7 +316,7 @@ def main(X_train, X_test, y_train, y_test):
     # learning
     startTime = time.time()
     n_epochs = 3
-    batchSize = 50
+    batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
@@ -355,6 +355,7 @@ def main(X_train, X_test, y_train, y_test):
 
 
     # -------------------------------- TEST ------------------------------------
+    """
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
@@ -375,11 +376,12 @@ def main(X_train, X_test, y_train, y_test):
             testStep += 1
 
     print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+    """
     # --------------------------------------------------------------------------
 
 
     # ------------------------ CHECK ESTIMATION MODEL -------------------------
-    estBatchSize = 2000
+    estBatchSize = 100
     img = cv2.imread("../image/original/11_20880.png")
     label = np.load("../data/dens/10/11_20880.npy")
     img = img[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
@@ -393,10 +395,10 @@ def main(X_train, X_test, y_train, y_test):
     train_n_batches = int(len(X_local) / estBatchSize)
 
     for batch in range(train_n_batches):
-        startIndex = batch*estBatchSize
-        endIndex = startIndex + estBatchSize
+        estStartIndex = batch*estBatchSize
+        estEndIndex = startIndex + estBatchSize
         estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
-                        X: np.vstack(X_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
+                        X: np.vstack(X_local[estStartIndex:estEndIndex]).reshape(-1, 72, 72, 3),
                         is_training: False}).reshape(estBatchSize)
         print("DONE: batch:{}".format(batch))
 
