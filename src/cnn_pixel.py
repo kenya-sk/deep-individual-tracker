@@ -78,7 +78,6 @@ def under_sampling(data_df, thresh):
     highFrequentlyIndex = data_df[data_df["label"] <= thresh].index
     randomIndices = np.random.choice(highFrequentlyIndex,  len(lowFrequentlyData), replace=False)
     highFrequentlyData = data_df.loc[randomIndices]
-    pd.DataFrame(highFrequentlyData)
 
     mergedData = pd.concat([highFrequentlyData, lowFrequentlyData], ignore_index=True)
     balancedData = pd.DataFrame(mergedData)
@@ -165,7 +164,7 @@ def main(X_train, X_test, y_train, y_test):
         # input image
         with tf.name_scope("X"):
             X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
-            _ = tf.summary.image("X(input)", X[:, :, :, 0:1], 5)
+            _ = tf.summary.image("X(input)", X[:, :, :, :], 5)
         # answer image
         with tf.name_scope("y_"):
             y_ = tf.placeholder(tf.float32, [None], name="label")
