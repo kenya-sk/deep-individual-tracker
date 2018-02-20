@@ -78,7 +78,6 @@ def under_sampling(data_df, thresh):
     highFrequentlyIndex = data_df[data_df["label"] <= thresh].index
     randomIndices = np.random.choice(highFrequentlyIndex,  len(lowFrequentlyData), replace=False)
     highFrequentlyData = data_df.loc[randomIndices]
-    pd.DataFrame(highFrequentlyData)
 
     mergedData = pd.concat([highFrequentlyData, lowFrequentlyData], ignore_index=True)
     balancedData = pd.DataFrame(mergedData)
