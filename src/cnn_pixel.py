@@ -14,6 +14,9 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
+ANALYSIS_HEIGHT = (0, 470)
+ANALYSIS_WIDTH = (0, 1280)
+
 
 def load_data(inputImageDirPath, inputDensDirPath):
     def get_file_path(inputDirPath):
@@ -43,7 +46,7 @@ def load_data(inputImageDirPath, inputDensDirPath):
 
 def get_local_data(image, densMap, localImgSize):
     # trimming original image(there are many unnecessary parts)
-    image = image[:470, :]
+    image = image[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     # local image size is even number
     height = image.shape[0]
     width = image.shape[1]
@@ -62,12 +65,10 @@ def get_local_data(image, densMap, localImgSize):
             tmpLocalImg = np.array(localImg)
             tmpLocalImg = padImg[h-pad:h+pad, w-pad:w+pad]
             img_lst.append(tmpLocalImg)
-    if densMap is not None:
-        densMap = densMap[:470, :]
-        df = pd.DataFrame({"img_arr":img_lst, "label":np.ravel(densMap).astype(np.float32)})
-        return df
-    else:
-        return img_lst
+
+    densMap = densMap[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
+    df = pd.DataFrame({"img_arr":img_lst, "label":np.ravel(densMap).astype(np.float32)})
+    return df
 
 
 def under_sampling(data_df, thresh):
@@ -378,8 +379,8 @@ def main(X_train, X_test, y_train, y_test):
     estBatchSize = 10000
     img = cv2.imread("../image/original/11_20880.png")
     label = np.load("../data/dens/10/11_20880.npy")
-    img = img[:470, :]
-    label = label[:470, :]
+    img = img[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
+    label = label[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     height = img.shape[0]
     width = img.shape[1]
     df = get_local_data(img, label, 72)
