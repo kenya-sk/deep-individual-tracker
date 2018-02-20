@@ -6,8 +6,6 @@
 
 #ignore certain directory
 movie/
-image/
-data/
 
 #And all the file types I'm interested in.
 !.gitignore
