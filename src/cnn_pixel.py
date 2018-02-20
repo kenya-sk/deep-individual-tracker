@@ -392,7 +392,7 @@ def main(X_train, X_test, y_train, y_test):
     X_local = df["img_arr"]
     y_local = df["label"]
     estDensMap = np.zeros((height*width), dtype="float32")
-    est_n_Batches = int(len(X_local) / estBatchSize)
+    est_n_batches = int(len(X_local) / estBatchSize)
 
     for batch in range(est_n_batches):
         startIndex = batch*estBatchSize
