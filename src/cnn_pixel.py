@@ -239,10 +239,10 @@ def main(X_train, X_test, y_train, y_test):
     # input 18x18x64 -> output 1000
     with tf.name_scope("fc4"):
         with tf.name_scope("weight4"):
-            W_fc4 = weight_variable([9*9*64, 1000], name="weight4")
+            W_fc4 = weight_variable([18*18*64, 1000], name="weight4")
             variable_summaries(W_fc4)
         with tf.name_scope("batchNorm4"):
-            h_conv3_flat = tf.reshape(h_conv3, [-1, 9*9*64])
+            h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
             fc4 = tf.matmul(h_conv3_flat, W_fc4)
             fc4_bn = batch_norm(fc4, [0], 1000, is_training)
         with tf.name_scope("flat4"):
@@ -289,7 +289,7 @@ def main(X_train, X_test, y_train, y_test):
             variable_summaries(b_fc7)
         with tf.name_scope("flat7"):
             y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7, name="output")
-            variable_summaries(h_fc7)
+            variable_summaries(y)
 
     # output
     tf.summary.histogram("output", y)
@@ -399,7 +399,6 @@ def main(X_train, X_test, y_train, y_test):
         endIndex = startIndex + estBatchSize
         estDensMap[startIndex:endIndex] = sess.run(y, feed_dict={
                         X: np.vstack(X_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
-                        y_: y_train_local[startIndex:endIndex].values,
                         is_training: False}).reshape(estBatchSize)
         print("DONE: batch:{}".format(batch))
 
