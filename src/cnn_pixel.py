@@ -306,8 +306,8 @@ def main(X_train, X_test, y_train, y_test):
     trainStep = 0
     testStep = 0
     merged = tf.summary.merge_all()
-    train_writer = tf.summary.FileWriter(log_dir + "/train", sess.graph)
-    test_writer = tf.summary.FileWriter(log_dir + "/test")
+    train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
+    test_writer = tf.summary.FileWriter(logDir + "/test")
 
     # learning
     startTime = time.time()
@@ -401,9 +401,9 @@ def main(X_train, X_test, y_train, y_test):
     print("DONE: estimate density map")
 
     # calculate estimation loss
-    diff_square = np.square(label - estDensMap, dtype="float32")
-    loss = np.mean(diff_square)
-    print("estimation loss: {}".format(loss))
+    diffSquare = np.square(label - estDensMap, dtype="float32")
+    estLoss = np.mean(diffSquare)
+    print("estimation loss: {}".format(estLoss))
     # --------------------------------------------------------------------------
 
 
@@ -415,7 +415,7 @@ def main(X_train, X_test, y_train, y_test):
     # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    inputImageDirPath = "../image/original/test2"
+    inputImageDirPath = "../image/original/test2/"
     inputDensDirPath = "../data/dens/10/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test)
