@@ -392,13 +392,13 @@ def main(X_train, X_test, y_train, y_test):
     X_local = df["img_arr"]
     y_local = df["label"]
     estDensMap = np.zeros((height*width), dtype="float32")
-    train_n_batches = int(len(X_local) / estBatchSize)
+    est_n_Batches = int(len(X_local) / estBatchSize)
 
-    for batch in range(train_n_batches):
-        StartIndex = batch*estBatchSize
-        EndIndex = startIndex + estBatchSize
+    for batch in range(est_n_batches):
+        startIndex = batch*estBatchSize
+        endIndex = startIndex + estBatchSize
         estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
-                        X: np.vstack(X_local[StartIndex:EndIndex]).reshape(-1, 72, 72, 3),
+                        X: np.vstack(X_local[startIndex:endIndex]).reshape(-1, 72, 72, 3),
                         is_training: False}).reshape(estBatchSize)
         print("DONE: batch:{}".format(batch))
 
