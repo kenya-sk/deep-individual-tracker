@@ -49,44 +49,50 @@ def load_data(inputImageDirPath, inputDensDirPath):
 
 
 def get_local_data(image, densMap, localImgSize):
-    # trimming original image(there are many unnecessary parts)
+    """
+    ret: localImg_mat([#locals, localImgSize, localImgSize, image.shape[2]]), density_arr([#locals])
+    """
+
+    assert len(image.shape) == 3
+
+    # trim original image
     image = image[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    # local image size is even number
     height = image.shape[0]
     width = image.shape[1]
-    pad = math.floor(localImgSize/2)
-    if len(image.shape) == 3:
-        padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]))
-        localImg = np.zeros((localImgSize, localImgSize, image.shape[2]))
-    else:
-        padImg = np.zeros((height + pad * 2, width + pad * 2))
-        localImg = np.zeros((localImgSize, localImgSize))
 
+    pad = math.floor(localImgSize/2)
+    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]))
     padImg[pad:height+pad, pad:width+pad] = image
-    img_lst = []
+
+    localImg_mat = np.zeros((height * width, localImgSize, localImgSize, image.shape[2]))
     for h in range(pad, height+pad):
         for w in range(pad, width+pad):
-            tmpLocalImg = np.array(localImg)
-            tmpLocalImg = padImg[h-pad:h+pad, w-pad:w+pad]
-            img_lst.append(tmpLocalImg)
+            idx = h * width + w
+            localImg_mat[idx] = padImg[h-pad:h+pad, w-pad:w+pad]
 
     densMap = densMap[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    df = pd.DataFrame({"img_arr":img_lst, "label":np.ravel(densMap).astype(np.float32)})
-    return df
+    density_ arr = np.ravel(densMap).astype(np.float32)
+    return localImg_mat, density_arr
 
 
-def under_sampling(data_df, thresh):
-    # low frequently data: value of label is below thresh
-    lowFrequentlyData = data_df[data_df["label"] > thresh]
+def under_sampling(localImg_mat, density_arr, thres):
+    """
+    ret: undersampled (localImg_mat, density_arr)
+    """
 
-    highFrequentlyIndex = data_df[data_df["label"] <= thresh].index
-    randomIndices = np.random.choice(highFrequentlyIndex,  len(lowFrequentlyData), replace=False)
-    highFrequentlyData = data_df.loc[randomIndices]
+    def select(length, k):
+        """
+        ret: array of boolean which length = length and #True = k
+        """
+        seed = np.arange(length)
+        np.random.shuffle(seed)
+        return seed < k
 
-    mergedData = pd.concat([highFrequentlyData, lowFrequentlyData], ignore_index=True)
-    balancedData = pd.DataFrame(mergedData)
+    assert localImg_mat.shape[0] == len(density_arr)
 
-    return balancedData
+    msk = density_arr > thres # select all positive samples first
+    msk[~msk] = select((~msk).sum(), msk.sum()) # select same number of negative samples with positive samples
+    return localImg_mat[msk], density_arr[msk]
 
 
 # processing variables and it output tensorboard
@@ -324,11 +330,10 @@ def main(X_train, X_test, y_train, y_test):
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
-            train_df = get_local_data(X_train[i], y_train[i], 72)
-            train_df = under_sampling(train_df, thresh=0.005)
-            X_train_local = train_df["img_arr"]
-            y_train_local = train_df["label"]
+            X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72)
+            X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thres = 0.005)
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
+
             train_n_batches = int(len(X_train_local) / batchSize)
 
             for batch in range(train_n_batches):
