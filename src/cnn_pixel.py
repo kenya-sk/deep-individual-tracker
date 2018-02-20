@@ -288,15 +288,15 @@ def main(X_train, X_test, y_train, y_test):
             b_fc7 = bias_variable([1], name="bias7")
             variable_summaries(b_fc7)
         with tf.name_scope("flat7"):
-            h_fc7 = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7, name="output")
+            y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7, name="output")
             variable_summaries(h_fc7)
 
     # output
-    tf.summary.histogram("output", h_fc7)
+    tf.summary.histogram("output", y)
 
     # loss function
     with tf.name_scope("loss"):
-        loss = tf.reduce_mean(tf.square(y_ - h_fc7))
+        loss = tf.reduce_mean(tf.square(y_ - y))
         tf.summary.scalar("loss", loss)
 
     # learning algorithm (learning rate: 0.00001)
@@ -397,7 +397,7 @@ def main(X_train, X_test, y_train, y_test):
     for batch in range(est_n_batches):
         startIndex = batch*estBatchSize
         endIndex = startIndex + estBatchSize
-        estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
+        estDensMap[startIndex:endIndex] = sess.run(y, feed_dict={
                         X: np.vstack(X_local[startIndex:endIndex].values).reshape(-1, 72, 72, 3),
                         y_: y_train_local[startIndex:endIndex].values,
                         is_training: False}).reshape(estBatchSize)
