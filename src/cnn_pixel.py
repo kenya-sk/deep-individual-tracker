@@ -64,8 +64,8 @@ def load_data(inputImageDirPath, inputDensDirPath):
 def get_masked_index(maskPath):
     mask = cv2.imread(maskPath)
     index = np.where(mask > 0)
-    indexH = index[0].astype(np.uint8)
-    indexW = index[1].astype(np.uint8)
+    indexH = index[0]
+    indexW = index[1]
     assert len(indexH) == len(indexW)
     return indexH, indexW
 
@@ -444,7 +444,7 @@ def main(X_train, X_test, y_train, y_test):
     print("STSRT: estimate density map")
     for idx in range(len(indexH)):
         if idx%1000 == 0:
-            print("current index: {0} / {1}".format(idx, len(indexX)))
+            print("current index: {0} / {1}".format(idx, len(indexW)))
         h = indexH[idx]
         w = indexW[idx]
         estDensMap[h, w] = sess.run(y, feed_dict={
