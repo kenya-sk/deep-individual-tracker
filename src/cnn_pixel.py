@@ -61,26 +61,24 @@ def load_data(inputImageDirPath, inputDensDirPath):
     return X_train, X_test, y_train, y_test
 
 
-def get_local_data(image, densMap, localImgSize):
+def get_masked_index(maskPath):
+    mask = cv2.imread(maskPath)
+    index = np.where(mask > 0)
+    indexH = index[0].astype(np.uint8)
+    indexW = index[1].astype(np.uint8)
+    assert len(indexH) == len(indexW)
+    return indexH, indexW
+
+def get_local_data(image, densMap, localImgSize, indexH, indexW):
     """
     ret: localImg_mat([#locals, localImgSize, localImgSize, image.shape[2]]), density_arr([#locals])
     """
-
-    def get_masked_index(maskPath):
-        mask = cv2.imread(maskPath)
-        index = np.where(mask > 0)
-        indexH = index[0].astype(np.uint8)
-        indexW = index[1].astype(np.uint8)
-        assert len(indexH) == len(indexW)
-        return indexH, indexW
-
     assert len(image.shape) == 3
     # trim original image
     image = image[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     height = image.shape[0]
     width = image.shape[1]
 
-    indexH, indexW = get_masked_index("../image/mask.png")
     pad = math.floor(localImgSize/2)
     padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="float32")
     padImg[pad:height+pad, pad:width+pad] = image
@@ -349,7 +347,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.00001)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-6).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
     # -------------------------------------------------------------------------
 
 
@@ -368,11 +366,14 @@ def main(X_train, X_test, y_train, y_test):
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
+    # mask index
+    indexH, indexW = get_masked_index("../image/mask.png")
+
     print("Original traning data size: {}".format(len(X_train)))
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
-            X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72)
+            X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
             X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thres = 0.1)
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
@@ -406,7 +407,7 @@ def main(X_train, X_test, y_train, y_test):
     print("TEST")
     test_loss = 0.0
     for i in range(len(X_test)):
-        X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72)
+        X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72, indexH, indexW)
         X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thres = 0.005)
         X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
         test_n_batches = int(len(X_test_local) / batchSize)
@@ -435,10 +436,26 @@ def main(X_train, X_test, y_train, y_test):
     label = label[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     height = img.shape[0]
     width = img.shape[1]
-    X_local, y_local = get_local_data(img, label, 72)
-    estDensMap = np.zeros((height*width), dtype="float32")
-    est_n_batches = int(len(X_local) / estBatchSize)
+    X_local, y_local = get_local_data(img, label, 72, indexH, indexW)
+    estDensMap = np.zeros((height, width), dtype="float32")
+    #est_n_batches = int(len(X_local) / estBatchSize)
 
+    for idx in range(len(indexH)):
+        h = indexH[idx]
+        w = indexW[idx]
+        estDensMap[h, w] = sees.run(y, feed_dict={
+            X: X_local[idx].reshape(-1, 72, 72, 3),
+            is_training: False})
+
+    np.save("./estimation/estimation.npy", estDensMap)
+    print("DONE: estimate density map")
+
+    # calculate estimation loss
+    diffSquare = np.square(label - estDensMap, dtype="float32")
+    estLoss = np.mean(diffSquare)
+    print("estimation loss: {}".format(estLoss))
+
+    """
     for batch in range(est_n_batches):
         startIndex = batch*estBatchSize
         endIndex = startIndex + estBatchSize
@@ -455,6 +472,7 @@ def main(X_train, X_test, y_train, y_test):
     diffSquare = np.square(label - estDensMap, dtype="float32")
     estLoss = np.mean(diffSquare)
     print("estimation loss: {}".format(estLoss))
+    """
     # --------------------------------------------------------------------------
 
 
