@@ -71,7 +71,7 @@ def get_local_data(image, densMap, localImgSize):
         index = np.where(mask > 0)
         indexH = index[0]
         indexW = index[1]
-        assert len(indexH) == len(index(W))
+        assert len(indexH) == len(index(indexW))
         return indexH, indexW
 
     assert len(image.shape) == 3
