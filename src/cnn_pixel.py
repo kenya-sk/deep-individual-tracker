@@ -66,8 +66,32 @@ def get_local_data(image, densMap, localImgSize):
     ret: localImg_mat([#locals, localImgSize, localImgSize, image.shape[2]]), density_arr([#locals])
     """
 
+    def get_masked_index(maskPath):
+        mask = cv2.imread(maskPath)
+        index = np.where(tf_mask > 0)
+        indexH = index[0]
+        indexW = index[1]
+        assert len(indexH) == len(index(W))
+        return indexH, indexW
+
     assert len(image.shape) == 3
 
+    indexH, indexW = get_masked_index("../image/mask.png")
+    pad = math.floor(localImgSize/2)
+    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="float32")
+    padImg[pad:height+pad, pad:width+pad] = image
+
+    localImg_mat = np.zeros((len(indexW), localImgSize, localImgSize, image.shape[2]), dtype="float32")
+    density_arr = np.zeros((len(indexW), 1), dtype="float32")
+    idx = 0
+    for h in indexH:
+        for w in indexW:
+            localImg_mat[idx] = padImg[h-pad:h+pad,w-pad:w+pad]
+            density_arr[idx] = densMap[h, w]
+            idx += 1
+    return localImg_mat, density_arr
+
+    """
     # trim original image
     image = image[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     height = image.shape[0]
@@ -86,6 +110,7 @@ def get_local_data(image, densMap, localImgSize):
     densMap = densMap[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     density_arr = np.ravel(densMap).astype(np.float32)
     return localImg_mat, density_arr
+    """
 
 
 def under_sampling(localImg_mat, density_arr, thres):
