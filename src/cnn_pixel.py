@@ -446,7 +446,7 @@ def main(X_train, X_test, y_train, y_test):
     print("STSRT: estimate density map")
     for idx in range(len(indexH)):
         if idx%1000 == 0:
-            print("current index: {}".format(idx))
+            print("current index: {0} / {1}".format(idx, len(indexX)))
         h = indexH[idx]
         w = indexW[idx]
         estDensMap[h, w] = sess.run(y, feed_dict={
