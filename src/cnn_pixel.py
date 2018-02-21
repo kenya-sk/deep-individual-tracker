@@ -317,7 +317,7 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.00001)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(1e-6).minimize(loss)
     # -------------------------------------------------------------------------
 
 
@@ -331,8 +331,8 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 3
-    batchSize = 100
+    n_epochs = 30
+    batchSize = 50
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
