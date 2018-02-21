@@ -68,13 +68,17 @@ def get_local_data(image, densMap, localImgSize):
 
     def get_masked_index(maskPath):
         mask = cv2.imread(maskPath)
-        index = np.where(tf_mask > 0)
+        index = np.where(mask > 0)
         indexH = index[0]
         indexW = index[1]
         assert len(indexH) == len(index(W))
         return indexH, indexW
 
     assert len(image.shape) == 3
+    # trim original image
+    image = image[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
+    height = image.shape[0]
+    width = image.shape[1]
 
     indexH, indexW = get_masked_index("../image/mask.png")
     pad = math.floor(localImgSize/2)
@@ -462,7 +466,7 @@ def main(X_train, X_test, y_train, y_test):
     # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    inputImageDirPath = "../image/original/test2/"
-    inputDensDirPath = "../data/dens/10/"
+    inputImageDirPath = "../image/original/tmp/"
+    inputDensDirPath = "../data/dens/10/tmp/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test)
