@@ -86,7 +86,7 @@ def get_local_data(image, densMap, localImgSize):
     padImg[pad:height+pad, pad:width+pad] = image
 
     localImg_mat = np.zeros((len(indexW), localImgSize, localImgSize, image.shape[2]), dtype="float32")
-    density_arr = np.zeros((len(indexW), 1), dtype="float32")
+    density_arr = np.zeros((len(indexW)), dtype="float32")
     for idx in range(len(indexW)):
         # fix index(padImage)
         h = indexH[idx]
