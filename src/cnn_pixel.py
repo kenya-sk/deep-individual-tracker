@@ -36,10 +36,10 @@ def load_data(inputImageDirPath, inputDensDirPath):
         mask: 3channel mask image. the value is 0 or 1
         """
         mask = cv2.imread("../image/mask.png")
-        if data.shape[2] == 1:
-            maskData = mask[:,:,0]*data
-        elif data.shape[2] == 3:
+        if len(data.shape) == 3:
             maskData = data*mask
+        else:
+            maskData = mask[:,:,0]*data
         return maskData
 
     X = []
