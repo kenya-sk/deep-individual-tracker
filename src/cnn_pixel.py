@@ -69,8 +69,8 @@ def get_local_data(image, densMap, localImgSize):
     def get_masked_index(maskPath):
         mask = cv2.imread(maskPath)
         index = np.where(mask > 0)
-        indexH = index[0].astype(np.uint16)
-        indexW = index[1].astype(np.uint16)
+        indexH = index[0]
+        indexW = index[1]
         assert len(indexH) == len(indexW)
         return indexH, indexW
 
@@ -90,7 +90,8 @@ def get_local_data(image, densMap, localImgSize):
     idx = 0
     for h in indexH:
         for w in indexW:
-            localImg_mat[idx] = padImg[h-pad:h+pad,w-pad:w+pad]
+            # fix index(padImage)
+            localImg_mat[idx] = padImg[h:h+2*pad,w:w+2*pad]
             density_arr[idx] = densMap[h, w]
             idx += 1
     return localImg_mat, density_arr
