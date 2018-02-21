@@ -69,9 +69,9 @@ def get_local_data(image, densMap, localImgSize):
     def get_masked_index(maskPath):
         mask = cv2.imread(maskPath)
         index = np.where(mask > 0)
-        indexH = index[0]
-        indexW = index[1]
-        assert len(indexH) == len(index(indexW))
+        indexH = index[0].astype(np.uint16)
+        indexW = index[1].astype(np.uint16)
+        assert len(indexH) == len(indexW)
         return indexH, indexW
 
     assert len(image.shape) == 3
