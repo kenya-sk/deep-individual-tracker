@@ -435,12 +435,10 @@ def main(X_train, X_test, y_train, y_test):
     estBatchSize = 100
     img = cv2.imread("../image/original/11_20880.png")
     label = np.load("../data/dens/10/11_20880.npy")
-    img = img[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    label = label[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    height = img.shape[0]
-    width = img.shape[1]
+    #img = img[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
+    #label = label[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     X_local, y_local = get_local_data(img, label, 72, indexH, indexW)
-    estDensMap = np.zeros((height, width), dtype="float32")
+    estDensMap = np.zeros((720, 1280), dtype="float32")
     #est_n_batches = int(len(X_local) / estBatchSize)
 
     print("STSRT: estimate density map")
