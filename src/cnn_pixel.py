@@ -69,8 +69,8 @@ def get_local_data(image, densMap, localImgSize):
     def get_masked_index(maskPath):
         mask = cv2.imread(maskPath)
         index = np.where(mask > 0)
-        indexH = index[0]
-        indexW = index[1]
+        indexH = index[0].astype(np.uint8)
+        indexW = index[1].astype(np.uint8)
         assert len(indexH) == len(indexW)
         return indexH, indexW
 
@@ -87,7 +87,7 @@ def get_local_data(image, densMap, localImgSize):
 
     localImg_mat = np.zeros((len(indexW), localImgSize, localImgSize, image.shape[2]), dtype="float32")
     density_arr = np.zeros((len(indexW), 1), dtype="float32")
-    for idx in range(len(indexW):
+    for idx in range(len(indexW)):
         # fix index(padImage)
         h = indexH[idx]
         w = indexW[idx]
@@ -373,7 +373,7 @@ def main(X_train, X_test, y_train, y_test):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
             X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72)
-            X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thres = 0.005)
+            X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thres = 0.1)
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
             train_n_batches = int(len(X_train_local) / batchSize)
