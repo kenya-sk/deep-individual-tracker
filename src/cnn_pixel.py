@@ -369,6 +369,7 @@ def main(X_train, X_test, y_train, y_test):
     # mask index
     indexH, indexW = get_masked_index("../image/mask.png")
 
+    print("START: learning")
     print("Original traning data size: {}".format(len(X_train)))
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
@@ -399,12 +400,13 @@ def main(X_train, X_test, y_train, y_test):
                                     y_: y_train_local[startIndex:endIndex],
                                     is_training:True})
                 train_writer.add_summary(summary, trainStep)
+    print("END: learning")
     # --------------------------------------------------------------------------
 
 
     # -------------------------------- TEST ------------------------------------
     """
-    print("TEST")
+    print("START: test")
     test_loss = 0.0
     for i in range(len(X_test)):
         X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72, indexH, indexW)
@@ -424,6 +426,7 @@ def main(X_train, X_test, y_train, y_test):
             testStep += 1
 
     print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+    print("END: test")
     """
     # --------------------------------------------------------------------------
 
@@ -440,15 +443,18 @@ def main(X_train, X_test, y_train, y_test):
     estDensMap = np.zeros((height, width), dtype="float32")
     #est_n_batches = int(len(X_local) / estBatchSize)
 
+    print("STSRT: estimate density map")
     for idx in range(len(indexH)):
+        if idx%1000 == 0:
+            print("current index: {}".format(idx))
         h = indexH[idx]
         w = indexW[idx]
-        estDensMap[h, w] = sees.run(y, feed_dict={
+        estDensMap[h, w] = sess.run(y, feed_dict={
             X: X_local[idx].reshape(-1, 72, 72, 3),
             is_training: False})
 
     np.save("./estimation/estimation.npy", estDensMap)
-    print("DONE: estimate density map")
+    print("END: estimate density map")
 
     # calculate estimation loss
     diffSquare = np.square(label - estDensMap, dtype="float32")
