@@ -87,13 +87,12 @@ def get_local_data(image, densMap, localImgSize):
 
     localImg_mat = np.zeros((len(indexW), localImgSize, localImgSize, image.shape[2]), dtype="float32")
     density_arr = np.zeros((len(indexW), 1), dtype="float32")
-    idx = 0
-    for h in indexH:
-        for w in indexW:
-            # fix index(padImage)
-            localImg_mat[idx] = padImg[h:h+2*pad,w:w+2*pad]
-            density_arr[idx] = densMap[h, w]
-            idx += 1
+    for idx in range(len(indexW):
+        # fix index(padImage)
+        h = indexH[idx]
+        w = indexW[idx]
+        localImg_mat[idx] = padImg[h:h+2*pad,w:w+2*pad]
+        density_arr[idx] = densMap[h, w]
     return localImg_mat, density_arr
 
     """
