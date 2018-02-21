@@ -33,16 +33,13 @@ def load_data(inputImageDirPath, inputDensDirPath):
     def get_masked_data(data):
         """
         data: image or density map
-        mask: the value is 0 or 1
+        mask: 3channel mask image. the value is 0 or 1
         """
-        mask1Ch = cv2.imread("../image/mask.png")
+        mask = cv2.imread("../image/mask.png")
         if data.shape[2] == 1:
-            maskData = mask1Ch*data
+            maskData = mask[:,:,0]*data
         elif data.shape[2] == 3:
-            mask3Ch = np.zeros((720, 1280, 3))
-            for i in range(3):
-                mask3Ch[:,:,i] = mask1Ch
-            maskData = data*mask3Ch
+            maskData = data*mask
         return maskData
 
     X = []
