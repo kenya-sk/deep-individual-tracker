@@ -30,6 +30,15 @@ def load_data(inputImageDirPath, inputDensDirPath):
         file_lst = [name for name in file_lst if repattern.match(name)]
         return file_lst
 
+    def get_masked_data(data, mask):
+        """
+        data: image or density map
+        mask: the value is 0 or 1
+        """
+        mask = cv2.imread("../image/mask.png")
+        maskData = data*mask
+        return maskData
+
     X = []
     y = []
     file_lst = get_file_path(inputImageDirPath)
@@ -39,9 +48,10 @@ def load_data(inputImageDirPath, inputDensDirPath):
             sys.stderr.write("Error: can not read image")
             sys.exit(1)
         else:
-            X.append(img)
+            X.append(get_masked_data(img))
         densPath = path.replace(".png", ".npy")
-        y.append(np.load(inputDensDirPath + densPath))
+        densMap = np.load(inputDensDirPath + densPath)
+        y.append(get_masked_data(densMap))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
