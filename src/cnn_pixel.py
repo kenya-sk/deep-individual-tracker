@@ -63,6 +63,8 @@ def load_data(inputImageDirPath, inputDensDirPath):
 
 def get_masked_index(maskPath):
     mask = cv2.imread(maskPath)
+    if mask.shape[2] == 3:
+        mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
     index = np.where(mask > 0)
     indexH = index[0]
     indexW = index[1]
@@ -448,6 +450,7 @@ def main(X_train, X_test, y_train, y_test):
                 print("current index: {0} / {1}".format(idx, len(indexW)))
             h = indexH[idx]
             w = indexW[idx]
+            print("[h={0}, w={1}]\n".format(h, w))
             output = sess.run(y, feed_dict={
                 X: X_local[idx].reshape(-1, 72, 72, 3),
                 is_training: False})
