@@ -442,14 +442,18 @@ def main(X_train, X_test, y_train, y_test):
     #est_n_batches = int(len(X_local) / estBatchSize)
 
     print("STSRT: estimate density map")
-    for idx in range(len(indexH)):
-        if idx%1000 == 0:
-            print("current index: {0} / {1}".format(idx, len(indexW)))
-        h = indexH[idx]
-        w = indexW[idx]
-        estDensMap[h, w] = sess.run(y, feed_dict={
-            X: X_local[idx].reshape(-1, 72, 72, 3),
-            is_training: False})
+    with open("./estimate.txt") as f:
+        for idx in range(len(indexH)):
+            if idx%1000 == 0:
+                print("current index: {0} / {1}".format(idx, len(indexW)))
+            h = indexH[idx]
+            w = indexW[idx]
+            output = sess.run(y, feed_dict={
+                X: X_local[idx].reshape(-1, 72, 72, 3),
+                is_training: False})
+            estDensMap[h, w] = max_output
+            f.write(output)
+            
 
     np.save("./estimation/estimation.npy", estDensMap)
     print("END: estimate density map")
