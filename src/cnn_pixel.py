@@ -451,8 +451,9 @@ def main(X_train, X_test, y_train, y_test):
             output = sess.run(y, feed_dict={
                 X: X_local[idx].reshape(-1, 72, 72, 3),
                 is_training: False})
-            estDensMap[h, w] = max_output
-            f.write(output)
+            estDensMap[h, w] = output
+            f.write(str(output) + "\n")
+    f.close()
 
 
     np.save("./estimation/estimation.npy", estDensMap)
