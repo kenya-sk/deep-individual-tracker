@@ -361,8 +361,8 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning
     startTime = time.time()
-    n_epochs = 30
-    batchSize = 50
+    n_epochs = 1
+    batchSize = 150
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
@@ -442,7 +442,7 @@ def main(X_train, X_test, y_train, y_test):
     #est_n_batches = int(len(X_local) / estBatchSize)
 
     print("STSRT: estimate density map")
-    with open("./estimate.txt") as f:
+    with open("./estimate.txt","w") as f:
         for idx in range(len(indexH)):
             if idx%1000 == 0:
                 print("current index: {0} / {1}".format(idx, len(indexW)))
@@ -453,7 +453,7 @@ def main(X_train, X_test, y_train, y_test):
                 is_training: False})
             estDensMap[h, w] = max_output
             f.write(output)
-            
+
 
     np.save("./estimation/estimation.npy", estDensMap)
     print("END: estimate density map")
