@@ -346,7 +346,7 @@ def main(X_train, X_test, y_train, y_test):
     # learning
     startTime = time.time()
     n_epochs = 1
-    batchSize = 150
+    batchSize = 200
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
 
@@ -377,6 +377,7 @@ def main(X_train, X_test, y_train, y_test):
                             y_: y_train_local[startIndex:endIndex],
                             is_training:True})
                     train_writer.add_summary(summary, trainStep)
+                    print("label mean: {}\n".format(np.mean(y_train_local[startIndex:endIndex])))
                     print("loss: {}\n".format(train_loss))
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
