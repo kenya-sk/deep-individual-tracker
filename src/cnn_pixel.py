@@ -96,7 +96,7 @@ def get_local_data(image, densMap, localImgSize, indexH, indexW):
     return localImg_mat, density_arr
 
 
-def under_sampling(localImg_mat, density_arr, thres):
+def under_sampling(localImg_mat, density_arr, thresh):
     """
     ret: undersampled (localImg_mat, density_arr)
     """
@@ -111,7 +111,7 @@ def under_sampling(localImg_mat, density_arr, thres):
 
     assert localImg_mat.shape[0] == len(density_arr)
 
-    msk = density_arr > thres # select all positive samples first
+    msk = density_arr > thresh # select all positive samples first
     msk[~msk] = select((~msk).sum(), msk.sum()) # select same number of negative samples with positive samples
     return localImg_mat[msk], density_arr[msk]
 
@@ -359,7 +359,7 @@ def main(X_train, X_test, y_train, y_test):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
         for i in range(len(X_train)):
             X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
-            X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thres = 0)
+            X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
             X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
             train_n_batches = int(len(X_train_local) / batchSize)
@@ -431,7 +431,6 @@ def main(X_train, X_test, y_train, y_test):
                 print("current index: {0} / {1}".format(i, len(X_local)))
             h = indexH[i]
             w = indexW[i]
-            print(np.max(y_local[i+1] - y_local[i]))
             output = sess.run(y, feed_dict={
                 X: X_local[i].reshape(1, 72, 72, 3),
                 is_training: False})
