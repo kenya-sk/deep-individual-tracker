@@ -436,7 +436,7 @@ def main(X_train, X_test, y_train, y_test):
                 X: X_local[i].reshape(1, 72, 72, 3),
                 is_training: False})
             estDensMap[h, w] = output
-            f.write(str(output) + "\n")
+            f.write("h={0}, w={1}, output={2}\n".format(h,w,output))
     f.close()
 
     np.save("./estimation/estimation.npy", estDensMap)
