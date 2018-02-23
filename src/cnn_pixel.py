@@ -370,6 +370,7 @@ def main(X_train, X_test, y_train, y_test):
                 endIndex = startIndex + batchSize
                 #record loss data
                 if batch%100 == 0:
+                    print("************************************************")
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
@@ -377,8 +378,9 @@ def main(X_train, X_test, y_train, y_test):
                             y_: y_train_local[startIndex:endIndex],
                             is_training:True})
                     train_writer.add_summary(summary, trainStep)
-                    print("label mean: {}\n".format(np.mean(y_train_local[startIndex:endIndex])))
-                    print("loss: {}\n".format(train_loss))
+                    print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
+                    print("loss: {}".format(train_loss))
+                    print("************************************************\n")
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
                                     X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
@@ -429,6 +431,7 @@ def main(X_train, X_test, y_train, y_test):
                 print("current index: {0} / {1}".format(i, len(X_local)))
             h = indexH[i]
             w = indexW[i]
+            print(np.max(X_local[i+1] - X_local[i]))
             output = sess.run(y, feed_dict={
                 X: X_local[i].reshape(1, 72, 72, 3),
                 is_training: False})
