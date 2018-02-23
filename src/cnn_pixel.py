@@ -431,7 +431,7 @@ def main(X_train, X_test, y_train, y_test):
                 print("current index: {0} / {1}".format(i, len(X_local)))
             h = indexH[i]
             w = indexW[i]
-            print(np.max(X_local[i+1] - X_local[i]))
+            print(np.max(y_local[i+1] - y_local[i]))
             output = sess.run(y, feed_dict={
                 X: X_local[i].reshape(1, 72, 72, 3),
                 is_training: False})
