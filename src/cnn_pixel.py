@@ -95,27 +95,6 @@ def get_local_data(image, densMap, localImgSize, indexH, indexW):
         density_arr[idx] = densMap[h, w]
     return localImg_mat, density_arr
 
-    """
-    # trim original image
-    image = image[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    height = image.shape[0]
-    width = image.shape[1]
-
-    pad = math.floor(localImgSize/2)
-    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="float32")
-    padImg[pad:height+pad, pad:width+pad] = image
-
-    localImg_mat = np.zeros((height * width, localImgSize, localImgSize, image.shape[2]), dtype="float32")
-    for h in range(pad, height+pad):
-        for w in range(pad, width+pad):
-            idx = (h - pad) * width + (w - pad)
-            localImg_mat[idx] = padImg[h-pad:h+pad, w-pad:w+pad]
-
-    densMap = densMap[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    density_arr = np.ravel(densMap).astype(np.float32)
-    return localImg_mat, density_arr
-    """
-
 
 def under_sampling(localImg_mat, density_arr, thres):
     """
@@ -156,8 +135,10 @@ def weight_variable(shape, name=None):
 
     # He initialization
     if len(shape) == 4:
+        #convolution layer
         n = shape[1] * shape[2] * shape[3]
     elif len(shape) == 2:
+        # fully conected layer
         n = shape[0]
     else:
         sys.stderr.write("Error: shape size is not correct !")
@@ -435,31 +416,24 @@ def main(X_train, X_test, y_train, y_test):
 
 
     # ------------------------ CHECK ESTIMATION MODEL -------------------------
-    estBatchSize = 100
     img = cv2.imread("../image/original/11_20880.png")
     label = np.load("../data/dens/10/11_20880.npy")
-    #img = img[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    #label = label[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     X_local, y_local = get_local_data(img, label, 72, indexH, indexW)
     estDensMap = np.zeros((720, 1280), dtype="float32")
-    #est_n_batches = int(len(X_local) / estBatchSize)
 
     print("STSRT: estimate density map")
     with open("./estimate.txt","w") as f:
-        for idx in range(len(indexH)):
-            if idx%1000 == 0:
-                print("current index: {0} / {1}".format(idx, len(indexW)))
-            h = indexH[idx]
-            w = indexW[idx]
-            #print("[h={0}, w={1}]\n".format(h, w))
+        for i in range(len(X_local)):
+            if i%1000 == 0:
+                print("current index: {0} / {1}".format(i, len(X_local)))
+            h = indexH[i]
+            w = indexW[i]
             output = sess.run(y, feed_dict={
-                X: X_local[idx].reshape(-1, 72, 72, 3),
+                X: X_local[i].reshape(1, 72, 72, 3),
                 is_training: False})
-            #print(output)
             estDensMap[h, w] = output
             f.write(str(output) + "\n")
     f.close()
-
 
     np.save("./estimation/estimation.npy", estDensMap)
     print("END: estimate density map")
@@ -468,25 +442,6 @@ def main(X_train, X_test, y_train, y_test):
     diffSquare = np.square(label - estDensMap, dtype="float32")
     estLoss = np.mean(diffSquare)
     print("estimation loss: {}".format(estLoss))
-
-    """
-    for batch in range(est_n_batches):
-        startIndex = batch*estBatchSize
-        endIndex = startIndex + estBatchSize
-        estDensMap[startIndex:endIndex] = sess.run(y, feed_dict={
-                        X: X_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                        is_training: False}).reshape(estBatchSize)
-        print("DONE: batch:{}".format(batch))
-
-    estDensMap = estDensMap.reshape(height, width)
-    np.save("./estimation/estimation.npy", estDensMap)
-    print("DONE: estimate density map")
-
-    # calculate estimation loss
-    diffSquare = np.square(label - estDensMap, dtype="float32")
-    estLoss = np.mean(diffSquare)
-    print("estimation loss: {}".format(estLoss))
-    """
     # --------------------------------------------------------------------------
 
 
