@@ -349,7 +349,8 @@ def main(X_train, X_test, y_train, y_test):
 
     # learning algorithm (learning rate: 0.00001)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
+        #train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
+        train_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
     # -------------------------------------------------------------------------
 
 
@@ -450,10 +451,11 @@ def main(X_train, X_test, y_train, y_test):
                 print("current index: {0} / {1}".format(idx, len(indexW)))
             h = indexH[idx]
             w = indexW[idx]
-            print("[h={0}, w={1}]\n".format(h, w))
+            #print("[h={0}, w={1}]\n".format(h, w))
             output = sess.run(y, feed_dict={
                 X: X_local[idx].reshape(-1, 72, 72, 3),
                 is_training: False})
+            #print(output)
             estDensMap[h, w] = output
             f.write(str(output) + "\n")
     f.close()
