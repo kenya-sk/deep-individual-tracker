@@ -324,7 +324,11 @@ def main(X_train, X_test, y_train, y_test):
     n_epochs = 3
     batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
-    saver = tf.train.Saver() # save weight
+    saver = tf.train.Saver({
+        "weight1":W_conv1, "weight2":W_conv2, "weight3":W_conv3,
+        "weight4":W_fc4, "weight5":W_fc5, "weight6":W_fc6,
+        "weight7":W_fc7, "bias7":b_fc7}) # save weight
+
 
     print("Original traning data size: {}".format(len(X_train)))
     for epoch in range(n_epochs):
