@@ -10,73 +10,6 @@ import numpy as np
 import tensorflow as tf
 from sklearn.cluster import MeanShift
 
-import cnn_pixel
-
-
-def estimate():
-    X = tf.placeholder(tf.float32, [None, 72, 72, 3])
-    y_ = tf.placeholder(tf.float32, [None])
-    is_training = tf.placeholder(tf.bool)
-
-    #model
-    #layer1
-    W_conv1 = tf.get_variable("weight1", [7,7,3,32])
-    h_conv1 = tf.nn.leaky_relu(cnn_pixel.conv2d(X, W_conv1))
-    h_pool1 = cnn_pixel.max_pool_2x2(h_conv1)
-    #layer2
-    W_conv2 = tf.get_variable("weight2", [7,7,32,32])
-    h_conv2 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool1, W_conv2))
-    h_pool2 = cnn_pixel.max_pool_2x2(h_conv2)
-    #layer3
-    W_conv3 = tf.get_variable("weight3", [5,5,32,64])
-    h_conv3 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool2, W_conv3))
-    #layer4
-    W_fc4 = tf.get_variable("weight4", [18*18*64, 1000])
-    h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
-    h_fc4 = tf.nn.leaky_relu(tf.matmul(h_conv3_flat, W_fc4))
-    #layer5
-    W_fc5 = tf.get_variable("weight5", [1000, 400])
-    h_fc5 = tf.nn.leaky_relu(tf.matmul(h_fc4, W_fc5))
-    #layer6
-    W_fc6 = tf.get_variable("weight6", [400, 324])
-    h_fc6 = tf.nn.leaky_relu(tf.matmul(h_fc5, W_fc6))
-    #layer7
-    W_fc7 = tf.get_variable("weight7", [324, 1])
-    b_fc7 = tf.get_variable("bias7", [1])
-    h_fc7 = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
-
-    batchSize = 20000
-    saver = tf.train.Saver()
-    with tf.Session() as sess:
-        saver.restore(sess, "./model_pixel/2018_2_14_13_12/model.ckpt")
-
-        img = cv2.imread("../image/original/11_20880.png")
-        img = img[:470, :]
-        height = img.shape[0]
-        width = img.shape[1]
-        img_lst = cnn_pixel.get_local_data(img, None, 72)
-        assert len(img_lst) == height*width
-        estDensMap = np.zeros((height*width), dtype="float32")
-        train_n_batches = int(len(img_lst) / batchSize)
-
-        for batch in range(train_n_batches):
-            startIndex = batch*batchSize
-            endIndex = startIndex + batchSize
-            estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
-                            X: np.array(img_lst[startIndex:endIndex]).reshape(-1, 72, 72, 3),
-                            is_training: False}).reshape(batchSize)
-            print("DONE: batch:{}".format(batch))
-
-        estDensMap = estDensMap.reshape(height, width)
-        print("DONE: estimate density map")
-
-        # calculate estimation loss
-        label = np.load("../data/dens/10/11_20880.npy")[:470, :]
-        loss = np.mean(label - estDensMap, dtype="float64")
-        print("estimation loss: {}".format(loss))
-
-    return estDensMap
-
 
 def clustering(densMap, bandwidth, thresh=0):
     # plot sample point and centroid
@@ -125,8 +58,6 @@ def plot_estimation_box(centroid_arr, boxSize=12):
 
 
 if __name__ == "__main__":
-    estDensMap = estimate()
-    np.save("./estimation/estimation.npy", estDensMap)
-    #estDensMap = np.load("./estimation/2018_2_9_17_31/estimation.npy")
-    #centroid_arr = clustering(estDensMap, 5, 0)
-    #plot_estimation_box(centroid_arr, 12)
+    estDensMap = np.load("./estimation/2018_2_9_17_31/estimation.npy")
+    centroid_arr = clustering(estDensMap, 5, 0)
+    plot_estimation_box(centroid_arr, 12)
