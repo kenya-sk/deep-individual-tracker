@@ -311,13 +311,6 @@ def main(X_train, X_test, y_train, y_test, modelPath):
     # -------------------------------------------------------------------------
 
 
-    # variable of TensorBoard
-    trainStep = 0
-    testStep = 0
-    merged = tf.summary.merge_all()
-    train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
-    test_writer = tf.summary.FileWriter(logDir + "/test")
-
     # initial processing
     startTime = time.time()
     tf.global_variables_initializer().run() # initialize all variable
@@ -360,6 +353,13 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         # --------------------------------------------------------------------------
 
     else:
+        # variable of TensorBoard
+        trainStep = 0
+        testStep = 0
+        merged = tf.summary.merge_all()
+        train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
+        test_writer = tf.summary.FileWriter(logDir + "/test")
+
         # -------------------------- LEARNING STEP --------------------------------
         n_epochs = 3
         batchSize = 100
@@ -427,10 +427,10 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         print("END: test")
         # -------------------------------------------------------------------------
 
-
     # --------------------------- END PROCESSING -------------------------------
-    train_writer.close()
-    test_writer.close()
+        train_writer.close()
+        test_writer.close()
+
     sess.close()
     # --------------------------------------------------------------------------
 
