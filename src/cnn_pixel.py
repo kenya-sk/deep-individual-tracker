@@ -318,10 +318,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
     train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
     test_writer = tf.summary.FileWriter(logDir + "/test")
 
-    # learning
+    # initial processing
     startTime = time.time()
-    n_epochs = 3
-    batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
     ckpt = tf.train.get_checkpoint_state(modelPath) # model exist: True or False
@@ -363,6 +361,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     else:
         # -------------------------- LEARNING STEP --------------------------------
+        n_epochs = 3
+        batchSize = 100
         print("START: learning")
         print("Original traning data size: {}".format(len(X_train)))
         for epoch in range(n_epochs):
@@ -388,7 +388,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                                 y_: y_train_local[startIndex:endIndex],
                                 is_training:True})
                         train_writer.add_summary(summary, trainStep)
-                        print("loss: {}\n".format(train_loss))
+                        print("loss: {}".format(train_loss))
                         print("************************************************\n")
 
                     summary, _ = sess.run([merged, train_step], feed_dict={
@@ -399,13 +399,11 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
         # end processing
         saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
-        train_writer.close()
         print("END: learning")
         # --------------------------------------------------------------------------
 
 
         # -------------------------------- TEST ------------------------------------
-        """
         print("START: test")
         test_loss = 0.0
         for i in range(len(X_test)):
@@ -426,14 +424,13 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                 testStep += 1
 
         print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
-        # end processing
-        test_writer.close()
         print("END: test")
-        """
         # -------------------------------------------------------------------------
 
 
     # --------------------------- END PROCESSING -------------------------------
+    train_writer.close()
+    test_writer.close()
     sess.close()
     # --------------------------------------------------------------------------
 
