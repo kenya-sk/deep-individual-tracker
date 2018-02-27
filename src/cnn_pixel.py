@@ -435,8 +435,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
     # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    inputImageDirPath = "../image/original/test2/"
-    inputDensDirPath = "../data/dens/10/"
-    modelPath = "./model_pixel/2017_2_27_15_55/"
+    inputImageDirPath = "../image/original/tmp/"
+    inputDensDirPath = "../data/dens/10/tmp/"
+    modelPath = "./model_pixel/2018_2_28_1_18/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test, modelPath)
