@@ -329,7 +329,7 @@ def main(X_train, X_test, y_train, y_test):
         "w4":W_fc4, "w5":W_fc5, "w6":W_fc6,
         "w7":W_fc7, "b7":b_fc7}) # save weight
 
-
+    print("START: learning")
     print("Original traning data size: {}".format(len(X_train)))
     for epoch in range(n_epochs):
         print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
@@ -346,6 +346,7 @@ def main(X_train, X_test, y_train, y_test):
                 endIndex = startIndex + batchSize
                 #record loss data
                 if batch%100 == 0:
+                    print("************************************************")
                     print("traning data: {0} / {1}".format(i, len(X_train)))
                     print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                     summary, train_loss = sess.run([merged, loss], feed_dict={
@@ -354,18 +355,24 @@ def main(X_train, X_test, y_train, y_test):
                             is_training:True})
                     train_writer.add_summary(summary, trainStep)
                     print("loss: {}\n".format(train_loss))
+                    print("************************************************\n")
 
                 summary, _ = sess.run([merged, train_step], feed_dict={
                                     X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
                                     y_: y_train_local[startIndex:endIndex],
                                     is_training:True})
                 train_writer.add_summary(summary, trainStep)
+
+    # end processing
+    saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
+    train_writer.close()
+    print("END: learning")
     # --------------------------------------------------------------------------
 
 
     # -------------------------------- TEST ------------------------------------
     """
-    print("TEST")
+    print("START: test")
     test_loss = 0.0
     for i in range(len(X_test)):
         X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72)
@@ -385,6 +392,9 @@ def main(X_train, X_test, y_train, y_test):
             testStep += 1
 
     print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+    # end processing
+    test_writer.close()
+    print("END: test")
     """
     # --------------------------------------------------------------------------
 
@@ -401,6 +411,7 @@ def main(X_train, X_test, y_train, y_test):
     estDensMap = np.zeros((height*width), dtype="float32")
     est_n_batches = int(len(X_local) / estBatchSize)
 
+    print("STSRT: estimate density map")
     for batch in range(est_n_batches):
         startIndex = batch*estBatchSize
         endIndex = startIndex + estBatchSize
@@ -411,7 +422,7 @@ def main(X_train, X_test, y_train, y_test):
 
     estDensMap = estDensMap.reshape(height, width)
     np.save("./estimation/estimation.npy", estDensMap)
-    print("DONE: estimate density map")
+    print("END: estimate density map")
 
     # calculate estimation loss
     diffSquare = np.square(label - estDensMap, dtype="float32")
@@ -421,9 +432,6 @@ def main(X_train, X_test, y_train, y_test):
 
 
     # --------------------------- END PROCESSING -------------------------------
-    saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
-    train_writer.close()
-    test_writer.close()
     sess.close()
     # --------------------------------------------------------------------------
 
