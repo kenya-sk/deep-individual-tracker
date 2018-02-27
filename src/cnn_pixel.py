@@ -186,20 +186,20 @@ def main(X_train, X_test, y_train, y_test):
     # first layer
     # convlution -> ReLU -> max pooling
     # input 72x72x3 -> output 36x36x32
-    with tf.name_scope("conv1"):
+    with tf.name_scope("conv1", reuse=True):
         # 7x7x3 filter
-        with tf.name_scope("weight1"):
-            W_conv1 = weight_variable([7,7,3,32], name="weight1")
+        with tf.name_scope("weight1", reuse=True):
+            W_conv1 = weight_variable([7,7,3,32])
             variable_summaries(W_conv1)
             _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
-        with tf.name_scope("batchNorm1"):
+        with tf.name_scope("batchNorm1", reuse=True):
             conv1 = conv2d(X, W_conv1)
             conv1_bn = batch_norm(conv1, [0, 1, 2], 32, is_training)
-        with tf.name_scope("leakyRelu1"):
+        with tf.name_scope("leakyRelu1", reuse=True):
             h_conv1 = tf.nn.leaky_relu(conv1_bn)
             variable_summaries(h_conv1)
 
-    with tf.name_scope("pool1"):
+    with tf.name_scope("pool1", reuse=True):
         h_pool1 = max_pool_2x2(h_conv1)
         variable_summaries(h_pool1)
 
@@ -207,94 +207,94 @@ def main(X_train, X_test, y_train, y_test):
     # second layer
     # convlution -> ReLU -> max pooling
     # input 36x36x32 -> output 18x18x32
-    with tf.name_scope("conv2"):
+    with tf.name_scope("conv2", reuse=True):
         # 7x7x32 filter
-        with tf.name_scope("weight2"):
-            W_conv2 = weight_variable([7,7,32,32], name="weight2")
+        with tf.name_scope("weight2", reuse=True):
+            W_conv2 = weight_variable([7,7,32,32])
             variable_summaries(W_conv2)
             _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
-        with tf.name_scope("batchNorm2"):
+        with tf.name_scope("batchNorm2", reuse=True):
             conv2 = conv2d(h_pool1, W_conv2)
             conv2_bn = batch_norm(conv2, [0, 1, 2], 32, is_training)
-        with tf.name_scope("leakyRelu2"):
+        with tf.name_scope("leakyRelu2", reuse=True):
             h_conv2 = tf.nn.leaky_relu(conv2_bn)
             variable_summaries(h_conv2)
 
-    with tf.name_scope("pool2"):
+    with tf.name_scope("pool2", reuse=True):
         h_pool2 = max_pool_2x2(h_conv2)
         variable_summaries(h_pool2)
 
     # third layer
     # convolution -> ReLU
     # input 18x18x32 -> output 18x18x64
-    with tf.name_scope("conv3"):
+    with tf.name_scope("conv3", reuse=True):
         # 5x5x32 filter
-        with tf.name_scope("weight3"):
-            W_conv3 = weight_variable([5,5,32,64], name="weight3")
+        with tf.name_scope("weight3", reuse=True):
+            W_conv3 = weight_variable([5,5,32,64])
             variable_summaries(W_conv3)
             _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=64)
-        with tf.name_scope("batchNorm3"):
+        with tf.name_scope("batchNorm3", reuse=True):
             conv3 = conv2d(h_pool2, W_conv3)
             conv3_bn = batch_norm(conv3, [0, 1, 2], 64, is_training)
-        with tf.name_scope("leakyRelu3"):
+        with tf.name_scope("leakyRelu3", reuse=True):
             h_conv3 = tf.nn.leaky_relu(conv3_bn)
             variable_summaries(h_conv3)
 
     # fourth layer
     # fully connected layer
     # input 18x18x64 -> output 1000
-    with tf.name_scope("fc4"):
-        with tf.name_scope("weight4"):
-            W_fc4 = weight_variable([18*18*64, 1000], name="weight4")
+    with tf.name_scope("fc4", reuse=True):
+        with tf.name_scope("weight4", reuse=True):
+            W_fc4 = weight_variable([18*18*64, 1000])
             variable_summaries(W_fc4)
-        with tf.name_scope("batchNorm4"):
+        with tf.name_scope("batchNorm4", reuse=True):
             h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
             fc4 = tf.matmul(h_conv3_flat, W_fc4)
             fc4_bn = batch_norm(fc4, [0], 1000, is_training)
-        with tf.name_scope("flat4"):
+        with tf.name_scope("flat4", reuse=True):
             h_fc4 = tf.nn.leaky_relu(fc4_bn)
             variable_summaries(h_fc4)
 
     # fifth layer
     # fully connected layer
     # input 1000 -> output 400
-    with tf.name_scope("fc5"):
-        with tf.name_scope("weight5"):
-            W_fc5 = weight_variable([1000, 400], name="weight5")
+    with tf.name_scope("fc5", reuse=True):
+        with tf.name_scope("weight5", reuse=True):
+            W_fc5 = weight_variable([1000, 400])
             variable_summaries(W_fc5)
-        with tf.name_scope("batchNorm5"):
+        with tf.name_scope("batchNorm5", reuse=True):
             fc5 = tf.matmul(h_fc4, W_fc5)
             fc5_bn = batch_norm(fc5, [0], 400, is_training)
-        with tf.name_scope("flat5"):
+        with tf.name_scope("flat5", reuse=True):
             h_fc5 = tf.nn.leaky_relu(fc5_bn)
             variable_summaries(h_fc5)
 
     # sixth layer
     # fully connected layer
     # input 400 -> output 324
-    with tf.name_scope("fc6"):
-        with tf.name_scope("weight6"):
-            W_fc6 = weight_variable([400, 324], name="weight6")
+    with tf.name_scope("fc6", reuse=True):
+        with tf.name_scope("weight6", reuse=True):
+            W_fc6 = weight_variable([400, 324])
             variable_summaries(W_fc6)
-        with tf.name_scope("batchNorm6"):
+        with tf.name_scope("batchNorm6", reuse=True):
             fc6 = tf.matmul(h_fc5, W_fc6)
             fc6_bn = batch_norm(fc6, [0], 324, is_training)
-        with tf.name_scope("flat6"):
+        with tf.name_scope("flat6", reuse=True):
             h_fc6 = tf.nn.leaky_relu(fc6_bn)
             variable_summaries(h_fc6)
 
     # seven layer
     # fully connected layer
     # input 324 -> output 1
-    with tf.name_scope("fc7"):
-        with tf.name_scope("weight7"):
-            W_fc7 = weight_variable([324, 1], name="weight7")
+    with tf.name_scope("fc7", reuse=True):
+        with tf.name_scope("weight7", reuse=True):
+            W_fc7 = weight_variable([324, 1])
             variable_summaries(W_fc7)
-        with tf.name_scope("bias7"):
-            b_fc7 = bias_variable([1], name="bias7")
+        with tf.name_scope("bias7", reuse=True):
+            b_fc7 = bias_variable([1])
             variable_summaries(b_fc7)
-        with tf.name_scope("flat7"):
-            y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7, name="output")
+        with tf.name_scope("flat7", reuse=True):
+            y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
             variable_summaries(y)
 
     # output
@@ -325,9 +325,9 @@ def main(X_train, X_test, y_train, y_test):
     batchSize = 100
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver({
-        "weight1":W_conv1, "weight2":W_conv2, "weight3":W_conv3,
-        "weight4":W_fc4, "weight5":W_fc5, "weight6":W_fc6,
-        "weight7":W_fc7, "bias7":b_fc7}) # save weight
+        "w1":W_conv1, "w2":W_conv2, "w3":W_conv3,
+        "w4":W_fc4, "w5":W_fc5, "w6":W_fc6,
+        "w7":W_fc7, "b7":b_fc7}) # save weight
 
 
     print("Original traning data size: {}".format(len(X_train)))
