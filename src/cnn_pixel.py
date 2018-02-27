@@ -212,7 +212,7 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("conv1"):
         # 7x7x3 filter
         with tf.name_scope("weight1"):
-            W_conv1 = weight_variable([7,7,3,32], name="weight1")
+            W_conv1 = weight_variable([7,7,3,32])
             variable_summaries(W_conv1)
             _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
         with tf.name_scope("batchNorm1"):
@@ -233,7 +233,7 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("conv2"):
         # 7x7x32 filter
         with tf.name_scope("weight2"):
-            W_conv2 = weight_variable([7,7,32,32], name="weight2")
+            W_conv2 = weight_variable([7,7,32,32])
             variable_summaries(W_conv2)
             _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
         with tf.name_scope("batchNorm2"):
@@ -253,7 +253,7 @@ def main(X_train, X_test, y_train, y_test):
     with tf.name_scope("conv3"):
         # 5x5x32 filter
         with tf.name_scope("weight3"):
-            W_conv3 = weight_variable([5,5,32,64], name="weight3")
+            W_conv3 = weight_variable([5,5,32,64])
             variable_summaries(W_conv3)
             _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=64)
         with tf.name_scope("batchNorm3"):
@@ -268,7 +268,7 @@ def main(X_train, X_test, y_train, y_test):
     # input 18x18x64 -> output 1000
     with tf.name_scope("fc4"):
         with tf.name_scope("weight4"):
-            W_fc4 = weight_variable([18*18*64, 1000], name="weight4")
+            W_fc4 = weight_variable([18*18*64, 1000])
             variable_summaries(W_fc4)
         with tf.name_scope("batchNorm4"):
             h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
@@ -283,7 +283,7 @@ def main(X_train, X_test, y_train, y_test):
     # input 1000 -> output 400
     with tf.name_scope("fc5"):
         with tf.name_scope("weight5"):
-            W_fc5 = weight_variable([1000, 400], name="weight5")
+            W_fc5 = weight_variable([1000, 400])
             variable_summaries(W_fc5)
         with tf.name_scope("batchNorm5"):
             fc5 = tf.matmul(h_fc4, W_fc5)
@@ -297,7 +297,7 @@ def main(X_train, X_test, y_train, y_test):
     # input 400 -> output 324
     with tf.name_scope("fc6"):
         with tf.name_scope("weight6"):
-            W_fc6 = weight_variable([400, 324], name="weight6")
+            W_fc6 = weight_variable([400, 324])
             variable_summaries(W_fc6)
         with tf.name_scope("batchNorm6"):
             fc6 = tf.matmul(h_fc5, W_fc6)
@@ -311,13 +311,13 @@ def main(X_train, X_test, y_train, y_test):
     # input 324 -> output 1
     with tf.name_scope("fc7"):
         with tf.name_scope("weight7"):
-            W_fc7 = weight_variable([324, 1], name="weight7")
+            W_fc7 = weight_variable([324, 1])
             variable_summaries(W_fc7)
         with tf.name_scope("bias7"):
-            b_fc7 = bias_variable([1], name="bias7")
+            b_fc7 = bias_variable([1])
             variable_summaries(b_fc7)
         with tf.name_scope("flat7"):
-            y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7, name="output")
+            y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
             variable_summaries(y)
 
     # output
@@ -349,9 +349,9 @@ def main(X_train, X_test, y_train, y_test):
     batchSize = 200
     tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver({
-        "weight1":W_conv1, "weight2":W_conv2, "weight3":W_conv3,
-        "weight4":W_fc4, "weight5":W_fc5, "weight6":W_fc6,
-        "weight7":W_fc7, "bias7":b_fc7}) # save weight
+        "w1":W_conv1, "w2":W_conv2, "w3":W_conv3,
+        "w4":W_fc4, "w5":W_fc5, "w6":W_fc6,
+        "w7":W_fc7, "b7":b_fc7}) # save weight
 
     # mask index
     indexH, indexW = get_masked_index("../image/mask.png")
