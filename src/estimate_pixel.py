@@ -20,29 +20,29 @@ def estimate():
 
     #model
     #layer1
-    W_conv1 = tf.get_variable("conv1/weight1/weight1", [7,7,3,32])
+    W_conv1 = tf.get_variable("weight1", [7,7,3,32])
     h_conv1 = tf.nn.leaky_relu(cnn_pixel.conv2d(X, W_conv1))
     h_pool1 = cnn_pixel.max_pool_2x2(h_conv1)
     #layer2
-    W_conv2 = tf.get_variable("conv2/weight2/weight2", [7,7,32,32])
+    W_conv2 = tf.get_variable("weight2", [7,7,32,32])
     h_conv2 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool1, W_conv2))
     h_pool2 = cnn_pixel.max_pool_2x2(h_conv2)
     #layer3
-    W_conv3 = tf.get_variable("conv3/weight3/weight3", [5,5,32,64])
+    W_conv3 = tf.get_variable("weight3", [5,5,32,64])
     h_conv3 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool2, W_conv3))
     #layer4
-    W_fc4 = tf.get_variable("fc4/weight4/weight4", [18*18*64, 1000])
+    W_fc4 = tf.get_variable("weight4", [18*18*64, 1000])
     h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
     h_fc4 = tf.nn.leaky_relu(tf.matmul(h_conv3_flat, W_fc4))
     #layer5
-    W_fc5 = tf.get_variable("fc5/weight5/weight5", [1000, 400])
+    W_fc5 = tf.get_variable("weight5", [1000, 400])
     h_fc5 = tf.nn.leaky_relu(tf.matmul(h_fc4, W_fc5))
     #layer6
-    W_fc6 = tf.get_variable("fc6/weight6/weight6", [400, 324])
+    W_fc6 = tf.get_variable("weight6", [400, 324])
     h_fc6 = tf.nn.leaky_relu(tf.matmul(h_fc5, W_fc6))
     #layer7
-    W_fc7 = tf.get_variable("fc7/weight7/weight7", [324, 1])
-    b_fc7 = tf.get_variable("fc7/bias7/bias7", [1])
+    W_fc7 = tf.get_variable("weight7", [324, 1])
+    b_fc7 = tf.get_variable("bias7", [1])
     h_fc7 = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
 
     batchSize = 20000
