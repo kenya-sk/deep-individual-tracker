@@ -31,8 +31,8 @@ def estimate():
     W_conv3 = tf.get_variable("conv3/weight3/weight3", [5,5,32,64])
     h_conv3 = tf.nn.leaky_relu(cnn_pixel.conv2d(h_pool2, W_conv3))
     #layer4
-    W_fc4 = tf.get_variable("fc4/weight4/weight4", [9*9*64, 1000])
-    h_conv3_flat = tf.reshape(h_conv3, [-1, 9*9*64])
+    W_fc4 = tf.get_variable("fc4/weight4/weight4", [18*18*64, 1000])
+    h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
     h_fc4 = tf.nn.leaky_relu(tf.matmul(h_conv3_flat, W_fc4))
     #layer5
     W_fc5 = tf.get_variable("fc5/weight5/weight5", [1000, 400])
@@ -63,7 +63,7 @@ def estimate():
             startIndex = batch*batchSize
             endIndex = startIndex + batchSize
             estDensMap[startIndex:endIndex] = sess.run(h_fc7, feed_dict={
-                            X: np.array(img_lst[startIndex:endIndex]).reshape(-1, 36, 36, 3),
+                            X: np.array(img_lst[startIndex:endIndex]).reshape(-1, 72, 72, 3),
                             is_training: False}).reshape(batchSize)
             print("DONE: batch:{}".format(batch))
 
