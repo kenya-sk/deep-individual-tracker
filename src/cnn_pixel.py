@@ -180,7 +180,7 @@ def batch_norm(X, axes, shape, is_training):
     return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
 
 
-def main(X_train, X_test, y_train, y_test):
+def main(X_train, X_test, y_train, y_test, modelPath):
     date = datetime.now()
     dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
     logDir = "./logs_pixel/" + dateDir
@@ -335,131 +335,129 @@ def main(X_train, X_test, y_train, y_test):
     # -------------------------------------------------------------------------
 
 
-    # -------------------------- LEARNING STEP --------------------------------
-    # variable of TensorBoard
-    trainStep = 0
-    testStep = 0
-    merged = tf.summary.merge_all()
-    train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
-    test_writer = tf.summary.FileWriter(logDir + "/test")
-
-    # learning
-    startTime = time.time()
-    n_epochs = 1
-    batchSize = 200
-    tf.global_variables_initializer().run() # initialize all variable
-    saver = tf.train.Saver({
-        "w1":W_conv1, "w2":W_conv2, "w3":W_conv3,
-        "w4":W_fc4, "w5":W_fc5, "w6":W_fc6,
-        "w7":W_fc7, "b7":b_fc7}) # save weight
 
     # mask index
     indexH, indexW = get_masked_index("../image/mask.png")
 
-    print("START: learning")
-    print("Original traning data size: {}".format(len(X_train)))
-    for epoch in range(n_epochs):
-        print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
-        for i in range(len(X_train)):
-            X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
-            X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
-            X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
+    # learning
+    startTime = time.time()
+    tf.global_variables_initializer().run() # initialize all variable
+    saver = tf.train.Saver() # save weight
+    ckpt = tf.train.get_checkpoint_state(modelPath) # model exist: True or False
 
-            train_n_batches = int(len(X_train_local) / batchSize)
+    if ckpt:
+        # ------------------------ CHECK ESTIMATION MODEL -------------------------
+        img = cv2.imread("../image/original/11_20880.png")
+        label = np.load("../data/dens/10/11_20880.npy")
+        X_local, y_local = get_local_data(img, label, 72, indexH, indexW)
+        estDensMap = np.zeros((720, 1280), dtype="float32")
 
-            for batch in range(train_n_batches):
-                trainStep += 1
+        print("STSRT: estimate density map")
+        with open("./estimate.txt","w") as f:
+            for i in range(len(X_local)):
+                if i%1000 == 0:
+                    print("current index: {0} / {1}".format(i, len(X_local)))
+                h = indexH[i]
+                w = indexW[i]
+                output = sess.run(y, feed_dict={
+                    X: X_local[i].reshape(1, 72, 72, 3),
+                    is_training: False})
+                estDensMap[h, w] = output
+                f.write("h={0}, w={1}, output={2}\n".format(h,w,output))
+        f.close()
+
+        np.save("./estimation/estimation.npy", estDensMap)
+        print("END: estimate density map")
+
+        # calculate estimation loss
+        diffSquare = np.square(label - estDensMap, dtype="float32")
+        estLoss = np.mean(diffSquare)
+        print("estimation loss: {}".format(estLoss))
+        # --------------------------------------------------------------------------
+    else:
+        # -------------------------- LEARNING STEP --------------------------------
+        # variable of TensorBoard
+        trainStep = 0
+        testStep = 0
+        merged = tf.summary.merge_all()
+        train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
+        test_writer = tf.summary.FileWriter(logDir + "/test")
+
+        n_epochs = 1
+        batchSize = 200
+        print("START: learning")
+        print("Original traning data size: {}".format(len(X_train)))
+        for epoch in range(n_epochs):
+            print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
+            for i in range(len(X_train)):
+                X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
+                X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
+                X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
+
+                train_n_batches = int(len(X_train_local) / batchSize)
+
+                for batch in range(train_n_batches):
+                    trainStep += 1
+                    startIndex = batch * batchSize
+                    endIndex = startIndex + batchSize
+                    #record loss data
+                    if batch%100 == 0:
+                        print("************************************************")
+                        print("traning data: {0} / {1}".format(i, len(X_train)))
+                        print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
+                        summary, train_loss = sess.run([merged, loss], feed_dict={
+                                X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                y_: y_train_local[startIndex:endIndex],
+                                is_training:True})
+                        train_writer.add_summary(summary, trainStep)
+                        print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
+                        print("loss: {}".format(train_loss))
+                        print("************************************************\n")
+
+                    summary, _ = sess.run([merged, train_step], feed_dict={
+                                        X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                        y_: y_train_local[startIndex:endIndex],
+                                        is_training:True})
+                    train_writer.add_summary(summary, trainStep)
+        saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
+        print("END: learning")
+        # --------------------------------------------------------------------------
+
+
+        # -------------------------------- TEST ------------------------------------
+        print("START: test")
+        test_loss = 0.0
+        for i in range(len(X_test)):
+            X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72, indexH, indexW)
+            X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thres = 0.005)
+            X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
+            test_n_batches = int(len(X_test_local) / batchSize)
+            for batch in range(test_n_batches):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
-                #record loss data
-                if batch%100 == 0:
-                    print("************************************************")
-                    print("traning data: {0} / {1}".format(i, len(X_train)))
-                    print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
-                    summary, train_loss = sess.run([merged, loss], feed_dict={
-                            X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                            y_: y_train_local[startIndex:endIndex],
-                            is_training:True})
-                    train_writer.add_summary(summary, trainStep)
-                    print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
-                    print("loss: {}".format(train_loss))
-                    print("************************************************\n")
 
-                summary, _ = sess.run([merged, train_step], feed_dict={
-                                    X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                    y_: y_train_local[startIndex:endIndex],
-                                    is_training:True})
-                train_writer.add_summary(summary, trainStep)
-    print("END: learning")
-    # --------------------------------------------------------------------------
+                summary, tmp_loss = sess.run([merged, loss], feed_dict={
+                                    X: X_test_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                    y_: y_test_local[startIndex:endIndex],
+                                    is_training:False})
+                test_writer.add_summary(summary, testStep)
+                test_loss += tmp_loss
+                testStep += 1
 
-
-    # -------------------------------- TEST ------------------------------------
-    """
-    print("START: test")
-    test_loss = 0.0
-    for i in range(len(X_test)):
-        X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72, indexH, indexW)
-        X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thres = 0.005)
-        X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
-        test_n_batches = int(len(X_test_local) / batchSize)
-        for batch in range(test_n_batches):
-            startIndex = batch * batchSize
-            endIndex = startIndex + batchSize
-
-            summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                X: X_test_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                y_: y_test_local[startIndex:endIndex],
-                                is_training:False})
-            test_writer.add_summary(summary, testStep)
-            test_loss += tmp_loss
-            testStep += 1
-
-    print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
-    print("END: test")
-    """
-    # --------------------------------------------------------------------------
-
-
-    # ------------------------ CHECK ESTIMATION MODEL -------------------------
-    img = cv2.imread("../image/original/11_20880.png")
-    label = np.load("../data/dens/10/11_20880.npy")
-    X_local, y_local = get_local_data(img, label, 72, indexH, indexW)
-    estDensMap = np.zeros((720, 1280), dtype="float32")
-
-    print("STSRT: estimate density map")
-    with open("./estimate.txt","w") as f:
-        for i in range(len(X_local)):
-            if i%1000 == 0:
-                print("current index: {0} / {1}".format(i, len(X_local)))
-            h = indexH[i]
-            w = indexW[i]
-            output = sess.run(y, feed_dict={
-                X: X_local[i].reshape(1, 72, 72, 3),
-                is_training: False})
-            estDensMap[h, w] = output
-            f.write("h={0}, w={1}, output={2}\n".format(h,w,output))
-    f.close()
-
-    np.save("./estimation/estimation.npy", estDensMap)
-    print("END: estimate density map")
-
-    # calculate estimation loss
-    diffSquare = np.square(label - estDensMap, dtype="float32")
-    estLoss = np.mean(diffSquare)
-    print("estimation loss: {}".format(estLoss))
-    # --------------------------------------------------------------------------
-
+        print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+        print("END: test")
+        # --------------------------------------------------------------------------
+        # end processing
+        train_writer.close()
+        test_writer.close()
 
     # --------------------------- END PROCESSING -------------------------------
-    saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
-    train_writer.close()
-    test_writer.close()
     sess.close()
     # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
     inputImageDirPath = "../image/original/tmp/"
     inputDensDirPath = "../data/dens/10/tmp/"
+    modelPath = "./m"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
-    main(X_train, X_test, y_train, y_test)
+    main(X_train, X_test, y_train, y_test, modelPath)
