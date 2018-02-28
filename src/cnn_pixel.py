@@ -334,7 +334,12 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         train_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
     # -------------------------------------------------------------------------
 
-
+    # variable of TensorBoard
+    trainStep = 0
+    testStep = 0
+    merged = tf.summary.merge_all()
+    train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
+    test_writer = tf.summary.FileWriter(logDir + "/test")
 
     # mask index
     indexH, indexW = get_masked_index("../image/mask.png")
@@ -374,15 +379,9 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         estLoss = np.mean(diffSquare)
         print("estimation loss: {}".format(estLoss))
         # --------------------------------------------------------------------------
+
     else:
         # -------------------------- LEARNING STEP --------------------------------
-        # variable of TensorBoard
-        trainStep = 0
-        testStep = 0
-        merged = tf.summary.merge_all()
-        train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
-        test_writer = tf.summary.FileWriter(logDir + "/test")
-
         n_epochs = 1
         batchSize = 200
         print("START: learning")
@@ -447,12 +446,10 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
         print("END: test")
         # --------------------------------------------------------------------------
-        # end processing
-        train_writer.close()
-        test_writer.close()
-        # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
+    train_writer.close()
+    test_writer.close()
     sess.close()
     # --------------------------------------------------------------------------
 
