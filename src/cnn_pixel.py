@@ -450,6 +450,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         # end processing
         train_writer.close()
         test_writer.close()
+        # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
     sess.close()
