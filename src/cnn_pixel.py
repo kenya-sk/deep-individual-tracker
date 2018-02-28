@@ -307,7 +307,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     # learning algorithm (learning rate: 0.00001)
     with tf.name_scope("train"):
-        train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
+        #train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
+        train_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
     # -------------------------------------------------------------------------
 
 
@@ -322,7 +323,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         lastModel = ckpt.model_checkpoint_path
         print("Load: {}".format(lastModel))
         saver.restore(sess, lastModel)
-        estBatchSize = 1000
+        estBatchSize = 500
         img = cv2.imread("../image/original/11_20880.png")
         label = np.load("../data/dens/10/11_20880.npy")
         img = img[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
@@ -361,8 +362,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         test_writer = tf.summary.FileWriter(logDir + "/test")
 
         # -------------------------- LEARNING STEP --------------------------------
-        n_epochs = 3
-        batchSize = 100
+        n_epochs = 10
+        batchSize = 50
         print("START: learning")
         print("Original traning data size: {}".format(len(X_train)))
         for epoch in range(n_epochs):
@@ -437,6 +438,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 if __name__ == "__main__":
     inputImageDirPath = "../image/original/tmp/"
     inputDensDirPath = "../data/dens/10/tmp/"
-    modelPath = "./model_pixel/2018_2_28_1_18/"
+    #modelPath = "./model_pixel/2018_2_28_1_18/"
+    modelPath = "./m"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test, modelPath)
