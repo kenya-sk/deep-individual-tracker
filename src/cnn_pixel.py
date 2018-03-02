@@ -75,7 +75,7 @@ def get_local_data(image, densMap, localImgSize):
     return localImg_mat, density_arr
 
 
-def under_sampling(localImg_mat, density_arr, thres):
+def under_sampling(localImg_mat, density_arr, thresh):
     """
     ret: undersampled (localImg_mat, density_arr)
     """
@@ -90,7 +90,7 @@ def under_sampling(localImg_mat, density_arr, thres):
 
     assert localImg_mat.shape[0] == len(density_arr)
 
-    msk = density_arr > thres # select all positive samples first
+    msk = density_arr > thresh # select all positive samples first
     msk[~msk] = select((~msk).sum(), msk.sum()) # select same number of negative samples with positive samples
     return localImg_mat[msk], density_arr[msk]
 
@@ -370,7 +370,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
             print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
             for i in range(len(X_train)):
                 X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72)
-                X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thres = 0.005)
+                X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.005)
                 X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
                 train_n_batches = int(len(X_train_local) / batchSize)
@@ -409,7 +409,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         test_loss = 0.0
         for i in range(len(X_test)):
             X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72)
-            X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thres = 0.005)
+            X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thresh = 0.005)
             X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
             test_n_batches = int(len(X_test_local) / batchSize)
             for batch in range(test_n_batches):
