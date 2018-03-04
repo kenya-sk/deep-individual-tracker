@@ -428,7 +428,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         test_loss = 0.0
         for i in range(len(X_test)):
             X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72, indexH, indexW)
-            X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thres = 0.005)
+            X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thresh = 0)
             X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
             test_n_batches = int(len(X_test_local) / batchSize)
             for batch in range(test_n_batches):
