@@ -352,6 +352,10 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     if ckpt:
         # ------------------------ CHECK ESTIMATION MODEL -------------------------
+        lastModel = ckpt.model_checkpoint_path
+        print("LODE: {}".format(lastModel))
+        saver.restore(sess, lastModel)
+
         img = cv2.imread("../image/original/11_20880.png")
         label = np.load("../data/dens/10/11_20880.npy")
         X_local, y_local = get_local_data(img, label, 72, indexH, indexW)
@@ -456,6 +460,6 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 if __name__ == "__main__":
     inputImageDirPath = "../image/original/tmp/"
     inputDensDirPath = "../data/dens/10/tmp/"
-    modelPath = "./m"
+    modelPath = "./model_pixel/2018_3_4_20_29/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test, modelPath)
