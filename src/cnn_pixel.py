@@ -368,11 +368,11 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                     print("current index: {0} / {1}".format(i, len(X_local)))
                 h = indexH[i]
                 w = indexW[i]
-                output = sess.run(y, feed_dict={
+                estDensMap[h, w] = sess.run(y, feed_dict={
                     X: X_local[i].reshape(1, 72, 72, 3),
                     is_training: False})
-                estDensMap[h, w] = output
-                f.write("h={0}, w={1}, output={2}\n".format(h,w,output))
+                print(estDensMap[h, w])
+                f.write("h={0}, w={1}, output={2}\n".format(h,w,estDensMap[h, w]))
         f.close()
 
         np.save("./estimation/estimation.npy", estDensMap)
