@@ -364,15 +364,17 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         print("STSRT: estimate density map")
         with open("./estimate.txt","w") as f:
             for i in range(len(X_local)):
-                if i%1000 == 0:
-                    print("current index: {0} / {1}".format(i, len(X_local)))
                 h = indexH[i]
                 w = indexW[i]
                 estDensMap[h, w] = sess.run(y, feed_dict={
                     X: X_local[i].reshape(1, 72, 72, 3),
+                    y_: y_local[i].reshape(1),
                     is_training: False})
-                print(estDensMap[h, w])
                 f.write("h={0}, w={1}, output={2}\n".format(h,w,estDensMap[h, w]))
+
+                if i%1000 == 0:
+                    print("current index: {0} / {1}".format(i, len(X_local)))
+                    print("h={0}, w={1}, estimation:{2}".format(h,w,estDensMap[h, w]))
         f.close()
 
         np.save("./estimation/estimation.npy", estDensMap)
