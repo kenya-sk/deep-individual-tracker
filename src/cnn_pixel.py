@@ -39,7 +39,7 @@ def load_data(inputImageDirPath, inputDensDirPath):
         if mask is None:
             sys.stderr.write("Error: can not read mask image")
             sys.exit(1)
-            
+
         if len(data.shape) == 3:
             maskData = data*mask
         else:
@@ -86,10 +86,10 @@ def get_local_data(image, densMap, localImgSize, indexH, indexW):
     width = image.shape[1]
 
     pad = math.floor(localImgSize/2)
-    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="float32")
+    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="uint8")
     padImg[pad:height+pad, pad:width+pad] = image
 
-    localImg_mat = np.zeros((len(indexW), localImgSize, localImgSize, image.shape[2]), dtype="float32")
+    localImg_mat = np.zeros((len(indexW), localImgSize, localImgSize, image.shape[2]), dtype="uint8")
     density_arr = np.zeros((len(indexW)), dtype="float32")
     for idx in range(len(indexW)):
         # fix index(padImage)
