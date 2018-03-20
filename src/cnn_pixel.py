@@ -61,10 +61,10 @@ def get_local_data(image, densMap, localImgSize):
     width = image.shape[1]
 
     pad = math.floor(localImgSize/2)
-    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="float32")
+    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="uint8")
     padImg[pad:height+pad, pad:width+pad] = image
 
-    localImg_mat = np.zeros((height * width, localImgSize, localImgSize, image.shape[2]), dtype="float32")
+    localImg_mat = np.zeros((height * width, localImgSize, localImgSize, image.shape[2]), dtype="uint8")
     for h in range(pad, height+pad):
         for w in range(pad, width+pad):
             idx = (h - pad) * width + (w - pad)
