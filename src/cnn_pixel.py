@@ -61,10 +61,10 @@ def get_local_data(image, densMap, localImgSize):
     width = image.shape[1]
 
     pad = math.floor(localImgSize/2)
-    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="float32")
+    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="float64")
     padImg[pad:height+pad, pad:width+pad] = image
 
-    localImg_mat = np.zeros((height * width, localImgSize, localImgSize, image.shape[2]), dtype="float32")
+    localImg_mat = np.zeros((height * width, localImgSize, localImgSize, image.shape[2]), dtype="float64")
     for h in range(pad, height+pad):
         for w in range(pad, width+pad):
             idx = (h - pad) * width + (w - pad)
@@ -121,7 +121,7 @@ def weight_variable(shape, name=None):
         sys.stderr.write("Error: shape size is not correct !")
         sys.exit(1)
     stddev = math.sqrt(2/n)
-    initial = tf.random_normal(shape, stddev=stddev, dtype=tf.float32)
+    initial = tf.random_normal(shape, stddev=stddev, dtype=tf.float64)
     if name is None:
         return tf.Variable(initial)
     else:
@@ -331,7 +331,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         height = img.shape[0]
         width = img.shape[1]
         X_local, y_local = get_local_data(img, label, 72)
-        estDensMap = np.zeros((height*width), dtype="float32")
+        estDensMap = np.zeros((height*width), dtype="float64")
         est_n_batches = int(len(X_local) / estBatchSize)
 
         print("STSRT: estimate density map")
@@ -348,7 +348,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         print("END: estimate density map")
 
         # calculate estimation loss
-        diffSquare = np.square(label - estDensMap, dtype="float32")
+        diffSquare = np.square(label - estDensMap, dtype="float64")
         estLoss = np.mean(diffSquare)
         print("estimation loss: {}".format(estLoss))
         # --------------------------------------------------------------------------
