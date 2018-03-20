@@ -71,7 +71,7 @@ def get_local_data(image, densMap, localImgSize):
             localImg_mat[idx] = padImg[h-pad:h+pad, w-pad:w+pad]
 
     densMap = densMap[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    density_arr = np.ravel(densMap).astype(np.float32)
+    density_arr = np.ravel(densMap).astype(np.float64)
     return localImg_mat, density_arr
 
 
@@ -173,11 +173,11 @@ def main(X_train, X_test, y_train, y_test, modelPath):
     # input image
     with tf.name_scope("input"):
         with tf.name_scope("X"):
-            X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
+            X = tf.placeholder(tf.float64, [None, 72, 72, 3], name="input")
             _ = tf.summary.image("X(input)", X[:, :, :, :], 5)
         # answer image
         with tf.name_scope("y_"):
-            y_ = tf.placeholder(tf.float32, [None], name="label")
+            y_ = tf.placeholder(tf.float64, [None], name="label")
         # status: True(lerning) or False(test)
         with tf.name_scope("is_training"):
             is_training = tf.placeholder(tf.bool, name="is_training")
