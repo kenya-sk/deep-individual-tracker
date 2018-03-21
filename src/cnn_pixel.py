@@ -30,22 +30,6 @@ def load_data(inputImageDirPath, inputDensDirPath):
         file_lst = [name for name in file_lst if repattern.match(name)]
         return file_lst
 
-    def get_masked_data(data):
-        """
-        data: image or density map
-        mask: 3channel mask image. the value is 0 or 1
-        """
-        mask = cv2.imread("../image/mask.png")
-        if mask is None:
-            sys.stderr.write("Error: can not read mask image")
-            sys.exit(1)
-
-        if len(data.shape) == 3:
-            maskData = data*mask
-        else:
-            maskData = mask[:,:,0]*data
-        return maskData
-
     X = []
     y = []
     file_lst = get_file_path(inputImageDirPath)
@@ -65,6 +49,22 @@ def load_data(inputImageDirPath, inputDensDirPath):
     return X_train, X_test, y_train, y_test
 
 
+def get_masked_data(data):
+    """
+    data: image or density map
+    mask: 3channel mask image. the value is 0 or 1
+    """
+    mask = cv2.imread("../image/mask.png")
+    if mask is None:
+        sys.stderr.write("Error: can not read mask image")
+        sys.exit(1)
+
+    if len(data.shape) == 3:
+        maskData = data*mask
+    else:
+        maskData = mask[:,:,0]*data
+    return maskData
+
 def get_masked_index(maskPath):
     mask = cv2.imread(maskPath)
     if mask.shape[2] == 3:
@@ -74,6 +74,7 @@ def get_masked_index(maskPath):
     indexW = index[1]
     assert len(indexH) == len(indexW)
     return indexH, indexW
+
 
 def get_local_data(image, densMap, localImgSize, indexH, indexW):
     """
@@ -91,6 +92,7 @@ def get_local_data(image, densMap, localImgSize, indexH, indexW):
 
     localImg_mat = np.zeros((len(indexW), localImgSize, localImgSize, image.shape[2]), dtype="uint8")
     density_arr = np.zeros((len(indexW)), dtype="float32")
+    # indexがpadding後のものになっているか確認
     for idx in range(len(indexW)):
         # fix index(padImage)
         h = indexH[idx]
@@ -185,14 +187,6 @@ def batch_norm(X, axes, shape, is_training):
 
 
 def main(X_train, X_test, y_train, y_test, modelPath):
-    date = datetime.now()
-    dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
-    logDir = "./logs_pixel/" + dateDir
-    # delete the specified directory if it exists, recreate it
-    if tf.gfile.Exists(logDir):
-        tf.gfile.DeleteRecursively(logDir)
-    tf.gfile.MakeDirs(logDir)
-
     # start session
     sess = tf.InteractiveSession()
 
@@ -362,7 +356,9 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
         img = cv2.imread("../image/original/11_20880.png")
         label = np.load("../data/dens/10/11_20880.npy")
-        X_local, y_local = get_local_data(img, label, 72, indexH, indexW)
+        maskedImg = get_masked_data(img)
+        maskedLabel = get_masked_data(label)
+        X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
         estDensMap = np.zeros((720, 1280), dtype="float32")
 
         print("STSRT: estimate density map")
@@ -392,6 +388,15 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     else:
         # -------------------------- LEARNING STEP --------------------------------
+        # logs of tensor board directory
+        date = datetime.now()
+        dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
+        logDir = "./logs_pixel/" + dateDir
+        # delete the specified directory if it exists, recreate it
+        if tf.gfile.Exists(logDir):
+            tf.gfile.DeleteRecursively(logDir)
+        tf.gfile.MakeDirs(logDir)
+
         n_epochs = 1
         batchSize = 200
         print("START: learning")
