@@ -332,12 +332,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         train_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
     # -------------------------------------------------------------------------
 
-    # variable of TensorBoard
-    trainStep = 0
-    testStep = 0
-    merged = tf.summary.merge_all()
-    train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
-    test_writer = tf.summary.FileWriter(logDir + "/test")
+
 
     # mask index
     indexH, indexW = get_masked_index("../image/mask.png")
@@ -387,7 +382,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         # --------------------------------------------------------------------------
 
     else:
-        # -------------------------- LEARNING STEP --------------------------------
+        # -------------------------- PRE PROCESSING --------------------------------
         # logs of tensor board directory
         date = datetime.now()
         dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
@@ -397,6 +392,15 @@ def main(X_train, X_test, y_train, y_test, modelPath):
             tf.gfile.DeleteRecursively(logDir)
         tf.gfile.MakeDirs(logDir)
 
+        # variable of TensorBoard
+        trainStep = 0
+        testStep = 0
+        merged = tf.summary.merge_all()
+        train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
+        test_writer = tf.summary.FileWriter(logDir + "/test")
+        # --------------------------------------------------------------------------
+
+        # -------------------------- LEARNING STEP --------------------------------
         n_epochs = 1
         batchSize = 200
         print("START: learning")
