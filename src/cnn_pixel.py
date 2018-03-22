@@ -158,6 +158,14 @@ def batch_norm(X, axes, shape, is_training):
 
 
 def main(X_train, X_test, y_train, y_test, modelPath):
+    # directory of TensorBoard logs
+    date = datetime.now()
+    dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
+    logDir = "./logs_pixel/" + dateDir
+    # delete the specified directory if it exists, recreate it
+    if tf.gfile.Exists(logDir):
+        tf.gfile.DeleteRecursively(logDir)
+    tf.gfile.MakeDirs(logDir)
     # start session
     sess = tf.InteractiveSession()
 
@@ -347,15 +355,6 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     else:
         # -------------------------- PRE PROCESSING --------------------------------
-        # directory of TensorBoard logs
-        date = datetime.now()
-        dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
-        logDir = "./logs_pixel/" + dateDir
-        # delete the specified directory if it exists, recreate it
-        if tf.gfile.Exists(logDir):
-            tf.gfile.DeleteRecursively(logDir)
-        tf.gfile.MakeDirs(logDir)
-
         # variable of TensorBoard
         trainStep = 0
         testStep = 0
@@ -431,10 +430,12 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         print("END: test")
         # -------------------------------------------------------------------------
 
-    # --------------------------- END PROCESSING -------------------------------
+        # --------------------------- END PROCESSING -------------------------------
         train_writer.close()
         test_writer.close()
+        # --------------------------------------------------------------------------
 
+    # --------------------------- END PROCESSING -------------------------------
     sess.close()
     # --------------------------------------------------------------------------
 
