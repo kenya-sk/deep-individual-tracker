@@ -92,7 +92,6 @@ def get_local_data(image, densMap, localImgSize, indexH, indexW):
 
     localImg_mat = np.zeros((len(indexW), localImgSize, localImgSize, image.shape[2]), dtype="uint8")
     density_arr = np.zeros((len(indexW)), dtype="float32")
-    # indexがpadding後のものになっているか確認
     for idx in range(len(indexW)):
         # fix index(padImage)
         h = indexH[idx]
@@ -117,7 +116,7 @@ def under_sampling(localImg_mat, density_arr, thresh):
 
     assert localImg_mat.shape[0] == len(density_arr)
 
-    msk = density_arr > thresh # select all positive samples first
+    msk = density_arr >= thresh # select all positive samples first
     msk[~msk] = select((~msk).sum(), msk.sum()) # select same number of negative samples with positive samples
     return localImg_mat[msk], density_arr[msk]
 
@@ -212,7 +211,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         with tf.name_scope("weight1"):
             W_conv1 = weight_variable([7,7,3,32])
             variable_summaries(W_conv1)
-            _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
+            _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=3)
         with tf.name_scope("batchNorm1"):
             conv1 = conv2d(X, W_conv1)
             conv1_bn = batch_norm(conv1, [0, 1, 2], 32, is_training)
@@ -233,7 +232,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         with tf.name_scope("weight2"):
             W_conv2 = weight_variable([7,7,32,32])
             variable_summaries(W_conv2)
-            _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=32)
+            _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=3)
         with tf.name_scope("batchNorm2"):
             conv2 = conv2d(h_pool1, W_conv2)
             conv2_bn = batch_norm(conv2, [0, 1, 2], 32, is_training)
@@ -253,7 +252,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         with tf.name_scope("weight3"):
             W_conv3 = weight_variable([5,5,32,64])
             variable_summaries(W_conv3)
-            _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=64)
+            _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=3)
         with tf.name_scope("batchNorm3"):
             conv3 = conv2d(h_pool2, W_conv3)
             conv3_bn = batch_norm(conv3, [0, 1, 2], 64, is_training)
@@ -326,7 +325,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         loss = tf.reduce_mean(tf.square(y_ - y))
         tf.summary.scalar("loss", loss)
 
-    # learning algorithm (learning rate: 0.00001)
+    # learning algorithm (learning rate: 0.0001)
     with tf.name_scope("train"):
         #train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
         train_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
@@ -370,7 +369,6 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                 if i%1000 == 0:
                     print("current index: {0} / {1}".format(i, len(X_local)))
                     print("h={0}, w={1}, estimation:{2}".format(h,w,estDensMap[h, w]))
-        f.close()
 
         np.save("./estimation/estimation.npy", estDensMap)
         print("END: estimate density map")
@@ -467,8 +465,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
-    train_writer.close()
-    test_writer.close()
+        train_writer.close()
+        test_writer.close()
     sess.close()
     # --------------------------------------------------------------------------
 
