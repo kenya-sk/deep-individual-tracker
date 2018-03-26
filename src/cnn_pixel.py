@@ -158,6 +158,14 @@ def batch_norm(X, axes, shape, is_training):
 
 
 def main(X_train, X_test, y_train, y_test, modelPath):
+    # directory of TensorBoard logs
+    date = datetime.now()
+    dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
+    logDir = "./logs_pixel/" + dateDir
+    # delete the specified directory if it exists, recreate it
+    if tf.gfile.Exists(logDir):
+        tf.gfile.DeleteRecursively(logDir)
+    tf.gfile.MakeDirs(logDir)
     # start session
     sess = tf.InteractiveSession()
 
@@ -347,15 +355,6 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     else:
         # -------------------------- PRE PROCESSING --------------------------------
-        # directory of TensorBoard logs
-        date = datetime.now()
-        dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
-        logDir = "./logs_pixel/" + dateDir
-        # delete the specified directory if it exists, recreate it
-        if tf.gfile.Exists(logDir):
-            tf.gfile.DeleteRecursively(logDir)
-        tf.gfile.MakeDirs(logDir)
-
         # variable of TensorBoard
         trainStep = 0
         testStep = 0
@@ -410,11 +409,13 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         # -------------------------------- TEST ------------------------------------
         print("START: test")
         test_loss = 0.0
+        total_test_batches = 0
         for i in range(len(X_test)):
             X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72)
             X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thresh = 0, ratio=1)
             X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
             test_n_batches = int(len(X_test_local) / batchSize)
+            total_test_batches += test_n_batches
             for batch in range(test_n_batches):
                 startIndex = batch * batchSize
                 endIndex = startIndex + batchSize
@@ -427,14 +428,16 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                 test_loss += tmp_loss
                 testStep += 1
 
-        print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+        print("test loss: {}\n".format(test_loss/(len(X_test)*total_test_batches)))
         print("END: test")
         # -------------------------------------------------------------------------
 
-    # --------------------------- END PROCESSING -------------------------------
+        # --------------------------- END PROCESSING -------------------------------
         train_writer.close()
         test_writer.close()
+        # --------------------------------------------------------------------------
 
+    # --------------------------- END PROCESSING -------------------------------
     sess.close()
     # --------------------------------------------------------------------------
 
