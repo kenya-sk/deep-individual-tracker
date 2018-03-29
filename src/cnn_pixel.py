@@ -396,7 +396,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
                     summary, _ = sess.run([merged, train_step], feed_dict={
                                         X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                        y_: y_train_local[startIndex:endIndex],
+                                        y_: y_train_local[startIndex:endIndex].reshape(-1,1),
                                         is_training:True})
                     train_writer.add_summary(summary, trainStep)
 
