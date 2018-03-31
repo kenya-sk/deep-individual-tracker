@@ -166,8 +166,12 @@ def main(X_train, X_test, y_train, y_test, modelPath):
     if tf.gfile.Exists(logDir):
         tf.gfile.DeleteRecursively(logDir)
     tf.gfile.MakeDirs(logDir)
+    # set GPU device
+    gpuConfig = tf.ConfigProto(
+        gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.5),
+        device_count={"GPU": 1})
     # start session
-    sess = tf.InteractiveSession()
+    sess = tf.InteractiveSession(config=gpuConfig)
 
     # ------------------------------- MODEL -----------------------------------
     # input image
