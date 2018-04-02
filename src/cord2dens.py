@@ -24,7 +24,7 @@ def plot_densMap(fileName, cordinateMatrix, cord_arr, sigmaPow):
     np.save("../data/dens/{0}/{1}".format(sigmaPow, fileName), kernel.T)
 
 
-def batch_processing(inputDirPath, sigmaPow):
+def batch_processing(inputDirPath, sigmaPow_lst):
     def read_csv(filePath):
         data_lst = []
         with open(filePath, "r") as f:
@@ -64,5 +64,5 @@ def batch_processing(inputDirPath, sigmaPow):
 
 if __name__ == "__main__":
     inputDirPath = input("Input directory path: ")
-    sigmaPow_lst = [6, 7, 8, 9, 10]
+    sigmaPow_lst = [8, 10, 15, 20]
     batch_processing(inputDirPath, sigmaPow_lst)
