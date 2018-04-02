@@ -186,7 +186,6 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         with tf.name_scope("is_training"):
             is_training = tf.placeholder(tf.bool, name="is_training")
 
-
     # first layer
     # convlution -> ReLU -> max pooling
     # input 72x72x3 -> output 36x36x32
@@ -202,11 +201,9 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         with tf.name_scope("leakyRelu1"):
             h_conv1 = tf.nn.leaky_relu(conv1_bn)
             variable_summaries(h_conv1)
-
-    with tf.name_scope("pool1"):
-        h_pool1 = max_pool_2x2(h_conv1)
-        variable_summaries(h_pool1)
-
+        with tf.name_scope("pool1"):
+            h_pool1 = max_pool_2x2(h_conv1)
+            variable_summaries(h_pool1)
 
     # second layer
     # convlution -> ReLU -> max pooling
@@ -223,10 +220,9 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         with tf.name_scope("leakyRelu2"):
             h_conv2 = tf.nn.leaky_relu(conv2_bn)
             variable_summaries(h_conv2)
-
-    with tf.name_scope("pool2"):
-        h_pool2 = max_pool_2x2(h_conv2)
-        variable_summaries(h_pool2)
+        with tf.name_scope("pool2"):
+            h_pool2 = max_pool_2x2(h_conv2)
+            variable_summaries(h_pool2)
 
     # third layer
     # convolution -> ReLU
@@ -275,33 +271,18 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     # sixth layer
     # fully connected layer
-    # input 400 -> output 324
+    # input 400 -> output 1
     with tf.name_scope("fc6"):
         with tf.name_scope("weight6"):
-            W_fc6 = weight_variable([400, 324])
+            W_fc6 = weight_variable([400, 1])
             variable_summaries(W_fc6)
-        with tf.name_scope("batchNorm6"):
-            fc6 = tf.matmul(h_fc5, W_fc6)
-            fc6_bn = batch_norm(fc6, [0], 324, is_training)
+        with tf.name_scope("bias6"):
+            b_fc6 = bias_variable([1])
+            variable_summaries(b_fc6)
         with tf.name_scope("flat6"):
-            h_fc6 = tf.nn.leaky_relu(fc6_bn)
-            variable_summaries(h_fc6)
-
-    # seven layer
-    # fully connected layer
-    # input 324 -> output 1
-    with tf.name_scope("fc7"):
-        with tf.name_scope("weight7"):
-            W_fc7 = weight_variable([324, 1])
-            variable_summaries(W_fc7)
-        with tf.name_scope("bias7"):
-            b_fc7 = bias_variable([1])
-            variable_summaries(b_fc7)
-        with tf.name_scope("flat7"):
-            y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
+            y = tf.nn.leaky_relu(tf.matmul(h_fc5, W_fc6) + b_fc6)
             variable_summaries(y)
 
-    # output
     tf.summary.histogram("output", y)
 
     # loss function
