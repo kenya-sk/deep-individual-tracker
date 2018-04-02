@@ -36,7 +36,7 @@ class Motion:
     def run(self):
         self.video = cv2.VideoCapture(self.inputFilePath)
         if not(self.video.isOpened()):
-            print("Error: Can not read movie file")
+            sys.stderr.write("Error: Can not read movie file")
             sys.exit(1)
 
         # processing of initial frame

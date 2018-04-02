@@ -20,7 +20,7 @@ class ImgMotion(movie2trainingData.Motion):
     def run(self):
         self.frame = cv2.imread(self.inputFilePath)
         if self.frame is None:
-            print("Error: Can not open image file")
+            sys.stderr.write("Error: Can not open image file")
             sys.exit(1)
 
         self.frameNum = self.get_frameNum()
@@ -47,7 +47,7 @@ class ImgMotion(movie2trainingData.Motion):
 
 def batch_processing(inputDirPath):
     if not(os.path.isdir(inputDirPath)):
-        print("Error: Do not exist directory")
+        sys.stderr.write("Error: Do not exist directory")
         sys.exit(1)
 
     file_lst = os.listdir(inputDirPath)

@@ -36,7 +36,7 @@ def batch_processing(inputDirPath, sigmaPow_lst):
 
 
     if not(os.path.isdir(inputDirPath)):
-        print("Error: Do not exist directory !")
+        sys.stderr.write("Error: Do not exist directory !")
         sys.exit(1)
 
     file_lst = os.listdir(inputDirPath)
