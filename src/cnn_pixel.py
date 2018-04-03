@@ -362,7 +362,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                 w = indexW[i]
                 estDensMap[h, w] = sess.run(y, feed_dict={
                     X: X_local[i].reshape(1, 72, 72, 3),
-                    y_: y_local[i].reshape(1),
+                    y_: y_local[i].reshape(-1, 1),
                     is_training: False})
                 f.write("h={0}, w={1}, output={2}\n".format(h,w,estDensMap[h, w]))
 
@@ -473,6 +473,6 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 if __name__ == "__main__":
     inputImageDirPath = "../image/original/tmp/"
     inputDensDirPath = "../data/dens/10/tmp/"
-    modelPath = "./model_pixel/2018_3_4_20_29/"
+    modelPath = "/data/sakka/tensor_model/2018_3_12_20_39/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test, modelPath)
