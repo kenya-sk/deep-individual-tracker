@@ -335,6 +335,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     # mask index
     indexH, indexW = get_masked_index("../image/mask.png")
+    assert len(indexH) == len(indexW)
 
     # learning
     startTime = time.time()
@@ -353,22 +354,24 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         maskedImg = get_masked_data(img)
         maskedLabel = get_masked_data(label)
         X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
+        est_arr = np.zeros(len(indexH))
         estDensMap = np.zeros((720, 1280), dtype="float32")
 
-        print("STSRT: estimate density map")
-        with open("./estimate.txt","w") as f:
-            for i in range(len(X_local)):
-                h = indexH[i]
-                w = indexW[i]
-                estDensMap[h, w] = sess.run(y, feed_dict={
-                    X: X_local[i].reshape(1, 72, 72, 3),
-                    y_: y_local[i].reshape(-1, 1),
-                    is_training: False})
-                f.write("h={0}, w={1}, output={2}\n".format(h,w,estDensMap[h, w]))
+        estBatchSize = 100
+        est_n_batches = int(len(X_local)/estBatchSize)
 
-                if i%1000 == 0:
-                    print("current index: {0} / {1}".format(i, len(X_local)))
-                    print("h={0}, w={1}, estimation:{2}".format(h,w,estDensMap[h, w]))
+        print("STSRT: estimate density map")
+        for batch in range(est_n_batches):
+            startIndex = batch*estBatchSize
+            endIndex = startIndex + estBatchSize
+
+            est_arr[startIndex:endIndex] = sess.run(y, feed_dict={
+                X: X_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                is_training: False})
+            print("DONE: batch {}".format(batch))
+
+        for i in range(len(indexH)):
+            estDensMap[indexH[i], indexW[i]] = est_arr[i]
 
         np.save("./estimation/estimation.npy", estDensMap)
         print("END: estimate density map")
