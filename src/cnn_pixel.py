@@ -197,7 +197,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
             _ = tf.summary.image("X", X[:, :, :, :], 5)
         # answer image
         with tf.name_scope("y_"):
-            y_ = tf.placeholder(tf.float32, [None], name="label")
+            y_ = tf.placeholder(tf.float32, [None, 1], name="label")
         # status: True(lerning) or False(test)
         with tf.name_scope("is_training"):
             is_training = tf.placeholder(tf.bool, name="is_training")
@@ -423,7 +423,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                         print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                         summary, train_loss = sess.run([merged, loss], feed_dict={
                                 X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                y_: y_train_local[startIndex:endIndex],
+                                y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
                                 is_training:True})
                         train_writer.add_summary(summary, trainStep)
                         print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
@@ -432,7 +432,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
                     summary, _ = sess.run([merged, train_step], feed_dict={
                                         X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                        y_: y_train_local[startIndex:endIndex],
+                                        y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
                                         is_training:True})
                     train_writer.add_summary(summary, trainStep)
         saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
@@ -454,7 +454,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
                 summary, tmp_loss = sess.run([merged, loss], feed_dict={
                                     X: X_test_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                    y_: y_test_local[startIndex:endIndex],
+                                    y_: y_test_local[startIndex:endIndex].reshape(-1, 1),
                                     is_training:False})
                 test_writer.add_summary(summary, testStep)
                 test_loss += tmp_loss
