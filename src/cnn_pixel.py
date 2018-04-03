@@ -368,7 +368,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
             est_arr[startIndex:endIndex] = sess.run(y, feed_dict={
                 X: X_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
                 y_: y_local[startIndex:endIndex].reshape(-1, 1),
-                is_training: False})
+                is_training: False}).reshpae(batchSize)
             print("DONE: batch {}".format(batch))
 
         for i in range(len(indexH)):
