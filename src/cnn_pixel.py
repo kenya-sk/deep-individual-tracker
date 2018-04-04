@@ -482,8 +482,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
     # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    inputImageDirPath = "../image/original/tmp/"
-    inputDensDirPath = "../data/dens/10/tmp/"
-    modelPath = "/data/sakka/tensor_model/2018_3_12_20_39/"
+    inputImageDirPath = "/data/sakka/image/original/"
+    inputDensDirPath = "/data/sakka/data/dens/25/"
+    modelPath = "/data/sakka/tensor_model/2018/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test, modelPath)
