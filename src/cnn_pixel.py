@@ -5,6 +5,7 @@ import os
 import re
 import time
 import sys
+import signal
 import cv2
 import numpy as np
 import pandas as pd
@@ -407,65 +408,71 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         batchSize = 200
         print("START: learning")
         print("Original traning data size: {}".format(len(X_train)))
-        for epoch in range(n_epochs):
-            print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
-            for i in range(len(X_train)):
-                X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
-                X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
-                X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
+        try:
+            for epoch in range(n_epochs):
+                print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
+                for i in range(len(X_train)):
+                    X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
+                    X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
+                    X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
-                train_n_batches = int(len(X_train_local) / batchSize)
+                    train_n_batches = int(len(X_train_local) / batchSize)
 
-                for batch in range(train_n_batches):
-                    trainStep += 1
+                    for batch in range(train_n_batches):
+                        trainStep += 1
+                        startIndex = batch * batchSize
+                        endIndex = startIndex + batchSize
+                        #record loss data
+                        if batch%100 == 0:
+                            print("************************************************")
+                            print("traning data: {0} / {1}".format(i, len(X_train)))
+                            print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
+                            summary, train_loss = sess.run([merged, loss], feed_dict={
+                                    X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                    y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
+                                    is_training:True})
+                            train_writer.add_summary(summary, trainStep)
+                            print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
+                            print("loss: {}".format(train_loss))
+                            print("************************************************\n")
+
+                        summary, _ = sess.run([merged, train_step], feed_dict={
+                                            X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                            y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
+                                            is_training:True})
+                        train_writer.add_summary(summary, trainStep)
+            saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
+            print("END: learning")
+            # --------------------------------------------------------------------------
+
+
+            # -------------------------------- TEST ------------------------------------
+            print("START: test")
+            test_loss = 0.0
+            for i in range(len(X_test)):
+                X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72, indexH, indexW)
+                X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thresh = 0)
+                X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
+                test_n_batches = int(len(X_test_local) / batchSize)
+                for batch in range(test_n_batches):
                     startIndex = batch * batchSize
                     endIndex = startIndex + batchSize
-                    #record loss data
-                    if batch%100 == 0:
-                        print("************************************************")
-                        print("traning data: {0} / {1}".format(i, len(X_train)))
-                        print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
-                        summary, train_loss = sess.run([merged, loss], feed_dict={
-                                X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
-                                is_training:True})
-                        train_writer.add_summary(summary, trainStep)
-                        print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
-                        print("loss: {}".format(train_loss))
-                        print("************************************************\n")
 
-                    summary, _ = sess.run([merged, train_step], feed_dict={
-                                        X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                        y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
-                                        is_training:True})
-                    train_writer.add_summary(summary, trainStep)
-        saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
-        print("END: learning")
-        # --------------------------------------------------------------------------
+                    summary, tmp_loss = sess.run([merged, loss], feed_dict={
+                                        X: X_test_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                        y_: y_test_local[startIndex:endIndex].reshape(-1, 1),
+                                        is_training:False})
+                    test_writer.add_summary(summary, testStep)
+                    test_loss += tmp_loss
+                    testStep += 1
 
-
-        # -------------------------------- TEST ------------------------------------
-        print("START: test")
-        test_loss = 0.0
-        for i in range(len(X_test)):
-            X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72, indexH, indexW)
-            X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thresh = 0)
-            X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
-            test_n_batches = int(len(X_test_local) / batchSize)
-            for batch in range(test_n_batches):
-                startIndex = batch * batchSize
-                endIndex = startIndex + batchSize
-
-                summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                    X: X_test_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                    y_: y_test_local[startIndex:endIndex].reshape(-1, 1),
-                                    is_training:False})
-                test_writer.add_summary(summary, testStep)
-                test_loss += tmp_loss
-                testStep += 1
-
-        print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
-        print("END: test")
+            print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+            print("END: test")
+        except KeyboardInterrupt:
+            #captured Ctrl + C
+            print("Pressed \"Ctrl + C\"")
+            print("exit problem, save learning model")
+            saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
         # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
