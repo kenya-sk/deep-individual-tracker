@@ -64,5 +64,5 @@ def batch_processing(inputDirPath, sigmaPow):
 
 if __name__ == "__main__":
     inputDirPath = input("Input directory path: ")
-    sigmaPow_lst = [6, 7, 8, 9, 10]
+    sigmaPow_lst = [25]
     batch_processing(inputDirPath, sigmaPow_lst)
