@@ -350,15 +350,15 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         print("LODE: {}".format(lastModel))
         saver.restore(sess, lastModel)
 
-        img = cv2.imread("../image/original/11_20880.png")
-        label = np.load("../data/dens/10/11_20880.npy")
+        img = cv2.imread("../image/original/16_100920.png")
+        label = np.load("../data/dens/25/16_100920.npy")
         maskedImg = get_masked_data(img)
         maskedLabel = get_masked_data(label)
         X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
         est_arr = np.zeros(len(indexH))
         estDensMap = np.zeros((720, 1280), dtype="float32")
 
-        estBatchSize = 100
+        estBatchSize = 2500
         est_n_batches = int(len(X_local)/estBatchSize)
 
         print("STSRT: estimate density map")
@@ -413,7 +413,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                 print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
                 for i in range(len(X_train)):
                     X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
-                    X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
+                    X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.3)
                     X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
                     train_n_batches = int(len(X_train_local) / batchSize)
@@ -482,8 +482,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
     # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    inputImageDirPath = "../image/original/tmp/"
-    inputDensDirPath = "../data/dens/10/tmp/"
-    modelPath = "/data/sakka/tensor_model/2018_3_12_20_39/"
+    inputImageDirPath = "../image/original/test25/"
+    inputDensDirPath = "../data/dens/25/"
+    modelPath = "/data/sakka/tensor_model/2018_4_4_10_52/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test, modelPath)
