@@ -404,8 +404,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         # --------------------------------------------------------------------------
 
         # -------------------------- LEARNING STEP --------------------------------
-        n_epochs = 1
-        batchSize = 200
+        n_epochs = 3
+        batchSize = 100
         print("START: learning")
         print("Original traning data size: {}".format(len(X_train)))
         try:
@@ -470,7 +470,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
             print("END: test")
         except KeyboardInterrupt:
             #captured Ctrl + C
-            print("Pressed \"Ctrl + C\"")
+            print("\nPressed \"Ctrl + C\"")
             print("exit problem, save learning model")
             saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
         # --------------------------------------------------------------------------
