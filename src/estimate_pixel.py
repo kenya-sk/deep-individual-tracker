@@ -11,12 +11,13 @@ import tensorflow as tf
 from sklearn.cluster import MeanShift
 
 
-def clustering(densMap, bandwidth, thresh=0.5):
+def clustering(densMap, bandwidth, thresh=0):
     # point[0]: y  point[1]: x
     point = np.where(densMap > thresh)
     # X[:, 0]: x  X[:,1]: y
     X = np.vstack((point[1], point[0])).T
     # MeanShift clustering
+    print("START: clustering")
     ms = MeanShift(bandwidth=bandwidth, seeds=X)
     ms.fit(X)
     labels = ms.labels_
@@ -59,5 +60,5 @@ def plot_estimation_box(img, centroid_arr, boxSize=12):
 if __name__ == "__main__":
     estDensMap = np.load("./estimation/estimation.npy")
     img = cv2.imread("../image/original/16_100920.png")
-    centroid_arr = clustering(estDensMap, 20, 0.5)
+    centroid_arr = clustering(estDensMap, 20, 0.7)
     plot_estimation_box(img, centroid_arr, 12)
