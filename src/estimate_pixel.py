@@ -11,7 +11,7 @@ import tensorflow as tf
 from sklearn.cluster import MeanShift
 
 
-def clustering(densMap, bandwidth, thresh=0):
+def clustering(densMap, bandwidth, thresh=0.5):
     # point[0]: y  point[1]: x
     point = np.where(densMap > thresh)
     # X[:, 0]: x  X[:,1]: y
