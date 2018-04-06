@@ -474,11 +474,12 @@ def main(X_train, X_test, y_train, y_test, modelPath):
             print("\nPressed \"Ctrl + C\"")
             print("exit problem, save learning model")
             saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
+            
+        train_writer.close()
+        test_writer.close()
         # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
-        train_writer.close()
-        test_writer.close()
     sess.close()
     # --------------------------------------------------------------------------
 
