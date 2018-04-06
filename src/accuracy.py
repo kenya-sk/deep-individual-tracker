@@ -5,11 +5,10 @@ import numpy as np
 import pandas as ps
 from munkres import Munkres
 
-def get_groundTruth(groundTruthPath):
-    groundTruth_df = pd.read_csv(groundTruthPath)
-    groundTruth_arr = np.array(groundTruth_df)
+import estimate_pixel
 
-    return groundTruth_arr
+def get_groundTruth(groundTruthPath):
+    return np.array(pd.read_csv(groundTruthPath))
 
 
 def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
@@ -47,6 +46,8 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
 
 
 if __name__ = "__main__":
-    estCentroid_arr = np.load("")
-    groundTruth_arr = get_groundTruth("")
-    accuracy(estCentroid_arr, groundTruth_arr, 6)
+    bandWidth = 15
+    estDensMap = np.load("./estimation/estimation.npy")
+    centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
+    groundTruth_arr = get_groundTruth("../data/cord/16_100920.csv")
+    accuracy(centroid_arr, groundTruth_arr, bandWidth)
