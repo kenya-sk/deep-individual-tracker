@@ -12,20 +12,11 @@ from sklearn.cluster import MeanShift
 
 
 def clustering(densMap, bandwidth, thresh=0):
-    # plot sample point and centroid
-    def plot_cluster(X, cluster_centers, labels, n_clusters):
-        plt.figure()
-        plt.scatter(X[:, 0],X[:,1], c=labels)
-        for k in range(n_clusters):
-            cluster_center = cluster_centers[k]
-            plt.plot(cluster_center[0], cluster_center[1], "*", markersize=5, c="red")
-        plt.title("Estimated number of clusters: {}".format(n_clusters))
-        plt.savefig("./estimateMap.png")
-        print("save estimateMap.png")
-
+    # point[0]: y  point[1]: x
     point = np.where(densMap > thresh)
+    # X[:, 0]: x  X[:,1]: y
     X = np.vstack((point[1], point[0])).T
-    # MeanShift
+    # MeanShift clustering
     ms = MeanShift(bandwidth=bandwidth, seeds=X)
     ms.fit(X)
     labels = ms.labels_
@@ -37,27 +28,36 @@ def clustering(densMap, bandwidth, thresh=0):
         centroid_arr[k] = cluster_centers[k]
     print("DONE: clustering")
 
-    plot_cluster(X, cluster_centers, labels, n_clusters)
-
     return centroid_arr
 
-def plot_estimation_box(centroid_arr, boxSize=12):
-    print("cluster: {}".format(len(centroid_arr)))
-    plt.figure(figsize=(12.8, 7.2))
-    ax = plt.axes()
-    centroid_X = centroid_arr[:, 0]
-    centroid_Y = centroid_arr[:, 1] + 250
-    plt.scatter(centroid_X, centroid_Y, s=10)
-    for x, y in zip(centroid_X, centroid_Y):
-        r = plt.Rectangle(xy=(x-boxSize/2, y-boxSize/2), width=boxSize, height=boxSize, ec='#000000', fill=False, edgecolor='red')
-        ax.add_patch(r)
-    plt.xlim(0, 1280)
-    plt.ylim(0, 720)
-    plt.savefig("./estimateBox.png")
+def plot_estimation_box(img, centroid_arr, boxSize=12):
+    # get cordinates of vertex(lert top and right bottom)
+    def get_rect_vertex(x, y, boxSize):
+        vertex = np.zeros((2, 2), dtype=np.uint16)
+        shift = int(boxSize/2)
+        # left top corner
+        vertex[0][0] = x - shift
+        vertex[0][1] = y - shift
+        # right bottom corner
+        vertex[1][0] = x + shift
+        vertex[1][1] = y + shift
 
+        return vertex
+
+    print("Number of cluster: {}".format(centroid_arr.shape[0]))
+    for i in range(centroid_arr.shape[0]):
+        x = int(centroid_arr[i][0])
+        y = int(centroid_arr[i][1])
+        estImg = cv2.circle(img, (x, y), 2, (0, 0, 255), -1, cv2.LINE_AA)
+        vertex = get_rect_vertex(x, y, boxSize)
+        estImg = cv2.rectangle(img, (vertex[0][0], vertex[0][1]), (vertex[1][0], vertex[1][1]), (0, 0, 255), 3)
+
+    cv2.imwrite("./estBoxImg.png", img)
+    print("Done: plot estimation box")
 
 
 if __name__ == "__main__":
-    estDensMap = np.load("./estimation/2018_2_9_17_31/estimation.npy")
-    centroid_arr = clustering(estDensMap, 5, 0)
-    plot_estimation_box(centroid_arr, 12)
+    estDensMap = np.load("./estimation/estimation.npy")
+    img = cv2.imread("../image/original/16_100920.png")
+    centroid_arr = clustering(estDensMap, 20, 0.5)
+    plot_estimation_box(img, centroid_arr, 12)
