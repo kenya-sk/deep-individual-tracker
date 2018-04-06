@@ -49,9 +49,9 @@ def plot_estimation_box(img, centroid_arr, boxSize=12):
     for i in range(centroid_arr.shape[0]):
         x = int(centroid_arr[i][0])
         y = int(centroid_arr[i][1])
-        estImg = cv2.circle(img, (x, y), 2, (0, 0, 255), -1, cv2.LINE_AA)
+        img = cv2.circle(img, (x, y), 2, (0, 0, 255), -1, cv2.LINE_AA)
         vertex = get_rect_vertex(x, y, boxSize)
-        estImg = cv2.rectangle(img, (vertex[0][0], vertex[0][1]), (vertex[1][0], vertex[1][1]), (0, 0, 255), 3)
+        img = cv2.rectangle(img, (vertex[0][0], vertex[0][1]), (vertex[1][0], vertex[1][1]), (0, 0, 255), 3)
 
     cv2.imwrite("./estBoxImg.png", img)
     print("Done: plot estimation box")
