@@ -335,6 +335,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
 
     # mask index
+    # if you analyze all areas, please set a white image
     indexH, indexW = get_masked_index("../image/mask.png")
     assert len(indexH) == len(indexW)
 
