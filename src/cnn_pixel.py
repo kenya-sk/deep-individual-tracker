@@ -5,7 +5,6 @@ import os
 import re
 import time
 import sys
-import signal
 import cv2
 import numpy as np
 import pandas as pd
