@@ -108,7 +108,7 @@ def hard_negative_dataset(X, y, loss):
         return index
 
     # the threshold is five times the average
-    thresh = np.mean(loss) * 5
+    thresh = np.mean(loss) * 3
     index = hard_negative_index(loss, thresh)
     hardNegativeImage_arr = np.zeros((len(index), 72, 72, 3), dtype="uint8")
     hardNegativeLabel_arr = np.zeros((len(index)), dtype="float32")
@@ -397,8 +397,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         print("END: estimate density map")
 
         # calculate estimation loss
-        diffSquare = np.square(label - estDensMap, dtype="float32")
-        estLoss = np.mean(diffSquare)
+        estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
         print("estimation loss: {}".format(estLoss))
         # --------------------------------------------------------------------------
 
@@ -448,7 +447,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                         startIndex = batch * batchSize
                         endIndex = startIndex + batchSize
 
-                        train_diff = sess.run(loss, feed_dict={
+                        train_diff = sess.run(diff, feed_dict={
                                 X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
                                 y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
                                 is_training:True})
@@ -472,7 +471,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                             print("traning data: {0} / {1}".format(i, len(X_train)))
                             print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
                             print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
-                            print("loss: {}".format(train_loss))
+                            print("loss: {}".format(np.mean(train_diff)))
                             print("************************************************\n")
 
             saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
