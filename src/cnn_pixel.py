@@ -104,7 +104,7 @@ def get_local_data(image, densMap, localImgSize, indexH, indexW):
 def hard_negative_dataset(X, y, loss):
     #get index that error is greater than the threshold
     def hard_negative_index(loss, thresh):
-        index = np.where(loss > thresh )[0]
+        index = np.where(loss > thresh)[0]
         return index
 
     # the threshold is five times the average
@@ -339,7 +339,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     # loss function
     with tf.name_scope("loss"):
-        loss = tf.reduce_mean(tf.square(y_ - y))
+        diff = tf.square(y_ - y)
+        loss = tf.reduce_mean(diff)
         tf.summary.scalar("loss", loss)
 
     # learning algorithm (learning rate: 0.0001)
@@ -447,7 +448,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                         startIndex = batch * batchSize
                         endIndex = startIndex + batchSize
 
-                        train_loss = sess.run(loss, feed_dict={
+                        train_diff = sess.run(loss, feed_dict={
                                 X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
                                 y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
                                 is_training:True})
@@ -458,7 +459,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                         train_writer.add_summary(summary, trainStep)
                         # hard negative mining
                         batchHardNegativeImage_arr, batchHardNegativeLabel_arr = \
-                                hard_negative_dataset(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_loss)
+                                hard_negative_dataset(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_diff)
                         if batchHardNegativeLabel_arr.shape[0] > 0: # there are hard negative data
                             hardNegativeImage_arr = np.append(hardNegativeImage_arr, batchHardNegativeImage_arr, axis=0)
                             hardNegativeLabel_arr = np.append(hardNegativeLabel_arr, batchHardNegativeLabel_arr, axis=0)
