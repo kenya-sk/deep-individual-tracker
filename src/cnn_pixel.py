@@ -434,6 +434,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                     X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
                     X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.3)
                     if hardNegativeLabel_arr.shape[0] > 1:
+                        print("negative length: {}".format(hardNegativeLabel_arr.shape[0] ))
                         X_train_local = np.append(X_train_local, hardNegativeImage_arr[1:], axis=0)
                         y_train_local = np.append(y_train_local, hardNegativeLabel_arr[1:], axis=0)
                     X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
@@ -456,8 +457,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                                 is_training:True})
                         train_writer.add_summary(summary, trainStep)
                         # hard negative mining
-                        batchHardNegativeImage_arr, batchHardNegativeLabel_arr
-                            = hard_negative_dataset(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_loss)
+                        batchHardNegativeImage_arr, batchHardNegativeLabel_arr = \
+                                hard_negative_dataset(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_loss)
                         if batchHardNegativeLabel_arr.shape[0] > 0: # there are hard negative data
                             hardNegativeImage_arr = np.append(hardNegativeImage_arr, batchHardNegativeImage_arr, axis=0)
                             hardNegativeLabel_arr = np.append(hardNegativeLabel_arr, batchHardNegativeLabel_arr, axis=0)
