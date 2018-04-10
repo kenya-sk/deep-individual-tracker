@@ -101,6 +101,23 @@ def get_local_data(image, densMap, localImgSize, indexH, indexW):
     return localImg_mat, density_arr
 
 
+def hard_negative_dataset(X, y, loss):
+    #get index that error is greater than the threshold
+    def hard_negative_index(loss, thresh):
+        index = np.where(loss > thresh )[0]
+        return index
+
+    # the threshold is ten times the average
+    thresh = np.mean(loss) * 10
+    index = hard_negative_index(loss, thresh)
+    hardNegativeImage_arr = np.zeros((len(index), 72, 72, 3), dtype="uint8")
+    hardNegativeLabel_arr = np.zeros((len(index)), dtype="float32")
+    for i, hardIndex in enumerate(index):
+        hardNegativeImage_arr[i] = X[hardIndex]
+        hardNegativeLabel_arr[i] = y[hardIndex]
+    return hardNegativeImage_arr, hardNegativeLabel_arr
+
+
 def under_sampling(localImg_mat, density_arr, thresh):
     """
     ret: undersampled (localImg_mat, density_arr)
@@ -422,25 +439,23 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                         trainStep += 1
                         startIndex = batch * batchSize
                         endIndex = startIndex + batchSize
+
+                        summary, train_loss = sess.run([merged, loss], feed_dict={
+                                X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
+                                is_training:True})
+                        summary, _ = sess.run([merged, train_step], train_loss)
+                        train_writer.add_summary(summary, trainStep)
+
                         #record loss data
                         if batch%100 == 0:
                             print("************************************************")
                             print("traning data: {0} / {1}".format(i, len(X_train)))
                             print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
-                            summary, train_loss = sess.run([merged, loss], feed_dict={
-                                    X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                    y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
-                                    is_training:True})
-                            train_writer.add_summary(summary, trainStep)
                             print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
                             print("loss: {}".format(train_loss))
                             print("************************************************\n")
 
-                        summary, _ = sess.run([merged, train_step], feed_dict={
-                                            X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                            y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
-                                            is_training:True})
-                        train_writer.add_summary(summary, trainStep)
             saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
             print("END: learning")
             # --------------------------------------------------------------------------
@@ -473,7 +488,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
             print("\nPressed \"Ctrl + C\"")
             print("exit problem, save learning model")
             saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
-            
+
         train_writer.close()
         test_writer.close()
         # --------------------------------------------------------------------------
