@@ -440,11 +440,14 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                         startIndex = batch * batchSize
                         endIndex = startIndex + batchSize
 
-                        summary, train_loss = sess.run([merged, loss], feed_dict={
+                        train_loss = sess.run(loss, feed_dict={
                                 X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
                                 y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
                                 is_training:True})
-                        summary, _ = sess.run([merged, train_step], train_loss)
+                        summary, _ = sess.run([merged, train_step], feed_dict={
+                                X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
+                                is_training:True})
                         train_writer.add_summary(summary, trainStep)
 
                         #record loss data
