@@ -107,8 +107,8 @@ def hard_negative_dataset(X, y, loss):
         index = np.where(loss > thresh )[0]
         return index
 
-    # the threshold is ten times the average
-    thresh = np.mean(loss) * 10
+    # the threshold is five times the average
+    thresh = np.mean(loss) * 5
     index = hard_negative_index(loss, thresh)
     hardNegativeImage_arr = np.zeros((len(index), 72, 72, 3), dtype="uint8")
     hardNegativeLabel_arr = np.zeros((len(index)), dtype="float32")
@@ -423,6 +423,8 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         # -------------------------- LEARNING STEP --------------------------------
         n_epochs = 3
         batchSize = 100
+        hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
+        hardNegativeLabel_arr = np.zeros((1), dtype="float32")
         print("START: learning")
         print("Original traning data size: {}".format(len(X_train)))
         try:
@@ -431,10 +433,14 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                 for i in range(len(X_train)):
                     X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
                     X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.3)
+                    if hardNegativeLabel_arr.shape[0] > 1:
+                        X_train_local = np.append(X_train_local, hardNegativeImage_arr[1:], axis=0)
+                        y_train_local = np.append(y_train_local, hardNegativeLabel_arr[1:], axis=0)
                     X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
+                    hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
+                    hardNegativeLabel_arr = np.zeros((1), dtype="float32")
                     train_n_batches = int(len(X_train_local) / batchSize)
-
                     for batch in range(train_n_batches):
                         trainStep += 1
                         startIndex = batch * batchSize
@@ -449,6 +455,14 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                                 y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
                                 is_training:True})
                         train_writer.add_summary(summary, trainStep)
+                        # hard negative mining
+                        batchHardNegativeImage_arr, batchHardNegativeLabel_arr
+                            = hard_negative_dataset(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_loss)
+                        if batchHardNegativeLabel_arr.shape[0] > 0: # there are hard negative data
+                            hardNegativeImage_arr = np.append(hardNegativeImage_arr, batchHardNegativeImage_arr, axis=0)
+                            hardNegativeLabel_arr = np.append(hardNegativeLabel_arr, batchHardNegativeLabel_arr, axis=0)
+                        else:
+                            pass
 
                         #record loss data
                         if batch%100 == 0:
