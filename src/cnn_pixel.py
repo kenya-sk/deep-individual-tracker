@@ -186,7 +186,7 @@ def batch_norm(X, axes, shape, is_training):
     return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
 
 
-def main(X_train, X_test, y_train, y_test, modelPath):
+def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
     # start session
     sess = tf.InteractiveSession()
 
@@ -341,15 +341,19 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     # learning
     startTime = time.time()
-    tf.global_variables_initializer().run() # initialize all variable
     saver = tf.train.Saver() # save weight
     ckpt = tf.train.get_checkpoint_state(modelPath) # model exist: True or False
 
-    if ckpt:
+    if estimation:
         # ------------------------ CHECK ESTIMATION MODEL -------------------------
-        lastModel = ckpt.model_checkpoint_path
-        print("LODE: {}".format(lastModel))
-        saver.restore(sess, lastModel)
+        # check if the ckpt exist
+        if ckpt:
+            lastModel = ckpt.model_checkpoint_path
+            print("LODE: {}".format(lastModel))
+            saver.restore(sess, lastModel)
+        else:
+            sys.stderr("Error: not found checkpoint file")
+            sys.exit(1)
 
         img = cv2.imread("../image/original/16_100920.png")
         label = np.load("../data/dens/25/16_100920.npy")
@@ -407,8 +411,19 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         # -------------------------- LEARNING STEP --------------------------------
         n_epochs = 3
         batchSize = 100
-        print("START: learning")
         print("Original traning data size: {}".format(len(X_train)))
+        # check if the ckpt exist
+        # relearning or not
+        if ckpt:
+            lastModel = ckpt.model_checkpoint_path
+            print("START: Relearning")
+            print("LODE: {}".format(lastModel))
+            saver.restore(sess, lastModel)
+        else:
+            print("START: learning")
+            # initialize all variable
+            tf.global_variables_initializer().run()
+
         try:
             for epoch in range(n_epochs):
                 print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
@@ -469,12 +484,13 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
             print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
             print("END: test")
+
+        # capture Ctrl + C
         except KeyboardInterrupt:
-            #captured Ctrl + C
             print("\nPressed \"Ctrl + C\"")
             print("exit problem, save learning model")
             saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
-            
+
         train_writer.close()
         test_writer.close()
         # --------------------------------------------------------------------------
@@ -488,4 +504,4 @@ if __name__ == "__main__":
     inputDensDirPath = "/data/sakka/data/dens/25/"
     modelPath = "/data/sakka/tensor_model/2018/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
-    main(X_train, X_test, y_train, y_test, modelPath)
+    main(X_train, X_test, y_train, y_test, modelPath, estimation=False)
