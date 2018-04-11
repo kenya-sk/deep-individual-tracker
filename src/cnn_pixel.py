@@ -5,7 +5,6 @@ import os
 import re
 import time
 import sys
-import signal
 import cv2
 import numpy as np
 import pandas as pd
@@ -100,6 +99,23 @@ def get_local_data(image, densMap, localImgSize, indexH, indexW):
         localImg_mat[idx] = padImg[h:h+2*pad,w:w+2*pad]
         density_arr[idx] = densMap[h, w]
     return localImg_mat, density_arr
+
+
+def hard_negative_dataset(X, y, loss):
+    #get index that error is greater than the threshold
+    def hard_negative_index(loss, thresh):
+        index = np.where(loss > thresh)[0]
+        return index
+
+    # the threshold is five times the average
+    thresh = np.mean(loss) * 5
+    index = hard_negative_index(loss, thresh)
+    hardNegativeImage_arr = np.zeros((len(index), 72, 72, 3), dtype="uint8")
+    hardNegativeLabel_arr = np.zeros((len(index)), dtype="float32")
+    for i, hardIndex in enumerate(index):
+        hardNegativeImage_arr[i] = X[hardIndex]
+        hardNegativeLabel_arr[i] = y[hardIndex]
+    return hardNegativeImage_arr, hardNegativeLabel_arr
 
 
 def under_sampling(localImg_mat, density_arr, thresh):
@@ -323,7 +339,8 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 
     # loss function
     with tf.name_scope("loss"):
-        loss = tf.reduce_mean(tf.square(y_ - y))
+        diff = tf.square(y_ - y)
+        loss = tf.reduce_mean(diff)
         tf.summary.scalar("loss", loss)
 
     # learning algorithm (learning rate: 0.0001)
@@ -384,8 +401,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
         print("END: estimate density map")
 
         # calculate estimation loss
-        diffSquare = np.square(label - estDensMap, dtype="float32")
-        estLoss = np.mean(diffSquare)
+        estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
         print("estimation loss: {}".format(estLoss))
         # --------------------------------------------------------------------------
 
@@ -430,33 +446,47 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 for i in range(len(X_train)):
                     X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
                     X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.3)
+                    print("hard negative data: {}".format(hardNegativeLabel_arr.shape[0] - 1))
+                    if hardNegativeLabel_arr.shape[0] > 1:
+                        X_train_local = np.append(X_train_local, hardNegativeImage_arr[1:], axis=0)
+                        y_train_local = np.append(y_train_local, hardNegativeLabel_arr[1:], axis=0)
                     X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
+                    hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
+                    hardNegativeLabel_arr = np.zeros((1), dtype="float32")
                     train_n_batches = int(len(X_train_local) / batchSize)
-
                     for batch in range(train_n_batches):
                         trainStep += 1
                         startIndex = batch * batchSize
                         endIndex = startIndex + batchSize
+
+                        train_diff = sess.run(diff, feed_dict={
+                                X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
+                                is_training:True})
+                        summary, _ = sess.run([merged, train_step], feed_dict={
+                                X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
+                                is_training:True})
+                        train_writer.add_summary(summary, trainStep)
+                        # hard negative mining
+                        batchHardNegativeImage_arr, batchHardNegativeLabel_arr = \
+                                hard_negative_dataset(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_diff)
+                        if batchHardNegativeLabel_arr.shape[0] > 0: # there are hard negative data
+                            hardNegativeImage_arr = np.append(hardNegativeImage_arr, batchHardNegativeImage_arr, axis=0)
+                            hardNegativeLabel_arr = np.append(hardNegativeLabel_arr, batchHardNegativeLabel_arr, axis=0)
+                        else:
+                            pass
+
                         #record loss data
                         if batch%100 == 0:
                             print("************************************************")
                             print("traning data: {0} / {1}".format(i, len(X_train)))
                             print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
-                            summary, train_loss = sess.run([merged, loss], feed_dict={
-                                    X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                    y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
-                                    is_training:True})
-                            train_writer.add_summary(summary, trainStep)
                             print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
-                            print("loss: {}".format(train_loss))
+                            print("loss: {}".format(np.mean(train_diff)))
                             print("************************************************\n")
 
-                        summary, _ = sess.run([merged, train_step], feed_dict={
-                                            X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                            y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
-                                            is_training:True})
-                        train_writer.add_summary(summary, trainStep)
             saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
             print("END: learning")
             # --------------------------------------------------------------------------
@@ -501,7 +531,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 
 if __name__ == "__main__":
     inputImageDirPath = "/data/sakka/image/original/"
-    inputDensDirPath = "/data/sakka/data/dens/25/"
+    inputDensDirPath = "/data/sakka/dens/25/"
     modelPath = "/data/sakka/tensor_model/2018/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test, modelPath, estimation=False)
