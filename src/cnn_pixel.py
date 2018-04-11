@@ -427,6 +427,8 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
         # -------------------------- LEARNING STEP --------------------------------
         n_epochs = 3
         batchSize = 100
+        hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
+        hardNegativeLabel_arr = np.zeros((1), dtype="float32")
         print("Original traning data size: {}".format(len(X_train)))
         # check if the ckpt exist
         # relearning or not
@@ -444,8 +446,6 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             for epoch in range(n_epochs):
                 print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
                 for i in range(len(X_train)):
-                    hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
-                    hardNegativeLabel_arr = np.zeros((1), dtype="float32")
 
                     # load traing dataset
                     X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
@@ -457,6 +457,8 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                     X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
                     # learning by batch
+                    hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
+                    hardNegativeLabel_arr = np.zeros((1), dtype="float32")
                     train_n_batches = int(len(X_train_local) / batchSize)
                     for batch in range(train_n_batches):
                         trainStep += 1
