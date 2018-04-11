@@ -108,7 +108,7 @@ def hard_negative_dataset(X, y, loss):
         return index
 
     # the threshold is five times the average
-    thresh = np.mean(loss) * 5
+    thresh = np.mean(loss) * 3
     index = hard_negative_index(loss, thresh)
     hardNegativeImage_arr = np.zeros((len(index), 72, 72, 3), dtype="uint8")
     hardNegativeLabel_arr = np.zeros((len(index)), dtype="float32")
@@ -447,6 +447,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                     hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
                     hardNegativeLabel_arr = np.zeros((1), dtype="float32")
 
+                    # load traing dataset
                     X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
                     X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.3)
                     print("hard negative data: {}".format(hardNegativeLabel_arr.shape[0] - 1))
@@ -455,6 +456,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                         y_train_local = np.append(y_train_local, hardNegativeLabel_arr[1:], axis=0)
                     X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
+                    # learning by batch
                     train_n_batches = int(len(X_train_local) / batchSize)
                     for batch in range(train_n_batches):
                         trainStep += 1
