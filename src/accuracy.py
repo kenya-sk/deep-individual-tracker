@@ -2,8 +2,8 @@
 #coding: utf-8
 
 import numpy as np
-import pandas as ps
-from munkres import Munkres
+import pandas as pd
+from scipy import optimize
 
 import estimate_pixel
 
@@ -25,8 +25,11 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
             distY = estCentroid_arr[i][1] - groundTruth_arr[j][1]
             distMatrix[i][j] = abs(get_norm(distX, distY))
 
-    # munkres algorithm
-    indexes = Munkres().compute(distMatrix)
+    # calculate by hangarian algorithm
+    row, col = optimize.linear_sum_assignment(distMatrix)
+    indexes = []
+    for i in range(n):
+        indexes.append([row[i], col[i]])
     validIndexLength = min(len(estCentroid_arr), len(groundTruth_arr))
     valid_lst = [i for i in range(validIndexLength)]
     if len(estCentroid_arr) >= len(groundTruth_arr):
@@ -38,16 +41,18 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
     for i in range(len(matchIndexes)):
         estIndex = matchIndexes[i][0]
         truthIndex = matchIndexes[i][1]
-        if distMatrix[estIndex][truthIndex] < distTreshold:
+        if distMatrix[estIndex][truthIndex] <= distTreshold:
             trueCount += 1
 
     accuracy = trueCount / n
+    print("******************************************")
     print("Accuracy: {}".format(accuracy))
+    print("******************************************")
 
 
-if __name__ = "__main__":
-    bandWidth = 15
+if __name__ == "__main__":
+    bandWidth = 20
     estDensMap = np.load("./estimation/estimation.npy")
-    centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
+    centroid_arr = estimate_pixel.clustering(estDensMap, bandWidth, thresh=0.7)
     groundTruth_arr = get_groundTruth("../data/cord/16_100920.csv")
     accuracy(centroid_arr, groundTruth_arr, bandWidth)
