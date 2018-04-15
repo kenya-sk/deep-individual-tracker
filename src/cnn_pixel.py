@@ -410,7 +410,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
         # logs of tensor board directory
         date = datetime.now()
         dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
-        logDir = "./logs_pixel/" + dateDir
+        logDir = "/data/sakka/tensor_log/" + dateDir
         # delete the specified directory if it exists, recreate it
         if tf.gfile.Exists(logDir):
             tf.gfile.DeleteRecursively(logDir)
@@ -492,7 +492,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                             print("loss: {}".format(np.mean(train_diff)))
                             print("************************************************\n")
 
-            saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
+            saver.save(sess, "/data/sakka/tensor_model/" + dateDir + "/model.ckpt")
             print("END: learning")
             # --------------------------------------------------------------------------
 
@@ -524,7 +524,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
         except KeyboardInterrupt:
             print("\nPressed \"Ctrl + C\"")
             print("exit problem, save learning model")
-            saver.save(sess, "./model_pixel/" + dateDir + "/model.ckpt")
+            saver.save(sess, "/data/sakka/tensor_model/" + dateDir + "/model.ckpt")
 
         train_writer.close()
         test_writer.close()
