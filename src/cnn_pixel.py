@@ -425,7 +425,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
         # --------------------------------------------------------------------------
 
         # -------------------------- LEARNING STEP --------------------------------
-        n_epochs = 3
+        n_epochs = 1
         batchSize = 100
         hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
         hardNegativeLabel_arr = np.zeros((1), dtype="float32")
@@ -449,7 +449,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 
                     # load traing dataset
                     X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
-                    X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.3)
+                    X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
                     print("hard negative data: {}".format(hardNegativeLabel_arr.shape[0] - 1))
                     if hardNegativeLabel_arr.shape[0] > 1:
                         X_train_local = np.append(X_train_local, hardNegativeImage_arr[1:], axis=0)
@@ -537,6 +537,6 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 if __name__ == "__main__":
     inputImageDirPath = "/data/sakka/image/original/"
     inputDensDirPath = "/data/sakka/dens/25/"
-    modelPath = "/data/sakka/tensor_model/2018/"
+    modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
     main(X_train, X_test, y_train, y_test, modelPath, estimation=False)
