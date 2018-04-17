@@ -5,10 +5,26 @@ import numpy as np
 import pandas as pd
 from scipy import optimize
 
-import estimate_pixel
+from clustering import clustering
+from cnn_pixel import get_masked_index
 
-def get_groundTruth(groundTruthPath):
-    return np.array(pd.read_csv(groundTruthPath))
+def get_groundTruth(groundTruthPath, maskPath=None):
+    groundTruth_arr = np.array(pd.read_csv(groundTruthPath))
+    if maskPath is None:
+        return groundTruth_arr
+    else:
+        validH, validW = get_masked_index(maskPath)
+        validGroundTruth_lst = []
+
+        for i in range(groundTruth_arr.shape[0]):
+            indexW = np.where(validW == groundTruth_arr[i][0])
+            indexH = np.where(validH == groundTruth_arr[i][1])
+            intersect = np.intersect1d(indexW, indexH)
+            if len(intersect) == 1:
+                validGroundTruth_lst.append([validW[intersect[0]], validH[intersect[0]]])
+            else:
+                pass
+        return np.array(validGroundTruth_lst)
 
 
 def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
@@ -53,6 +69,6 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
 if __name__ == "__main__":
     bandWidth = 20
     estDensMap = np.load("./estimation/estimation.npy")
-    centroid_arr = estimate_pixel.clustering(estDensMap, bandWidth, thresh=0.7)
-    groundTruth_arr = get_groundTruth("../data/cord/16_100920.csv")
+    centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
+    groundTruth_arr = get_groundTruth("../data/cord/16_100920.csv", maskPath="../image/mask.png")
     accuracy(centroid_arr, groundTruth_arr, bandWidth)
