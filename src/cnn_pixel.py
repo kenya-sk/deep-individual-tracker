@@ -18,7 +18,7 @@ ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
 
 
-def load_data(inputImageDirPath, inputDensDirPath):
+def load_data(inputImageDirPath, inputDensDirPath, testSize=0.2):
     def get_file_path(inputDirPath):
         try:
             file_lst = os.listdir(inputDirPath)
@@ -45,7 +45,7 @@ def load_data(inputImageDirPath, inputDensDirPath):
         y.append(get_masked_data(densMap))
     X = np.array(X)
     y = np.array(y)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=testSize)
     return X_train, X_test, y_train, y_test
 
 
@@ -153,8 +153,6 @@ def variable_summaries(var):
 
 # initialize weight by He initialization
 def weight_variable(shape, name=None):
-    # initial = tf.truncated_normal(shape, stddev=0.1, dtype=tf.float32)
-
     # He initialization
     if len(shape) == 4:
         #convolution layer
@@ -163,7 +161,7 @@ def weight_variable(shape, name=None):
         # fully conected layer
         n = shape[0]
     else:
-        sys.stderr.write("Error: shape size is not correct !")
+        sys.stderr.write("Error: shape is not correct !")
         sys.exit(1)
     stddev = math.sqrt(2/n)
     initial = tf.random_normal(shape, stddev=stddev, dtype=tf.float32)
@@ -538,5 +536,5 @@ if __name__ == "__main__":
     inputImageDirPath = "/data/sakka/image/original/"
     inputDensDirPath = "/data/sakka/dens/25/"
     modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
-    X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath)
+    X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
     main(X_train, X_test, y_train, y_test, modelPath, estimation=False)
