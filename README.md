@@ -1,4 +1,5 @@
 ## Introduction
+This repository performs individual detection in consideration of overlap by using CNN in pixel units.
 
 ## Requirement
 * Python3
