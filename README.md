@@ -1,5 +1,11 @@
 ## Introduction
 
+## Requirement
+* Python3
+* C++
+* OpenCV
+* TensorFlow
+
 ## Source code
 1. movie2image.cpp
     * To get images from movie at arbitrary interval (default: 1 min).
@@ -26,12 +32,6 @@
     * To calculate the accuracy. If the distance between the estimation and ground truth is
     less than threshold (arg:distThreshold), it is regarded as the correct estimation.
 
-
-## Requirement
-* Python3
-* C++
-* OpenCV
-* TensorFlow
 
 ## Learning Data
 To create learning data in the following procedure.
