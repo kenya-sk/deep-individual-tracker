@@ -1,6 +1,6 @@
-# CNN
+## Introduction
 
-### src
+## Source code
 1. movie2image.cpp
     * get images from movie at arbitrary interval (default: 1 min).
 
@@ -17,12 +17,20 @@
 
 5. cnn_pixel.py
     * 7 layer CNN. this model learns an equation that converts **each pixel** of input
-    image into a density map.
+    image into a density map. and, estimate using learned model.
 
-6. estimate_pixel.py
-    * using the learned model(cnn_pixel.py), estimate the value of
-    the density map for each pixel. after that, clustering by MeanShift.
+6. clustering.py
+    * clustering by MeanShift. the centroid of cluster is the detection point.
 
 7. accuracy.py
     * calculate the accuracy. if the distance between the estimation and ground truth is
     less than threshold(arg:distThreshold), it is regarded as the correct estimation.
+
+
+## Requirement
+    * Python3 or more
+    * C++
+    * OpenCV
+    * TensorFlow
+
+## Training Your Own Model
