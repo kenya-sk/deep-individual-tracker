@@ -63,7 +63,7 @@ def estimation(modelPath):
     # ------------------------ ESTIMATION -------------------------
     # mask index
     # if you analyze all areas, please set a white image
-    indexH, indexW = get_masked_index("../image/mask.png")
+    indexH, indexW = cnn_pixel.get_masked_index("/data/sakka/image/mask.png")
     assert len(indexH) == len(indexW)
 
     saver = tf.train.Saver() # save weight
