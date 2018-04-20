@@ -70,5 +70,5 @@ if __name__ == "__main__":
     bandWidth = 20
     estDensMap = np.load("./estimation/estimation.npy")
     centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
-    groundTruth_arr = get_groundTruth("../data/cord/16_100920.csv", maskPath="../image/mask.png")
+    groundTruth_arr = get_groundTruth("/data/sakka/cord/12_3480.csv", maskPath="../image/mask.png")
     accuracy(centroid_arr, groundTruth_arr, bandWidth)
