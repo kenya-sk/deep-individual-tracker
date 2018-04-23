@@ -77,6 +77,7 @@ if __name__ == "__main__":
             centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
             groundTruth_arr = get_groundTruth("/data/sakka/cord/est/{0}_{1}.csv".format(hour, minute), maskPath="/data/sakka/image/mask.png")
             accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
+            print("DONE: {0}:{1}\n".format(hour, minute))
 
     print("******************************************")
     print("Accuracy: {}".format(sum(accuracy_lst)/len(accuracy_lst)))
