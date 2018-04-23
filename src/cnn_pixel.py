@@ -54,7 +54,7 @@ def get_masked_data(data):
     data: image or density map
     mask: 3channel mask image. the value is 0 or 1
     """
-    mask = cv2.imread("../image/mask.png")
+    mask = cv2.imread("/data/sakka/image/mask.png")
     if mask is None:
         sys.stderr.write("Error: can not read mask image")
         sys.exit(1)
