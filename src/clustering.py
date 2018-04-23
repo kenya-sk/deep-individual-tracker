@@ -31,7 +31,7 @@ def clustering(densMap, bandwidth, thresh=0):
 
     return centroid_arr
 
-def plot_estimation_box(img, centroid_arr, boxSize=12):
+def plot_estimation_box(img, centroid_arr,hour, minute, boxSize=12):
     # get cordinates of vertex(lert top and right bottom)
     def get_rect_vertex(x, y, boxSize):
         vertex = np.zeros((2, 2), dtype=np.uint16)
@@ -53,12 +53,14 @@ def plot_estimation_box(img, centroid_arr, boxSize=12):
         vertex = get_rect_vertex(x, y, boxSize)
         img = cv2.rectangle(img, (vertex[0][0], vertex[0][1]), (vertex[1][0], vertex[1][1]), (0, 0, 255), 3)
 
-    cv2.imwrite("./estBoxImg.png", img)
-    print("Done: plot estimation box")
+    cv2.imwrite("/data/sakka/image/estBox/{0}_{1}.png".format(hour, minute), img)
+    print("Done({0}:{1}): plot estimation box".format(hour, minute))
 
 
 if __name__ == "__main__":
-    estDensMap = np.load("./estimation/estimation.npy")
-    img = cv2.imread("../image/original/16_100920.png")
-    centroid_arr = clustering(estDensMap, 20, 0.7)
-    plot_estimation_box(img, centroid_arr, 12)
+    for hour in range(10, 17):
+        for minute in range(1, 62):
+            estDensMap = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
+            img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
+            centroid_arr = clustering(estDensMap, 20, 0.7)
+            plot_estimation_box(img, centroid_arr, hour, minute, 12)
