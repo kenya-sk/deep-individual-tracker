@@ -61,11 +61,10 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
             trueCount += 1
 
     accuracy = trueCount / n
-    """
     print("******************************************")
     print("Accuracy: {}".format(accuracy))
-    print("******************************************")
-    """
+    print("******************************************\n")
+
     return accuracy
 
 if __name__ == "__main__":
@@ -79,6 +78,6 @@ if __name__ == "__main__":
             accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
             print("DONE: {0}:{1}\n".format(hour, minute))
 
-    print("******************************************")
-    print("Accuracy: {}".format(sum(accuracy_lst)/len(accuracy_lst)))
+    print("\n******************************************")
+    print("Toal Accuracy (data size {0}): {1}".format(len(accuracy_lst), sum(accuracy_lst)/len(accuracy_lst)))
     print("******************************************")
