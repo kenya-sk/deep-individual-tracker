@@ -399,7 +399,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                     estDensMap[indexH[i], indexW[i]] = est_arr[i]
 
                 np.save("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute), estDensMap)
-                print("END: estimate density map")
+                print("END: {0}_{1} estimate density map".format(hour, minute))
 
                 # calculate estimation loss
                 estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
