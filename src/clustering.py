@@ -54,7 +54,7 @@ def plot_estimation_box(img, centroid_arr,hour, minute, boxSize=12):
         img = cv2.rectangle(img, (vertex[0][0], vertex[0][1]), (vertex[1][0], vertex[1][1]), (0, 0, 255), 3)
 
     cv2.imwrite("/data/sakka/image/estBox/{0}_{1}.png".format(hour, minute), img)
-    print("Done({0}:{1}): plot estimation box".format(hour, minute))
+    print("Done({0}:{1}): plot estimation box\n".format(hour, minute))
 
 
 if __name__ == "__main__":

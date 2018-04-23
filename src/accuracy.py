@@ -61,14 +61,23 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
             trueCount += 1
 
     accuracy = trueCount / n
+    """
     print("******************************************")
     print("Accuracy: {}".format(accuracy))
     print("******************************************")
-
+    """
+    return accuracy
 
 if __name__ == "__main__":
     bandWidth = 20
-    estDensMap = np.load("./estimation/estimation.npy")
-    centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
-    groundTruth_arr = get_groundTruth("/data/sakka/cord/12_3480.csv", maskPath="../image/mask.png")
-    accuracy(centroid_arr, groundTruth_arr, bandWidth)
+    accuracy_lst = []
+    for hour in range(10, 17):
+        for minute in range(1, 62):
+            estDensMap = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
+            centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
+            groundTruth_arr = get_groundTruth("/data/sakka/truth/{0}_{1}.csv".format(hour, minute), maskPath="/data/sakka/image/mask.png")
+            accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
+
+    print("******************************************")
+    print("Accuracy: {}".format(sum(accuracy_lst)/len(accuracy_lst)))
+    print("******************************************")
