@@ -351,7 +351,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 
     # mask index
     # if you analyze all areas, please set a white image
-    indexH, indexW = get_masked_index("../image/mask.png")
+    indexH, indexW = get_masked_index("/data/sakka/image/mask.png")
     assert len(indexH) == len(indexW)
 
     # learning
