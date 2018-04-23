@@ -374,7 +374,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
         for hour in range(1, 17):
             for minute in range(1, 62):
                 img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
-                label = np.load("/data/sakka/data/est/dens/{0}_{1}.npy".format(hour, minute))
+                label = np.load("/data/sakka/dens/est/{0}_{1}.npy".format(hour, minute))
                 maskedImg = get_masked_data(img)
                 maskedLabel = get_masked_data(label)
                 X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
@@ -542,4 +542,4 @@ if __name__ == "__main__":
     inputDensDirPath = "/data/sakka/dens/25/"
     modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
-    main(X_train, X_test, y_train, y_test, modelPath, estimation=False)
+    main(X_train, X_test, y_train, y_test, modelPath, estimation=True)
