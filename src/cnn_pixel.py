@@ -371,7 +371,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.exit(1)
 
         loss_lst = []
-        for hour in range(1, 17):
+        for hour in range(10, 17):
             for minute in range(1, 62):
                 img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
                 label = np.load("/data/sakka/dens/est/{0}_{1}.npy".format(hour, minute))
