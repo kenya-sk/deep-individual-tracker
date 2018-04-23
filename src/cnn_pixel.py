@@ -405,7 +405,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
                 loss_lst.append(estLoss)
 
-        print("mean estimation loss: {}".format(sum(estLoss) / len(estLoss)))
+        print("mean estimation loss: {}".format(sum(loss_lst) / len(estLoss)))
         # --------------------------------------------------------------------------
 
     else:
