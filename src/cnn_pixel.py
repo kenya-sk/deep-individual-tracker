@@ -370,8 +370,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.stderr("Error: not found checkpoint file")
             sys.exit(1)
 
-        #skip_lst = [1, 2, 3, 4, 5, 10, 15]
-        skip_lst = [1]
+        skip_lst = [1, 2, 3, 4, 5, 10, 15]
 
         for skip in skip_lst:
             for file_num in range(35):
@@ -415,7 +414,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                         estDensMap[index_lst[counter]] = est_arr[i]
 
                 estDensMap = estDensMap.reshape(720, 1280)
-                np.save("/data/sakka/estimation/test_image/{}/{}.npy".format(window, file_num+1), estDensMap)
+                np.save("/data/sakka/estimation/test_image/{}/{}.npy".format(skip, file_num+1), estDensMap)
                 print("END: estimate density map")
 
                 # calculate estimation loss
