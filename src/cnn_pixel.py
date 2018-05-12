@@ -379,11 +379,11 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
                 maskedImg = get_masked_data(img)
                 maskedLabel = get_masked_data(label)
-                X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW
+                X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
 
                 # local image index
                 index_lst = []
-                for step in range(len(indewH)):
+                for step in range(len(indexH)):
                     if step%window == 0:
                         index_lst.append(step)
 
