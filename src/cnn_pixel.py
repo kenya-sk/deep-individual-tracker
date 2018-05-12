@@ -370,37 +370,38 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.stderr("Error: not found checkpoint file")
             sys.exit(1)
 
-        img = cv2.imread("../image/original/16_100920.png")
-        label = np.load("../data/dens/25/16_100920.npy")
-        maskedImg = get_masked_data(img)
-        maskedLabel = get_masked_data(label)
-        X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
-        est_arr = np.zeros(len(indexH))
-        estDensMap = np.zeros((720, 1280), dtype="float32")
+        for i in range(35):
+            img = cv2.imread("/data/sakka/image/test_image/{}.png".format(i+1))
+            label = np.load("/data/sakka/dens/test_image/{}.npy".format(i+1))
+            maskedImg = get_masked_data(img)
+            maskedLabel = get_masked_data(label)
+            X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
+            est_arr = np.zeros(len(indexH))
+            estDensMap = np.zeros((720, 1280), dtype="float32")
 
-        estBatchSize = 2500
-        est_n_batches = int(len(X_local)/estBatchSize)
+            estBatchSize = 2500
+            est_n_batches = int(len(X_local)/estBatchSize)
 
-        print("STSRT: estimate density map")
-        for batch in range(est_n_batches):
-            startIndex = batch*estBatchSize
-            endIndex = startIndex + estBatchSize
+            print("STSRT: estimate density map")
+            for batch in range(est_n_batches):
+                startIndex = batch*estBatchSize
+                endIndex = startIndex + estBatchSize
 
-            est_arr[startIndex:endIndex] = sess.run(y, feed_dict={
-                X: X_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                y_: y_local[startIndex:endIndex].reshape(-1, 1),
-                is_training: False}).reshape(estBatchSize)
-            print("DONE: batch {}".format(batch))
+                est_arr[startIndex:endIndex] = sess.run(y, feed_dict={
+                    X: X_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                    y_: y_local[startIndex:endIndex].reshape(-1, 1),
+                    is_training: False}).reshape(estBatchSize)
+                print("DONE: batch {}".format(batch))
 
-        for i in range(len(indexH)):
-            estDensMap[indexH[i], indexW[i]] = est_arr[i]
+            for i in range(len(indexH)):
+                estDensMap[indexH[i], indexW[i]] = est_arr[i]
 
-        np.save("./estimation/estimation.npy", estDensMap)
-        print("END: estimate density map")
+            np.save("/data/sakka/estimation/test_image/{}.npy".format(i+1), estDensMap)
+            print("END: estimate density map")
 
-        # calculate estimation loss
-        estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
-        print("estimation loss: {}".format(estLoss))
+            # calculate estimation loss
+            estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
+            print("estimation loss: {}".format(estLoss))
         # --------------------------------------------------------------------------
 
     else:
