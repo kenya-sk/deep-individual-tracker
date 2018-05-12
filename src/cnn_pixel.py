@@ -390,14 +390,14 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 estBatchSize = 2500
                 est_n_batches = int(len(index_lst)/estBatchSize)
                 est_arr = np.zeros(estBatchSize)
-                estDensMap = np.zeros((720, 1280), dtype="float32")
+                estDensMap = np.zeros(720*1280, dtype="float32")
 
                 print("STSRT: estimate density map")
                 for batch in range(est_n_batches):
                     # array of skiped local image
                     X_skip = np.zeros((estBatchSize,72,72,3))
-                    y_skip = no.zeros((estBatchSize,1))
-                    for index_cord,index_local in enumarate(range(estBatchSize)):
+                    y_skip = np.zeros((estBatchSize,1))
+                    for index_cord,index_local in enumerate(range(estBatchSize)):
                         current_index = index_lst[batch+index_local]
                         X_skip[index_cord] = X_local[current_index]
                         y_skip[index_cord] = y_local[current_index]
@@ -412,10 +412,9 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                     startIndex = batch*estBatchSize
                     endIndex = startIndex + estBatchSize
                     for i in range(startIndex,endIndex):
-                        skiped_h = indexH[index_lst[i]]
-                        skiped_w = indexW[index_lst[i]]
-                        estDensMap[skiped_H, skiped_W] = est_arr[i]
+                        estDensMap[index_lst[i]] = est_arr[i]
 
+                estDensMap = estDensMap.reshape(720, 1280)
                 np.save("/data/sakka/estimation/test_image/{}/{}.npy".format(window, file_num+1), estDensMap)
                 print("END: estimate density map")
 
