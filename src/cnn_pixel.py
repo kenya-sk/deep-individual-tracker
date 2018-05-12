@@ -54,7 +54,7 @@ def get_masked_data(data):
     data: image or density map
     mask: 3channel mask image. the value is 0 or 1
     """
-    mask = cv2.imread("../image/mask.png")
+    mask = cv2.imread("/data/sakka/image/mask.png")
     if mask is None:
         sys.stderr.write("Error: can not read mask image")
         sys.exit(1)
@@ -538,4 +538,4 @@ if __name__ == "__main__":
     inputDensDirPath = "/data/sakka/dens/25/"
     modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
-    main(X_train, X_test, y_train, y_test, modelPath, estimation=False)
+    main(X_train, X_test, y_train, y_test, modelPath, estimation=True)
