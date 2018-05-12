@@ -384,7 +384,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 # local image index
                 index_lst = []
                 for step in range(len(indexH)):
-                    if step%window == 0:
+                    if step%skip == 0:
                         index_lst.append(step)
 
                 estBatchSize = 2500
