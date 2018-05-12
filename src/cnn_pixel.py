@@ -6,9 +6,9 @@ import re
 import time
 import sys
 import cv2
+import math
 import numpy as np
 import pandas as pd
-import math
 import tensorflow as tf
 from datetime import datetime
 from sklearn.model_selection import train_test_split
@@ -370,10 +370,11 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.stderr("Error: not found checkpoint file")
             sys.exit(1)
 
-        skip_lst = [1, 2, 3, 4, 5, 10, 15]
+        skip_lst = [1, 2, 3, 4, 5, 10, 15, 20, 30]
 
         for skip in skip_lst:
             for file_num in range(35):
+                est_start_time = time.time()
                 img = cv2.imread("/data/sakka/image/test_image/{}.png".format(file_num+1))
                 label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
                 maskedImg = get_masked_data(img)
@@ -420,6 +421,9 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 # calculate estimation loss
                 estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
                 print("estimation loss: {}".format(estLoss))
+
+            with open("/data/estimation/test_image/{}/{}.txt".format(skip,file_num+1), "w") as f:
+                f.write(str(time.time() - est_start_time))
         # --------------------------------------------------------------------------
 
     else:
