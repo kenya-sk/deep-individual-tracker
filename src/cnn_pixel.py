@@ -422,7 +422,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
                 print("estimation loss: {}".format(estLoss))
 
-            with open("/data/estimation/test_image/{}/{}.txt".format(skip,file_num+1), "w") as f:
+            with open("/data/sakka/estimation/test_image/{}/time.txt".format(skip), "w") as f:
                 f.write(str(time.time() - est_start_time))
         # --------------------------------------------------------------------------
 
