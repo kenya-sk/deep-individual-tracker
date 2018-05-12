@@ -370,9 +370,9 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.stderr("Error: not found checkpoint file")
             sys.exit(1)
 
-        for i in range(35):
-            img = cv2.imread("/data/sakka/image/test_image/{}.png".format(i+1))
-            label = np.load("/data/sakka/dens/test_image/{}.npy".format(i+1))
+        for file_num in range(35):
+            img = cv2.imread("/data/sakka/image/test_image/{}.png".format(file_num+1))
+            label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
             maskedImg = get_masked_data(img)
             maskedLabel = get_masked_data(label)
             X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
@@ -396,7 +396,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             for i in range(len(indexH)):
                 estDensMap[indexH[i], indexW[i]] = est_arr[i]
 
-            np.save("/data/sakka/estimation/test_image/{}.npy".format(i+1), estDensMap)
+            np.save("/data/sakka/estimation/test_image/{}.npy".format(file_num+1), estDensMap)
             print("END: estimate density map")
 
             # calculate estimation loss
