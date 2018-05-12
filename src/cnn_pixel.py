@@ -370,38 +370,58 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.stderr("Error: not found checkpoint file")
             sys.exit(1)
 
-        for file_num in range(35):
-            img = cv2.imread("/data/sakka/image/test_image/{}.png".format(file_num+1))
-            label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
-            maskedImg = get_masked_data(img)
-            maskedLabel = get_masked_data(label)
-            X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
-            est_arr = np.zeros(len(indexH))
-            estDensMap = np.zeros((720, 1280), dtype="float32")
+        #skip_lst = [1, 2, 3, 4, 5, 10, 15]
+        skip_lst = [1]
 
-            estBatchSize = 2500
-            est_n_batches = int(len(X_local)/estBatchSize)
+        for skip in skip_lst:
+            for file_num in range(35):
+                img = cv2.imread("/data/sakka/image/test_image/{}.png".format(file_num+1))
+                label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
+                maskedImg = get_masked_data(img)
+                maskedLabel = get_masked_data(label)
+                X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW
 
-            print("STSRT: estimate density map")
-            for batch in range(est_n_batches):
-                startIndex = batch*estBatchSize
-                endIndex = startIndex + estBatchSize
+                # local image index
+                index_lst = []
+                for step in range(len(indewH)):
+                    if step%window == 0:
+                        index_lst.append(step)
 
-                est_arr[startIndex:endIndex] = sess.run(y, feed_dict={
-                    X: X_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                    y_: y_local[startIndex:endIndex].reshape(-1, 1),
-                    is_training: False}).reshape(estBatchSize)
-                print("DONE: batch {}".format(batch))
+                estBatchSize = 2500
+                est_n_batches = int(len(index_lst)/estBatchSize)
+                est_arr = np.zeros(estBatchSize)
+                estDensMap = np.zeros((720, 1280), dtype="float32")
 
-            for i in range(len(indexH)):
-                estDensMap[indexH[i], indexW[i]] = est_arr[i]
+                print("STSRT: estimate density map")
+                for batch in range(est_n_batches):
+                    # array of skiped local image
+                    X_skip = np.zeros((estBatchSize,72,72,3))
+                    y_skip = no.zeros((estBatchSize,1))
+                    for index_cord,index_local in enumarate(range(estBatchSize)):
+                        current_index = index_lst[batch+index_local]
+                        X_skip[index_cord] = X_local[current_index]
+                        y_skip[index_cord] = y_local[current_index]
 
-            np.save("/data/sakka/estimation/test_image/{}.npy".format(file_num+1), estDensMap)
-            print("END: estimate density map")
+                    # esimate each local image
+                    est_arr = sess.run(y, feed_dict={
+                        X: X_skip,
+                        y_: y_skip,
+                        is_training: False}).reshape(estBatchSize)
+                    print("DONE: batch {}".format(batch))
 
-            # calculate estimation loss
-            estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
-            print("estimation loss: {}".format(estLoss))
+                    startIndex = batch*estBatchSize
+                    endIndex = startIndex + estBatchSize
+                    for i in range(startIndex,endIndex):
+                        skiped_h = indexH[index_lst[i]]
+                        skiped_w = indexW[index_lst[i]]
+                        estDensMap[skiped_H, skiped_W] = est_arr[i]
+
+                np.save("/data/sakka/estimation/test_image/{}/{}.npy".format(window, file_num+1), estDensMap)
+                print("END: estimate density map")
+
+                # calculate estimation loss
+                estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
+                print("estimation loss: {}".format(estLoss))
         # --------------------------------------------------------------------------
 
     else:
