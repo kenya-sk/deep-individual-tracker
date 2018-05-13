@@ -3,6 +3,7 @@
 
 import numpy as np
 import pandas as pd
+import csv
 from scipy import optimize
 
 from clustering import clustering
@@ -68,16 +69,22 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
     return accuracy
 
 if __name__ == "__main__":
-    bandWidth = 20
-    accuracy_lst = []
-    for hour in range(10, 17):
-        for minute in range(1, 62):
-            estDensMap = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
+    bandWidth = 25
+    skip_lst = [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    for skip in skip_lst:
+        accuracy_lst = []
+        for file_num in range(1, 36):
+            estDensMap = np.load("/data/sakka/estimation/{0}/{1}.npy".format(skip, file_num))
             centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
-            groundTruth_arr = get_groundTruth("/data/sakka/cord/est/{0}_{1}.csv".format(hour, minute), maskPath="/data/sakka/image/mask.png")
+            groundTruth_arr = get_groundTruth("/data/sakka/cord/test_image/{1}.csv".format(file_num), maskPath="/data/sakka/image/mask.png")
             accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
             print("DONE: {0}:{1}\n".format(hour, minute))
 
-    print("\n******************************************")
-    print("Toal Accuracy (data size {0}): {1}".format(len(accuracy_lst), sum(accuracy_lst)/len(accuracy_lst)))
-    print("******************************************")
+        print("\n******************************************")
+        print("Toal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
+        print("******************************************")
+
+        with open("/data/sakka/estimation/test_image/{}/accuracy.csv".format(skip), "w") as f:
+            writer = csv.writer(f)
+            writer.weiterow(accuracy_lst)
+        print("SAVE: accuracy data")
