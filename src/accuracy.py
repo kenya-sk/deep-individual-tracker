@@ -18,6 +18,7 @@ def get_groundTruth(groundTruthPath, maskPath=None):
         validGroundTruth_lst = []
 
         for i in range(groundTruth_arr.shape[0]):
+            print(i)
             indexW = np.where(validW == groundTruth_arr[i][0])
             indexH = np.where(validH == groundTruth_arr[i][1])
             intersect = np.intersect1d(indexW, indexH)
@@ -75,10 +76,9 @@ if __name__ == "__main__":
         accuracy_lst = []
         for file_num in range(1, 36):
             estDensMap = np.load("/data/sakka/estimation/test_image/{0}/{1}.npy".format(skip, file_num))
-            centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
+            centroid_arr = clustering(estDensMap, bandWidth, thresh=0.5)
             groundTruth_arr = get_groundTruth("/data/sakka/cord/test_image/{1}.csv".format(file_num), maskPath="/data/sakka/image/mask.png")
             accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
-            print("DONE: {0}:{1}\n".format(hour, minute))
 
         print("\n******************************************")
         print("Toal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
