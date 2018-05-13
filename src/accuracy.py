@@ -74,7 +74,7 @@ if __name__ == "__main__":
     for skip in skip_lst:
         accuracy_lst = []
         for file_num in range(1, 36):
-            estDensMap = np.load("/data/sakka/estimation/{0}/{1}.npy".format(skip, file_num))
+            estDensMap = np.load("/data/sakka/estimation/test_image/{0}/{1}.npy".format(skip, file_num))
             centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
             groundTruth_arr = get_groundTruth("/data/sakka/cord/test_image/{1}.csv".format(file_num), maskPath="/data/sakka/image/mask.png")
             accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
