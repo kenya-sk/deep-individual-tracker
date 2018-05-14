@@ -390,7 +390,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 estBatchSize = 2500
                 est_n_batches = int(len(index_lst)/estBatchSize)
                 est_arr = np.zeros(estBatchSize)
-                estDensMap = np.zeros(720*1280, dtype="float32")
+                estDensMap = np.zeros(720,1280, dtype="float32")
 
                 print("STSRT: estimate density map")
                 for batch in range(est_n_batches):
@@ -398,7 +398,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                     X_skip = np.zeros((estBatchSize,72,72,3))
                     y_skip = np.zeros((estBatchSize,1))
                     for index_cord,index_local in enumerate(range(estBatchSize)):
-                        current_index = index_lst[batch*estbatchSize+index_local]
+                        current_index = index_lst[batch*estBatchSize+index_local]
                         X_skip[index_cord] = X_local[current_index]
                         y_skip[index_cord] = y_local[current_index]
 
