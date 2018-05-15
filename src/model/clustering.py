@@ -12,6 +12,7 @@ from sklearn.cluster import MeanShift
 
 
 def clustering(densMap, bandwidth, thresh=0):
+    # search high value cordinates
     while True:
         # point[0]: y  point[1]: x
         point = np.where(densMap > thresh)
