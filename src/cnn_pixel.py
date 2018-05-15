@@ -390,7 +390,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 estBatchSize = 2500
                 est_n_batches = int(len(index_lst)/estBatchSize)
                 est_arr = np.zeros(estBatchSize)
-                estDensMap = np.zeros(720,1280, dtype="float32")
+                estDensMap = np.zeros((720,1280), dtype="float32")
 
                 print("STSRT: estimate density map")
                 for batch in range(est_n_batches):

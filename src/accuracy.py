@@ -75,15 +75,19 @@ if __name__ == "__main__":
         accuracy_lst = []
         for file_num in range(1, 36):
             estDensMap = np.load("/data/sakka/estimation/test_image/{0}/{1}.npy".format(skip, file_num))
-            centroid_arr = clustering(estDensMap, bandWidth, thresh=0.5)
-            groundTruth_arr = get_groundTruth("/data/sakka/cord/test_image/{0}.csv".format(file_num), maskPath="/data/sakka/image/mask.png")
-            accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
+            centroid_arr = clustering(estDensMap, bandWidth, thresh=0.6)
+            if centroid_arr == None:
+                print("Not found point of centroid\nAccuracy is 0.0")
+                accuracy_lst.append(0.0)
+            else:
+                groundTruth_arr = get_groundTruth("/data/sakka/cord/test_image/{0}.csv".format(file_num), maskPath="/data/sakka/image/mask.png")
+                accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
 
         print("\n******************************************")
         print("Toal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
         print("******************************************")
 
-        with open("/data/sakka/estimation/test_image/{}/accuracy.csv".format(skip), "w") as f:
+        with open("/data/sakka/estimation/test_image/{}/accuracy2.csv".format(skip), "w") as f:
             writer = csv.writer(f)
             writer.writerow(accuracy_lst)
         print("SAVE: accuracy data")
