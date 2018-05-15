@@ -23,7 +23,7 @@ def clustering(densMap, bandwidth, thresh=0):
             if thresh > 0:
                 thresh -= 0.05
             else:
-                return None
+                return np.zeros((0, 2))
 
     # MeanShift clustering
     print("START: clustering")
