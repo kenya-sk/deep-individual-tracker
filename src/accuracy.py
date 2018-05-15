@@ -85,5 +85,5 @@ if __name__ == "__main__":
 
         with open("/data/sakka/estimation/test_image/{}/accuracy.csv".format(skip), "w") as f:
             writer = csv.writer(f)
-            writer.weiterow(accuracy_lst)
+            writer.writerow(accuracy_lst)
         print("SAVE: accuracy data")
