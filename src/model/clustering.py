@@ -22,7 +22,7 @@ def clustering(densMap, bandwidth, thresh=0):
             break
         else:
             if thresh > 0:
-                thresh -= -0.05
+                thresh -= 0.05
             else:
                 return np.zeros((0,2))
 
