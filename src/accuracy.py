@@ -74,8 +74,12 @@ if __name__ == "__main__":
         for minute in range(1, 62):
             estDensMap = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
             centroid_arr = clustering(estDensMap, bandWidth, thresh=0.7)
-            groundTruth_arr = get_groundTruth("/data/sakka/cord/est/{0}_{1}.csv".format(hour, minute), maskPath="/data/sakka/image/mask.png")
-            accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
+            if centroid_arr.shape[0] == 0:
+                print("Not found point of centroid\nAccuracy is 0.0")
+                accuracy_lst.append(0.0)
+            else:
+                groundTruth_arr = get_groundTruth("/data/sakka/cord/est/{0}_{1}.csv".format(hour, minute), maskPath="/data/sakka/image/mask.png")
+                accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
             print("DONE: {0}:{1}\n".format(hour, minute))
 
     print("\n******************************************")

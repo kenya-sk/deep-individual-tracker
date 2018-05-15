@@ -12,10 +12,20 @@ from sklearn.cluster import MeanShift
 
 
 def clustering(densMap, bandwidth, thresh=0):
-    # point[0]: y  point[1]: x
-    point = np.where(densMap > thresh)
-    # X[:, 0]: x  X[:,1]: y
-    X = np.vstack((point[1], point[0])).T
+    # search high value cordinates
+    while True:
+        # point[0]: y  point[1]: x
+        point = np.where(densMap > thresh)
+        # X[:, 0]: x  X[:,1]: y
+        X = np.vstack((point[1], point[0])).T
+        if X.shape[0] > 0:
+            break
+        else:
+            if thresh > 0:
+                thresh -= -0.05
+            else:
+                return np.zeros((0,2))
+
     # MeanShift clustering
     print("START: clustering")
     ms = MeanShift(bandwidth=bandwidth, seeds=X)
