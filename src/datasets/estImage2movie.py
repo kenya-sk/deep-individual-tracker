@@ -8,7 +8,7 @@ import numpy as np
 from tqdm import tqdm
 
 def estImage2movie(image_dirpath, cord_dirpath):
-    file_num = len(glob.glob(image_dirpath + "*.png"))
+    file_num = len(glob.glob(image_dirpath + "/*.png"))
     fourcc = cv2.VideoWriter_fourcc("a", "v", "c", "1")
     fps = 30
     width = 1280
