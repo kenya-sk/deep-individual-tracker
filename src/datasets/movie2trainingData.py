@@ -103,7 +103,7 @@ class Motion:
         else:
             cv2.imwrite("../image/grandTruth/{}.png".format(self.frameNum), self.frame)
             np.savetxt("../data/cord/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
-            self.gauss_kernel(sigmaPow=4)
+            self.gauss_kernel(sigmaPow=25)
             print("save data frame number: {}".format(self.frameNum))
         return
 
