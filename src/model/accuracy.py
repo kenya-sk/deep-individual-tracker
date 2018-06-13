@@ -74,8 +74,9 @@ if __name__ == "__main__":
     for skip in skip_lst:
         accuracy_lst = []
         for file_num in range(1, 36):
-            estDensMap = np.load("/data/sakka/estimation/test_image/{0}/{1}.npy".format(skip, file_num))
+            estDensMap = np.load("/data/sakka/estimation/test_image/dens/{0}/{1}.npy".format(skip, file_num))
             centroid_arr = clustering(estDensMap, bandWidth, thresh=0.6)
+            np.save("/data/sakka/estimation/test_image/cord/{0}/{1}.npy".format(skip, file_num), centroid_arr)
             if centroid_arr.shape[0] == 0:
                 print("Not found point of centroid\nAccuracy is 0.0")
                 accuracy_lst.append(0.0)
@@ -87,7 +88,7 @@ if __name__ == "__main__":
         print("Toal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
         print("******************************************")
 
-        with open("/data/sakka/estimation/test_image/{}/accuracy2.csv".format(skip), "w") as f:
+        with open("/data/sakka/estimation/test_image/accuracy/{}/accuracy.csv".format(skip), "w") as f:
             writer = csv.writer(f)
             writer.writerow(accuracy_lst)
         print("SAVE: accuracy data")
