@@ -97,7 +97,7 @@ if __name__ == "__main__":
     for thresh in thresh_lst:
         accuracy_lst = []
         for file_num in range(1, 36):
-            estDensMap = np.load("/data/sakka/estimation/test_image/model_201806140043/dens/15/{1}.npy".format(file_num))
+            estDensMap = np.load("/data/sakka/estimation/test_image/model_201806140043/dens/15/{0}.npy".format(file_num))
             centroid_arr = clustering(estDensMap, bandWidth, thresh=thresh)
             #np.save("/data/sakka/estimation/test_image/cord/{0}/{1}.npy".format(skip, file_num), centroid_arr)
             if centroid_arr.shape[0] == 0:
@@ -108,7 +108,7 @@ if __name__ == "__main__":
                 accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
 
         print("\n******************************************")
-        print("Toal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
+        print("Toal Accuracy (data size {0}, thresh {1}): {2}".format(len(accuracy_lst), thresh, sum(accuracy_lst)/len(accuracy_lst)))
         print("******************************************")
 
         with open("/data/sakka/estimation/test_image/model_201806140043/accuracy/15/{}/accuracy.csv".format(thresh), "w") as f:
