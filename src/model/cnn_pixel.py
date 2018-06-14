@@ -422,7 +422,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                 print("estimation loss: {}".format(estLoss))
 
             with open("/data/sakka/estimation/test_image/model_201806140043/dens/{}/time.txt".format(skip), "a") as f:
-                f.write("skip: {0} time: {1}".format(skip, (time.time() - est_start_time)/35)) # modify: division num
+                f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip, 35,time.time() - est_start_time)) # modify: division num
         # --------------------------------------------------------------------------
 
     else:
