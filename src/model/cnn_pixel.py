@@ -370,11 +370,11 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.stderr("Error: not found checkpoint file")
             sys.exit(1)
 
-        skip_lst = [1, 2, 3, 4, 5, 10, 15, 20, 30]
+        skip_lst = [15]
 
         for skip in skip_lst:
-            for file_num in range(35):
-                est_start_time = time.time()
+            est_start_time = time.time()
+            for file_num in range(36): # modify: roop num
                 img = cv2.imread("/data/sakka/image/test_image/{}.png".format(file_num+1))
                 label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
                 maskedImg = get_masked_data(img)
@@ -414,15 +414,15 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                         w_est = indexW[index_lst[batch*estBatchSize+i]]
                         estDensMap[h_est,w_est] = est_arr[i]
 
-                np.save("/data/sakka/estimation/test_image/dens/{}/{}.npy".format(skip, file_num+1), estDensMap)
+                np.save("/data/sakka/estimation/test_image/model_201806140043/dens/{}/{}.npy".format(skip, file_num+1), estDensMap)
                 print("END: estimate density map")
 
                 # calculate estimation loss
                 estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
                 print("estimation loss: {}".format(estLoss))
 
-            with open("/data/sakka/estimation/test_image/dens/{}/time.txt".format(skip), "w") as f:
-                f.write(str(time.time() - est_start_time))
+            with open("/data/sakka/estimation/test_image/model_201806140043/dens/{}/time.txt".format(skip), "a") as f:
+                f.write("skip: {0} time: {1}".format(skip, (time.time() - est_start_time)/35)) # modify: division num
         # --------------------------------------------------------------------------
 
     else:
@@ -555,8 +555,8 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
     # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    inputImageDirPath = "/data/sakka/image/original/20170422/"
-    inputDensDirPath = "/data/sakka/dens/20170422/"
-    modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
-    X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0)
-    main(X_train, X_test, y_train, y_test, modelPath, estimation=False)
+    inputImageDirPath = "/data/sakka/image/original/"
+    inputDensDirPath = "/data/sakka/dens/25/"
+    modelPath = "/data/sakka/tensor_model/2018_6_14_0_43/"
+    X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
+    main(X_train, X_test, y_train, y_test, modelPath, estimation=True)
