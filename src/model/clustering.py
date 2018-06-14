@@ -73,4 +73,4 @@ if __name__ == "__main__":
             estDensMap = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
             img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
             centroid_arr = clustering(estDensMap, 20, 0.7)
-            plot_estimation_box(img, centroid_arr, hour, minute, 12)
+            plot_estimation_box(img, centroid_arr, hour, minute, boxSize=12)
