@@ -29,7 +29,7 @@ def get_groundTruth(groundTruthPath, maskPath=None):
 
 def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
 # the distance between the estimation and groundtruth is less than distThreshold --> True
-    def get_norm(x, y):
+    def norm(x, y):
         return (x**2 + y**2)**0.5
 
     # make distance matrix
@@ -39,7 +39,7 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
         for j in range(len(groundTruth_arr)):
             distX = estCentroid_arr[i][0] - groundTruth_arr[j][0]
             distY = estCentroid_arr[i][1] - groundTruth_arr[j][1]
-            distMatrix[i][j] = abs(get_norm(distX, distY))
+            distMatrix[i][j] = abs(norm(distX, distY))
 
     # calculate by hangarian algorithm
     row, col = optimize.linear_sum_assignment(distMatrix)
