@@ -380,7 +380,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             for file_path in image_file_lst:
                 img = cv2.imread(file_path)
                 #label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
-                label = np.zeros((1280, 720))
+                label = np.zeros((720, 1280))
                 maskedImg = get_masked_data(img)
                 maskedLabel = get_masked_data(label)
                 X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
