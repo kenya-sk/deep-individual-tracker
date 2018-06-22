@@ -63,7 +63,7 @@ class Motion:
             elif key == P_KEY:
                 self.interval = 0
                 # save original image
-                cv2.imwrite("../image/original/{}.png".format(self.frameNum), self.frame)
+                cv2.imwrite("../../image/original/{}.png".format(self.frameNum), self.frame)
             elif key == S_KEY:
                 self.save_data()
                 self.interval = INTERVAL
@@ -101,9 +101,9 @@ class Motion:
         if self.features is None:
             print("Error: Not select feature point")
         else:
-            cv2.imwrite("../image/grandTruth/{}.png".format(self.frameNum), self.frame)
-            np.savetxt("../data/cord/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
-            self.gauss_kernel(sigmaPow=4)
+            cv2.imwrite("../../image/grandTruth/20170422/{}.png".format(self.frameNum), self.frame)
+            np.savetxt("../../data/cord/20170422/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
+            self.gauss_kernel(sigmaPow=25)
             print("save data frame number: {}".format(self.frameNum))
         return
 
@@ -119,7 +119,7 @@ class Motion:
             norm = powMatrix[:, :, 0] + powMatrix[:, :, 1]
             kernel += np.exp(-norm/ (2 * sigmaPow))
 
-        np.save("../data/dens/{}".format(self.frameNum), kernel.T)
+        np.save("../../data/dens/20170422/{}".format(self.frameNum), kernel.T)
 
 
 if __name__ == "__main__":

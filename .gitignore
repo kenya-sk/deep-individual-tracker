@@ -16,6 +16,7 @@ movie/
 !*.md
 !*.ipynb
 !CMakeLists.txt
+!Makefile
 
 cnn.py
 .ipynb_checkpoints
