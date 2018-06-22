@@ -557,6 +557,6 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 if __name__ == "__main__":
     inputImageDirPath = "/data/sakka/image/original/"
     inputDensDirPath = "/data/sakka/dens/25/"
-    modelPath = "/data/sakka/tensor_model/2018_6_14_0_43/"
+    modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
     main(X_train, X_test, y_train, y_test, modelPath, estimation=True)
