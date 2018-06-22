@@ -7,6 +7,7 @@ import time
 import sys
 import cv2
 import math
+import glob
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -359,6 +360,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
     saver = tf.train.Saver() # save weight
     ckpt = tf.train.get_checkpoint_state(modelPath) # model exist: True or False
 
+    # FUTURE TASK: switch between prediction and learning
     if estimation:
         # ------------------------ CHECK ESTIMATION MODEL -------------------------
         # check if the ckpt exist
@@ -371,12 +373,14 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.exit(1)
 
         skip_lst = [15]
+        image_file_lst = glob.glob("/data/sakka/image/1h/*.png")
 
         for skip in skip_lst:
             est_start_time = time.time()
-            for file_num in range(36): # modify: roop num
-                img = cv2.imread("/data/sakka/image/test_image/{}.png".format(file_num+1))
-                label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
+            for file_path in image_file_lst:
+                img = cv2.imread(file_path)
+                #label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
+                label = np.zeros((1280, 720))
                 maskedImg = get_masked_data(img)
                 maskedLabel = get_masked_data(label)
                 X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
@@ -414,14 +418,15 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                         w_est = indexW[index_lst[batch*estBatchSize+i]]
                         estDensMap[h_est,w_est] = est_arr[i]
 
-                np.save("/data/sakka/estimation/test_image/model_201806140043/dens/{}/{}.npy".format(skip, file_num+1), estDensMap)
+                outfile_path = file_path.split("/")[-1][:-4] #NEED MODIFY
+                np.save("/data/sakka/estimation/1h/model_201806142123/dens/{}/{}.npy".format(skip, outfile_path), estDensMap)
                 print("END: estimate density map")
 
                 # calculate estimation loss
                 estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
                 print("estimation loss: {}".format(estLoss))
 
-            with open("/data/sakka/estimation/test_image/model_201806140043/dens/{}/time.txt".format(skip), "a") as f:
+            with open("/data/sakka/estimation/1h/model_201806142123/dens/{}/time.txt".format(skip), "a") as f:
                 f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip, 35,time.time() - est_start_time)) # modify: division num
         # --------------------------------------------------------------------------
 
@@ -557,6 +562,6 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 if __name__ == "__main__":
     inputImageDirPath = "/data/sakka/image/original/"
     inputDensDirPath = "/data/sakka/dens/25/"
-    modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
+    modelPath = "/data/sakka/tensor_model/2018_6_14_21_23/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
     main(X_train, X_test, y_train, y_test, modelPath, estimation=True)
