@@ -21,6 +21,7 @@ def get_groundTruth(groundTruthPath, maskPath=None):
     output:
         array showing the positon of target
     """
+    
     groundTruth_arr = np.array(pd.read_csv(groundTruthPath))
     if maskPath is None:
         return groundTruth_arr
