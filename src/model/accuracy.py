@@ -99,7 +99,7 @@ if __name__ == "__main__":
                 print("Not found point of centroid\nAccuracy is 0.0")
                 accuracy_lst.append(0.0)
             else:
-                groundTruth_arr = get_groundTruth("/data/sakka/cord/test_image/model_201806142123/{0}.csv".format(file_num), maskPath="/data/sakka/image/mask.png")
+                groundTruth_arr = get_groundTruth("/data/sakka/cord/test_image/{0}.csv".format(file_num), maskPath="/data/sakka/image/mask.png")
                 accuracy_lst.append(accuracy(centroid_arr, groundTruth_arr, bandWidth))
 
         print("\n******************************************")
