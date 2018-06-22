@@ -39,7 +39,7 @@ def clustering(densMap, bandwidth, thresh=0):
         centroid_arr[k] = cluster_centers[k]
     print("DONE: clustering")
 
-    return centroid_arr
+    return centroid_arr.astype(np.int32)
 
 def plot_estimation_box(img, centroid_arr,hour, minute, boxSize=12):
     # get cordinates of vertex(lert top and right bottom)
