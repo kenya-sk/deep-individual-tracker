@@ -10,6 +10,17 @@ from clustering import clustering
 from cnn_pixel import get_masked_index
 
 def get_groundTruth(groundTruthPath, maskPath=None):
+    """
+    plots the coordinates of answer label on the black image(all value 0) and
+    creates a correct image for accuracy evaluation.
+
+    input:
+        groundTruthPath: coordinates of the estimated target (.csv)
+        maskPath: enter path only when using mask image
+
+    output:
+        array showing the positon of target
+    """
     groundTruth_arr = np.array(pd.read_csv(groundTruthPath))
     if maskPath is None:
         return groundTruth_arr
@@ -29,9 +40,17 @@ def get_groundTruth(groundTruthPath, maskPath=None):
 
 
 def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
-# the distance between the estimation and groundtruth is less than distThreshold --> True
-    def norm(x, y):
-        return (x**2 + y**2)**0.5
+    """
+    the distance between the estimation and groundtruth is less than distThreshold --> True
+
+    input:
+        estCentroid_arr: coordinates of the estimated target (.npy). array shape == original image shape
+        groundTruth_arr: coordinates of the answer label (.csv)
+        distThreshold: it is set maximum value of kernel width
+
+    output:
+        accuracy per frame
+    """
 
     # make distance matrix
     n = max(len(estCentroid_arr), len(groundTruth_arr))
@@ -40,7 +59,7 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
         for j in range(len(groundTruth_arr)):
             distX = estCentroid_arr[i][0] - groundTruth_arr[j][0]
             distY = estCentroid_arr[i][1] - groundTruth_arr[j][1]
-            distMatrix[i][j] = abs(norm(distX, distY))
+            distMatrix[i][j] = abs(np.linalg.norm(distX, distY))
 
     # calculate by hangarian algorithm
     row, col = optimize.linear_sum_assignment(distMatrix)
