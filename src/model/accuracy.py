@@ -58,8 +58,8 @@ def accuracy(estCentroid_arr, groundTruth_arr, distTreshold):
     distMatrix = np.zeros((n,n))
     for i in range(len(estCentroid_arr)):
         for j in range(len(groundTruth_arr)):
-            diff_cord = estCentroid_arr[i] - groundTruth_arr[j]
-            distMatrix[i][j] = np.linalg.norm(diff_cord[0])
+            dist_cord = estCentroid_arr[i] - groundTruth_arr[j]
+            distMatrix[i][j] = np.linalg.norm(dist_cord)
 
     # calculate by hangarian algorithm
     row, col = optimize.linear_sum_assignment(distMatrix)
