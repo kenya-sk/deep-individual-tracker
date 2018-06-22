@@ -94,7 +94,7 @@ if __name__ == "__main__":
         for file_num in range(1, 36):
             estDensMap = np.load("/data/sakka/estimation/test_image/model_201806142123/dens/{0}/{1}.npy".format(skip, file_num))
             centroid_arr = clustering(estDensMap, bandWidth, thresh=0.4)
-            np.save("/data/sakka/estimation/test_image/cord/{0}/{1}.npy".format(skip, file_num), centroid_arr)
+            np.save("/data/sakka/estimation/test_image/model_201806142123/cord/{0}/{1}.npy".format(skip, file_num), centroid_arr)
             if centroid_arr.shape[0] == 0:
                 print("Not found point of centroid\nAccuracy is 0.0")
                 accuracy_lst.append(0.0)
