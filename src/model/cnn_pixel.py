@@ -203,7 +203,8 @@ def batch_norm(X, axes, shape, is_training):
 
 def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
     # start session
-    sess = tf.InteractiveSession()
+    config = tf.ConfigProto(gpu_options = tf.GPUOptions(pre_process_gpu_memory_fraction=1.0))
+    sess = tf.InteractiveSession(config=config)
 
     # ------------------------------- MODEL -----------------------------------
     # input image
@@ -419,14 +420,14 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                         estDensMap[h_est,w_est] = est_arr[i]
 
                 outfile_path = file_path.split("/")[-1][:-4] #NEED MODIFY
-                np.save("/data/sakka/estimation/1h/model_201806142123/dens/{}/{}.npy".format(skip, outfile_path), estDensMap)
+                np.save("/data/sakka/estimation/1h/model_201804151507/dens/{}/{}.npy".format(skip, outfile_path), estDensMap)
                 print("END: estimate density map")
 
                 # calculate estimation loss
                 estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
                 print("estimation loss: {}".format(estLoss))
 
-            with open("/data/sakka/estimation/1h/model_201806142123/dens/{}/time.txt".format(skip), "a") as f:
+            with open("/data/sakka/estimation/1h/model_201804151507/dens/{}/time.txt".format(skip), "a") as f:
                 f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip, 35,time.time() - est_start_time)) # modify: division num
         # --------------------------------------------------------------------------
 
@@ -562,6 +563,6 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 if __name__ == "__main__":
     inputImageDirPath = "/data/sakka/image/original/"
     inputDensDirPath = "/data/sakka/dens/25/"
-    modelPath = "/data/sakka/tensor_model/2018_6_14_21_23/"
+    modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
     main(X_train, X_test, y_train, y_test, modelPath, estimation=True)
