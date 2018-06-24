@@ -203,7 +203,7 @@ def batch_norm(X, axes, shape, is_training):
 
 def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
     # start session
-    config = tf.ConfigProto(gpu_options = tf.GPUOptions(pre_process_gpu_memory_fraction=1.0))
+    config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1.0))
     sess = tf.InteractiveSession(config=config)
 
     # ------------------------------- MODEL -----------------------------------
