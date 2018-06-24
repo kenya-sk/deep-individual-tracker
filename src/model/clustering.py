@@ -8,6 +8,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import glob
 from sklearn.cluster import MeanShift
 
 
@@ -68,9 +69,17 @@ def plot_estimation_box(img, centroid_arr,hour, minute, boxSize=12):
 
 
 if __name__ == "__main__":
-    for hour in range(10, 17):
-        for minute in range(1, 62):
-            estDensMap = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
-            img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
-            centroid_arr = clustering(estDensMap, 20, 0.7)
-            plot_estimation_box(img, centroid_arr, hour, minute, boxSize=12)
+    # for hour in range(10, 17):
+    #     for minute in range(1, 62):
+    #         estDensMap = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
+    #         img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
+    #         centroid_arr = clustering(estDensMap, 20, 0.7)
+    #         plot_estimation_box(img, centroid_arr, hour, minute, boxSize=12)
+
+    # check 1h data
+    file_lst = glob.glob("/data/sakka/estimation/1h/model_201806142123/dens/15/*.npy")
+    for file_path in file_lst:
+        estDensMap = np.load(file_path)
+        centroid_arr = clustering(estDensMap, 25, 0.4)
+        file_num = file_path.split("/")[-1][:-4]
+        np.save("/data/sakka/estimation/1h/model_201806142123/cord/15/{}.npy".format(file_num), centroid_arr)
