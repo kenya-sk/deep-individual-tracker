@@ -203,7 +203,8 @@ def batch_norm(X, axes, shape, is_training):
 
 def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
     # start session
-    sess = tf.InteractiveSession()
+    config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
+    sess = tf.InteractiveSession(config=config)
 
     # ------------------------------- MODEL -----------------------------------
     # input image
@@ -562,6 +563,6 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 if __name__ == "__main__":
     inputImageDirPath = "/data/sakka/image/original/"
     inputDensDirPath = "/data/sakka/dens/25/"
-    modelPath = "/data/sakka/tensor_model/2018_6_14_21_23/"
+    modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
     main(X_train, X_test, y_train, y_test, modelPath, estimation=True)
