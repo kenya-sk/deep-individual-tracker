@@ -77,9 +77,9 @@ if __name__ == "__main__":
     #         plot_estimation_box(img, centroid_arr, hour, minute, boxSize=12)
 
     # check 1h data
-    file_lst = glob.glob("/data/sakka/estimation/1h/model_201806142123/dens/15/*.npy")
+    file_lst = glob.glob("/data/sakka/estimation/1h_10/model_201804151507/dens/15/*.npy")
     for file_path in file_lst:
         estDensMap = np.load(file_path)
         centroid_arr = clustering(estDensMap, 25, 0.4)
         file_num = file_path.split("/")[-1][:-4]
-        np.save("/data/sakka/estimation/1h/model_201806142123/cord/15/{}.npy".format(file_num), centroid_arr)
+        np.save("/data/sakka/estimation/1h_10/model_201804151507/cord/15/{}.npy".format(file_num), centroid_arr)

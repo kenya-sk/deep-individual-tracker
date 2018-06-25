@@ -373,7 +373,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.exit(1)
 
         skip_lst = [15]
-        image_file_lst = glob.glob("/data/sakka/image/1h/*.png")
+        image_file_lst = glob.glob("/data/sakka/image/1h_10/*.png")
 
         for skip in skip_lst:
             est_start_time = time.time()
@@ -419,14 +419,14 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
                         estDensMap[h_est,w_est] = est_arr[i]
 
                 outfile_path = file_path.split("/")[-1][:-4] #NEED MODIFY
-                np.save("/data/sakka/estimation/1h/model_201806142123/dens/{}/{}.npy".format(skip, outfile_path), estDensMap)
+                np.save("/data/sakka/estimation/1h_10/model_201806142123/dens/{}/{}.npy".format(skip, outfile_path), estDensMap)
                 print("END: estimate density map")
 
                 # calculate estimation loss
                 estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
                 print("estimation loss: {}".format(estLoss))
 
-            with open("/data/sakka/estimation/1h/model_201806142123/dens/{}/time.txt".format(skip), "a") as f:
+            with open("/data/sakka/estimation/1h_10/model_201806142123/dens/{}/time.txt".format(skip), "a") as f:
                 f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip, 35,time.time() - est_start_time)) # modify: division num
         # --------------------------------------------------------------------------
 
