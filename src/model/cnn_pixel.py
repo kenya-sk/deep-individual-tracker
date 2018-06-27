@@ -304,7 +304,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     # mask index
     # if you analyze all areas, please set a white image
-    indexH, indexW = cnn_util.et_masked_index("/data/sakka/image/mask.png")
+    indexH, indexW = cnn_util.get_masked_index("/data/sakka/image/mask.png")
 
     # learning
     startTime = time.time()
