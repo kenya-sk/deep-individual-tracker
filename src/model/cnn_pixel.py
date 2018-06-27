@@ -6,9 +6,10 @@ import re
 import time
 import sys
 import cv2
+import math
+import glob
 import numpy as np
 import pandas as pd
-import math
 import tensorflow as tf
 from datetime import datetime
 from sklearn.model_selection import train_test_split
@@ -54,7 +55,7 @@ def get_masked_data(data):
     data: image or density map
     mask: 3channel mask image. the value is 0 or 1
     """
-    mask = cv2.imread("../image/mask.png")
+    mask = cv2.imread("/data/sakka/image/mask.png")
     if mask is None:
         sys.stderr.write("Error: can not read mask image")
         sys.exit(1)
@@ -202,7 +203,8 @@ def batch_norm(X, axes, shape, is_training):
 
 def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
     # start session
-    sess = tf.InteractiveSession()
+    config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
+    sess = tf.InteractiveSession(config=config)
 
     # ------------------------------- MODEL -----------------------------------
     # input image
@@ -351,7 +353,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 
     # mask index
     # if you analyze all areas, please set a white image
-    indexH, indexW = get_masked_index("../image/mask.png")
+    indexH, indexW = get_masked_index("/data/sakka/image/mask.png")
     assert len(indexH) == len(indexW)
 
     # learning
@@ -359,6 +361,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
     saver = tf.train.Saver() # save weight
     ckpt = tf.train.get_checkpoint_state(modelPath) # model exist: True or False
 
+    # FUTURE TASK: switch between prediction and learning
     if estimation:
         # ------------------------ CHECK ESTIMATION MODEL -------------------------
         # check if the ckpt exist
@@ -370,37 +373,62 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
             sys.stderr("Error: not found checkpoint file")
             sys.exit(1)
 
-        img = cv2.imread("../image/original/16_100920.png")
-        label = np.load("../data/dens/25/16_100920.npy")
-        maskedImg = get_masked_data(img)
-        maskedLabel = get_masked_data(label)
-        X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
-        est_arr = np.zeros(len(indexH))
-        estDensMap = np.zeros((720, 1280), dtype="float32")
+        skip_lst = [15]
+        image_file_lst = glob.glob("/data/sakka/image/1h_10/*.png")
 
-        estBatchSize = 2500
-        est_n_batches = int(len(X_local)/estBatchSize)
+        for skip in skip_lst:
+            est_start_time = time.time()
+            for file_path in image_file_lst:
+                img = cv2.imread(file_path)
+                #label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
+                label = np.zeros((720, 1280))
+                maskedImg = get_masked_data(img)
+                maskedLabel = get_masked_data(label)
+                X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
 
-        print("STSRT: estimate density map")
-        for batch in range(est_n_batches):
-            startIndex = batch*estBatchSize
-            endIndex = startIndex + estBatchSize
+                # local image index
+                index_lst = []
+                for step in range(len(indexH)):
+                    if step%skip == 0:
+                        index_lst.append(step)
 
-            est_arr[startIndex:endIndex] = sess.run(y, feed_dict={
-                X: X_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                y_: y_local[startIndex:endIndex].reshape(-1, 1),
-                is_training: False}).reshape(estBatchSize)
-            print("DONE: batch {}".format(batch))
+                estBatchSize = 2500
+                est_n_batches = int(len(index_lst)/estBatchSize)
+                est_arr = np.zeros(estBatchSize)
+                estDensMap = np.zeros((720,1280), dtype="float32")
 
-        for i in range(len(indexH)):
-            estDensMap[indexH[i], indexW[i]] = est_arr[i]
+                print("STSRT: estimate density map")
+                for batch in range(est_n_batches):
+                    # array of skiped local image
+                    X_skip = np.zeros((estBatchSize,72,72,3))
+                    y_skip = np.zeros((estBatchSize,1))
+                    for index_cord,index_local in enumerate(range(estBatchSize)):
+                        current_index = index_lst[batch*estBatchSize+index_local]
+                        X_skip[index_cord] = X_local[current_index]
+                        y_skip[index_cord] = y_local[current_index]
 
-        np.save("./estimation/estimation.npy", estDensMap)
-        print("END: estimate density map")
+                    # esimate each local image
+                    est_arr = sess.run(y, feed_dict={
+                        X: X_skip,
+                        y_: y_skip,
+                        is_training: False}).reshape(estBatchSize)
+                    print("DONE: batch {}".format(batch))
 
-        # calculate estimation loss
-        estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
-        print("estimation loss: {}".format(estLoss))
+                    for i in range(estBatchSize):
+                        h_est = indexH[index_lst[batch*estBatchSize+i]]
+                        w_est = indexW[index_lst[batch*estBatchSize+i]]
+                        estDensMap[h_est,w_est] = est_arr[i]
+
+                outfile_path = file_path.split("/")[-1][:-4] #NEED MODIFY
+                np.save("/data/sakka/estimation/1h_10/model_201806142123/dens/{}/{}.npy".format(skip, outfile_path), estDensMap)
+                print("END: estimate density map")
+
+                # calculate estimation loss
+                estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
+                print("estimation loss: {}".format(estLoss))
+
+            with open("/data/sakka/estimation/1h_10/model_201806142123/dens/{}/time.txt".format(skip), "a") as f:
+                f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip, 35,time.time() - est_start_time)) # modify: division num
         # --------------------------------------------------------------------------
 
     else:
@@ -423,7 +451,7 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
         # --------------------------------------------------------------------------
 
         # -------------------------- LEARNING STEP --------------------------------
-        n_epochs = 1
+        n_epochs = 10
         batchSize = 100
         hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
         hardNegativeLabel_arr = np.zeros((1), dtype="float32")
@@ -537,4 +565,4 @@ if __name__ == "__main__":
     inputDensDirPath = "/data/sakka/dens/25/"
     modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
-    main(X_train, X_test, y_train, y_test, modelPath, estimation=False)
+    main(X_train, X_test, y_train, y_test, modelPath, estimation=True)

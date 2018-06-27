@@ -38,6 +38,10 @@ This repository performs individual detection in consideration of overlap by usi
 To create learning data in the following procedure.
 1. To get images from movie. To input the path of movie file and the path of output image file.
 ```
+make
+```
+or
+```
 g++ -o movie2image.cpp `pkg-config --cflags opencv` `pkg-config --libs opencv`
 ```
 

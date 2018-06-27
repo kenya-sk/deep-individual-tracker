@@ -22,7 +22,8 @@ void movie_to_image(std::string inputFilePath, std::string outputDirPath){
     cout << "Input movie fps: " << fps << endl;
 
     cv::Mat frame;
-    int interval = fps * 60; //interval at which images are saved.
+    //int interval = fps * 60; //interval at which images are saved.
+    int interval = 30; //interval at which images are saved.
     int frameNum = 0;
     string outputFilePath = "";
 
@@ -34,7 +35,7 @@ void movie_to_image(std::string inputFilePath, std::string outputDirPath){
         frameNum++;
 
         if(frameNum % interval == 0){
-            outputFilePath = outputDirPath + "/16_" + to_string(frameNum) + ".png";
+            outputFilePath = outputDirPath + to_string(frameNum) + ".png";
             cv::imwrite(outputFilePath, frame);
             cout << "Saved image(frame number: " << frameNum << ")" << endl;
         }
