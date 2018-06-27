@@ -25,7 +25,7 @@ def get_masked_data(data, mask_path):
     return mask_data
 
 
- def get_masked_index(mask_path=None):
+def get_masked_index(mask_path=None):
     if mask_path is None:
          mask = np.ones((720, 1280))
     else:
