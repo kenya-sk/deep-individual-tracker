@@ -15,6 +15,8 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
+from cnn_util import get_masked_data, get_masked_index
+
 ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
 
@@ -33,6 +35,7 @@ def load_data(inputImageDirPath, inputDensDirPath, testSize=0.2):
 
     X = []
     y = []
+    mask_path = "/data/sakka/image/mask.png" #引数で受け取るべき
     file_lst = get_file_path(inputImageDirPath)
     for path in file_lst:
         img = cv2.imread(inputImageDirPath + path)
@@ -40,66 +43,14 @@ def load_data(inputImageDirPath, inputDensDirPath, testSize=0.2):
             sys.stderr.write("Error: can not read image")
             sys.exit(1)
         else:
-            X.append(get_masked_data(img))
+            X.append(cnn_util.get_masked_data(img, mask_pathpath))
         densPath = path.replace(".png", ".npy")
         densMap = np.load(inputDensDirPath + densPath)
-        y.append(get_masked_data(densMap))
+        y.append(cnn_util.get_masked_data(densMap, mask_path))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=testSize)
     return X_train, X_test, y_train, y_test
-
-
-def get_masked_data(data):
-    """
-    data: image or density map
-    mask: 3channel mask image. the value is 0 or 1
-    """
-    mask = cv2.imread("/data/sakka/image/mask.png")
-    if mask is None:
-        sys.stderr.write("Error: can not read mask image")
-        sys.exit(1)
-
-    if len(data.shape) == 3:
-        maskData = data*mask
-    else:
-        maskData = mask[:,:,0]*data
-    return maskData
-
-def get_masked_index(maskPath):
-    mask = cv2.imread(maskPath)
-    if mask.shape[2] == 3:
-        mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
-    index = np.where(mask > 0)
-    indexH = index[0]
-    indexW = index[1]
-    assert len(indexH) == len(indexW)
-    return indexH, indexW
-
-
-def get_local_data(image, densMap, localImgSize, indexH, indexW):
-    """
-    ret: localImg_mat([#locals, localImgSize, localImgSize, image.shape[2]]), density_arr([#locals])
-    """
-    assert len(image.shape) == 3
-    # trim original image
-    image = image[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
-    height = image.shape[0]
-    width = image.shape[1]
-
-    pad = math.floor(localImgSize/2)
-    padImg = np.zeros((height + pad * 2, width + pad * 2, image.shape[2]), dtype="uint8")
-    padImg[pad:height+pad, pad:width+pad] = image
-
-    localImg_mat = np.zeros((len(indexW), localImgSize, localImgSize, image.shape[2]), dtype="uint8")
-    density_arr = np.zeros((len(indexW)), dtype="float32")
-    for idx in range(len(indexW)):
-        # fix index(padImage)
-        h = indexH[idx]
-        w = indexW[idx]
-        localImg_mat[idx] = padImg[h:h+2*pad,w:w+2*pad]
-        density_arr[idx] = densMap[h, w]
-    return localImg_mat, density_arr
 
 
 def hard_negative_dataset(X, y, loss):
@@ -201,7 +152,7 @@ def batch_norm(X, axes, shape, is_training):
     return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
 
 
-def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
+def main(X_train, X_test, y_train, y_test, modelPath):
     # start session
     config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
     sess = tf.InteractiveSession(config=config)
@@ -353,208 +304,137 @@ def main(X_train, X_test, y_train, y_test, modelPath, estimation=False):
 
     # mask index
     # if you analyze all areas, please set a white image
-    indexH, indexW = get_masked_index("/data/sakka/image/mask.png")
-    assert len(indexH) == len(indexW)
+    indexH, indexW = cnn_util.et_masked_index("/data/sakka/image/mask.png")
 
     # learning
     startTime = time.time()
     saver = tf.train.Saver() # save weight
     ckpt = tf.train.get_checkpoint_state(modelPath) # model exist: True or False
 
-    # FUTURE TASK: switch between prediction and learning
-    if estimation:
-        # ------------------------ CHECK ESTIMATION MODEL -------------------------
-        # check if the ckpt exist
-        if ckpt:
-            lastModel = ckpt.model_checkpoint_path
-            print("LODE: {}".format(lastModel))
-            saver.restore(sess, lastModel)
-        else:
-            sys.stderr("Error: not found checkpoint file")
-            sys.exit(1)
+    # -------------------------- PRE PROCESSING --------------------------------
+    # logs of tensor board directory
+    date = datetime.now()
+    dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
+    logDir = "/data/sakka/tensor_log/" + dateDir
 
-        skip_lst = [15]
-        image_file_lst = glob.glob("/data/sakka/image/1h_10/*.png")
+    # delete the specified directory if it exists, recreate it
+    if tf.gfile.Exists(logDir):
+        tf.gfile.DeleteRecursively(logDir)
+    tf.gfile.MakeDirs(logDir)
 
-        for skip in skip_lst:
-            est_start_time = time.time()
-            for file_path in image_file_lst:
-                img = cv2.imread(file_path)
-                #label = np.load("/data/sakka/dens/test_image/{}.npy".format(file_num+1))
-                label = np.zeros((720, 1280))
-                maskedImg = get_masked_data(img)
-                maskedLabel = get_masked_data(label)
-                X_local, y_local = get_local_data(maskedImg, maskedLabel, 72, indexH, indexW)
+    # variable of TensorBoard
+    trainStep = 0
+    testStep = 0
+    merged = tf.summary.merge_all()
+    train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
+    test_writer = tf.summary.FileWriter(logDir + "/test")
+    # --------------------------------------------------------------------------
 
-                # local image index
-                index_lst = []
-                for step in range(len(indexH)):
-                    if step%skip == 0:
-                        index_lst.append(step)
-
-                estBatchSize = 2500
-                est_n_batches = int(len(index_lst)/estBatchSize)
-                est_arr = np.zeros(estBatchSize)
-                estDensMap = np.zeros((720,1280), dtype="float32")
-
-                print("STSRT: estimate density map")
-                for batch in range(est_n_batches):
-                    # array of skiped local image
-                    X_skip = np.zeros((estBatchSize,72,72,3))
-                    y_skip = np.zeros((estBatchSize,1))
-                    for index_cord,index_local in enumerate(range(estBatchSize)):
-                        current_index = index_lst[batch*estBatchSize+index_local]
-                        X_skip[index_cord] = X_local[current_index]
-                        y_skip[index_cord] = y_local[current_index]
-
-                    # esimate each local image
-                    est_arr = sess.run(y, feed_dict={
-                        X: X_skip,
-                        y_: y_skip,
-                        is_training: False}).reshape(estBatchSize)
-                    print("DONE: batch {}".format(batch))
-
-                    for i in range(estBatchSize):
-                        h_est = indexH[index_lst[batch*estBatchSize+i]]
-                        w_est = indexW[index_lst[batch*estBatchSize+i]]
-                        estDensMap[h_est,w_est] = est_arr[i]
-
-                outfile_path = file_path.split("/")[-1][:-4] #NEED MODIFY
-                np.save("/data/sakka/estimation/1h_10/model_201806142123/dens/{}/{}.npy".format(skip, outfile_path), estDensMap)
-                print("END: estimate density map")
-
-                # calculate estimation loss
-                estLoss = np.mean(np.square(label - estDensMap), dtype="float32")
-                print("estimation loss: {}".format(estLoss))
-
-            with open("/data/sakka/estimation/1h_10/model_201806142123/dens/{}/time.txt".format(skip), "a") as f:
-                f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip, 35,time.time() - est_start_time)) # modify: division num
-        # --------------------------------------------------------------------------
-
+    # -------------------------- LEARNING STEP --------------------------------
+    n_epochs = 10
+    batchSize = 100
+    hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
+    hardNegativeLabel_arr = np.zeros((1), dtype="float32")
+    print("Original traning data size: {}".format(len(X_train)))
+    # check if the ckpt exist
+    # relearning or not
+    if ckpt:
+        lastModel = ckpt.model_checkpoint_path
+        print("START: Relearning")
+        print("LODE: {}".format(lastModel))
+        saver.restore(sess, lastModel)
     else:
-        # -------------------------- PRE PROCESSING --------------------------------
-        # logs of tensor board directory
-        date = datetime.now()
-        dateDir = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
-        logDir = "/data/sakka/tensor_log/" + dateDir
-        # delete the specified directory if it exists, recreate it
-        if tf.gfile.Exists(logDir):
-            tf.gfile.DeleteRecursively(logDir)
-        tf.gfile.MakeDirs(logDir)
+        print("START: learning")
+        # initialize all variable
+        tf.global_variables_initializer().run()
 
-        # variable of TensorBoard
-        trainStep = 0
-        testStep = 0
-        merged = tf.summary.merge_all()
-        train_writer = tf.summary.FileWriter(logDir + "/train", sess.graph)
-        test_writer = tf.summary.FileWriter(logDir + "/test")
-        # --------------------------------------------------------------------------
+    try:
+        for epoch in range(n_epochs):
+            print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
+            for i in range(len(X_train)):
 
-        # -------------------------- LEARNING STEP --------------------------------
-        n_epochs = 10
-        batchSize = 100
-        hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
-        hardNegativeLabel_arr = np.zeros((1), dtype="float32")
-        print("Original traning data size: {}".format(len(X_train)))
-        # check if the ckpt exist
-        # relearning or not
-        if ckpt:
-            lastModel = ckpt.model_checkpoint_path
-            print("START: Relearning")
-            print("LODE: {}".format(lastModel))
-            saver.restore(sess, lastModel)
-        else:
-            print("START: learning")
-            # initialize all variable
-            tf.global_variables_initializer().run()
+                # load traing dataset
+                X_train_local, y_train_local = cnn_util.get_local_data(X_train[i], y_train[i], indexH, indexW, local_img_size=72)
+                X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
+                print("hard negative data: {}".format(hardNegativeLabel_arr.shape[0] - 1))
+                if hardNegativeLabel_arr.shape[0] > 1:
+                    X_train_local = np.append(X_train_local, hardNegativeImage_arr[1:], axis=0)
+                    y_train_local = np.append(y_train_local, hardNegativeLabel_arr[1:], axis=0)
+                X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
-        try:
-            for epoch in range(n_epochs):
-                print("elapsed time: {0:.3f} [sec]".format(time.time() - startTime))
-                for i in range(len(X_train)):
-
-                    # load traing dataset
-                    X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], 72, indexH, indexW)
-                    X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
-                    print("hard negative data: {}".format(hardNegativeLabel_arr.shape[0] - 1))
-                    if hardNegativeLabel_arr.shape[0] > 1:
-                        X_train_local = np.append(X_train_local, hardNegativeImage_arr[1:], axis=0)
-                        y_train_local = np.append(y_train_local, hardNegativeLabel_arr[1:], axis=0)
-                    X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
-
-                    # learning by batch
-                    hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
-                    hardNegativeLabel_arr = np.zeros((1), dtype="float32")
-                    train_n_batches = int(len(X_train_local) / batchSize)
-                    for batch in range(train_n_batches):
-                        trainStep += 1
-                        startIndex = batch * batchSize
-                        endIndex = startIndex + batchSize
-
-                        train_diff = sess.run(diff, feed_dict={
-                                X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
-                                is_training:True})
-                        summary, _ = sess.run([merged, train_step], feed_dict={
-                                X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
-                                is_training:True})
-                        train_writer.add_summary(summary, trainStep)
-                        # hard negative mining
-                        batchHardNegativeImage_arr, batchHardNegativeLabel_arr = \
-                                hard_negative_dataset(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_diff)
-                        if batchHardNegativeLabel_arr.shape[0] > 0: # there are hard negative data
-                            hardNegativeImage_arr = np.append(hardNegativeImage_arr, batchHardNegativeImage_arr, axis=0)
-                            hardNegativeLabel_arr = np.append(hardNegativeLabel_arr, batchHardNegativeLabel_arr, axis=0)
-                        else:
-                            pass
-
-                        #record loss data
-                        if batch%100 == 0:
-                            print("************************************************")
-                            print("traning data: {0} / {1}".format(i, len(X_train)))
-                            print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
-                            print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
-                            print("loss: {}".format(np.mean(train_diff)))
-                            print("************************************************\n")
-
-            saver.save(sess, "/data/sakka/tensor_model/" + dateDir + "/model.ckpt")
-            print("END: learning")
-            # --------------------------------------------------------------------------
-
-
-            # -------------------------------- TEST ------------------------------------
-            print("START: test")
-            test_loss = 0.0
-            for i in range(len(X_test)):
-                X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], 72, indexH, indexW)
-                X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thresh = 0)
-                X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
-                test_n_batches = int(len(X_test_local) / batchSize)
-                for batch in range(test_n_batches):
+                # learning by batch
+                hardNegativeImage_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
+                hardNegativeLabel_arr = np.zeros((1), dtype="float32")
+                train_n_batches = int(len(X_train_local) / batchSize)
+                for batch in range(train_n_batches):
+                    trainStep += 1
                     startIndex = batch * batchSize
                     endIndex = startIndex + batchSize
 
-                    summary, tmp_loss = sess.run([merged, loss], feed_dict={
-                                        X: X_test_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
-                                        y_: y_test_local[startIndex:endIndex].reshape(-1, 1),
-                                        is_training:False})
-                    test_writer.add_summary(summary, testStep)
-                    test_loss += tmp_loss
-                    testStep += 1
+                    train_diff = sess.run(diff, feed_dict={
+                            X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                            y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
+                            is_training:True})
+                    summary, _ = sess.run([merged, train_step], feed_dict={
+                            X: X_train_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                            y_: y_train_local[startIndex:endIndex].reshape(-1, 1),
+                            is_training:True})
+                    train_writer.add_summary(summary, trainStep)
+                    # hard negative mining
+                    batchHardNegativeImage_arr, batchHardNegativeLabel_arr = \
+                            hard_negative_dataset(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_diff)
+                    if batchHardNegativeLabel_arr.shape[0] > 0: # there are hard negative data
+                        hardNegativeImage_arr = np.append(hardNegativeImage_arr, batchHardNegativeImage_arr, axis=0)
+                        hardNegativeLabel_arr = np.append(hardNegativeLabel_arr, batchHardNegativeLabel_arr, axis=0)
+                    else:
+                        pass
 
-            print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
-            print("END: test")
+                    #record loss data
+                    if batch%100 == 0:
+                        print("************************************************")
+                        print("traning data: {0} / {1}".format(i, len(X_train)))
+                        print("epoch: {0}, batch: {1} / {2}".format(epoch, batch, train_n_batches))
+                        print("label mean: {}".format(np.mean(y_train_local[startIndex:endIndex])))
+                        print("loss: {}".format(np.mean(train_diff)))
+                        print("************************************************\n")
 
-        # capture Ctrl + C
-        except KeyboardInterrupt:
-            print("\nPressed \"Ctrl + C\"")
-            print("exit problem, save learning model")
-            saver.save(sess, "/data/sakka/tensor_model/" + dateDir + "/model.ckpt")
-
-        train_writer.close()
-        test_writer.close()
+        saver.save(sess, "/data/sakka/tensor_model/" + dateDir + "/model.ckpt")
+        print("END: learning")
         # --------------------------------------------------------------------------
+
+
+        # -------------------------------- TEST ------------------------------------
+        print("START: test")
+        test_loss = 0.0
+        for i in range(len(X_test)):
+            X_test_local, y_test_local = cnn_util.get_local_data(X_test[i], y_test[i], indexH, indexW, local_img_size=72)
+            X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thresh = 0)
+            X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
+            test_n_batches = int(len(X_test_local) / batchSize)
+            for batch in range(test_n_batches):
+                startIndex = batch * batchSize
+                endIndex = startIndex + batchSize
+
+                summary, tmp_loss = sess.run([merged, loss], feed_dict={
+                                    X: X_test_local[startIndex:endIndex].reshape(-1, 72, 72, 3),
+                                    y_: y_test_local[startIndex:endIndex].reshape(-1, 1),
+                                    is_training:False})
+                test_writer.add_summary(summary, testStep)
+                test_loss += tmp_loss
+                testStep += 1
+
+        print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+        print("END: test")
+
+    # capture Ctrl + C
+    except KeyboardInterrupt:
+        print("\nPressed \"Ctrl + C\"")
+        print("exit problem, save learning model")
+        saver.save(sess, "/data/sakka/tensor_model/" + dateDir + "/model.ckpt")
+
+    train_writer.close()
+    test_writer.close()
+    # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
     sess.close()
@@ -565,4 +445,4 @@ if __name__ == "__main__":
     inputDensDirPath = "/data/sakka/dens/25/"
     modelPath = "/data/sakka/tensor_model/2018_4_15_15_7/"
     X_train, X_test, y_train, y_test = load_data(inputImageDirPath, inputDensDirPath, testSize=0.2)
-    main(X_train, X_test, y_train, y_test, modelPath, estimation=True)
+    main(X_train, X_test, y_train, y_test, modelPath)
