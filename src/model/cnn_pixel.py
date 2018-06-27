@@ -43,7 +43,7 @@ def load_data(inputImageDirPath, inputDensDirPath, testSize=0.2):
             sys.stderr.write("Error: can not read image")
             sys.exit(1)
         else:
-            X.append(get_masked_data(img, mask_pathpath))
+            X.append(get_masked_data(img, mask_path))
         densPath = path.replace(".png", ".npy")
         densMap = np.load(inputDensDirPath + densPath)
         y.append(get_masked_data(densMap, mask_path))
