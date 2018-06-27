@@ -15,7 +15,7 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
-from cnn_util import get_masked_data, get_masked_index
+from cnn_util import get_masked_data, get_masked_index, get_local_data
 
 ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
