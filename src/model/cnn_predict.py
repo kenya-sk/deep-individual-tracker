@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import math
 import sys
 import cv2
 import glob
@@ -220,7 +221,7 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
 
 
     saver = tf.train.Saver()
-    ckpt = tf.train.get_checkpoint_state(modelPath)
+    ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
         last_model = ckpt.model_checkpoint_path
         print("LODE: {}".format(last_model))
