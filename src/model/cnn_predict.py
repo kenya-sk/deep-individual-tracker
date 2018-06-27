@@ -28,15 +28,15 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
     skip_width = params_dict["skip_width"]
     img_file_lst = glob.glob(input_img_path)
     mask_path = "/data/sakka/image/mask.png"
-    index_h, index_w = cnn_util.get_masked_index(mask_path)
+    index_h, index_w = get_masked_index(mask_path)
     est_start_time = time.time()
 
     for img_path in img_file_lst:
         img = cv2.imread(img_path)
         label = np.zeros((720, 1280))
-        mask_img = cnn_util.get_masked_data(img, mask_path)
-        mask_label = cnn_util.get_masked_data(label, mask_path)
-        X_local, y_local = cnn_util.get_local_data(masked_img, masked_label, index_h, index_w, local_img_size=72)
+        mask_img = get_masked_data(img, mask_path)
+        mask_label = get_masked_data(label, mask_path)
+        X_local, y_local = get_local_data(masked_img, masked_label, index_h, index_w, local_img_size=72)
 
         # local image index
         index_lst = []

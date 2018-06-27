@@ -43,10 +43,10 @@ def load_data(inputImageDirPath, inputDensDirPath, testSize=0.2):
             sys.stderr.write("Error: can not read image")
             sys.exit(1)
         else:
-            X.append(cnn_util.get_masked_data(img, mask_pathpath))
+            X.append(get_masked_data(img, mask_pathpath))
         densPath = path.replace(".png", ".npy")
         densMap = np.load(inputDensDirPath + densPath)
-        y.append(cnn_util.get_masked_data(densMap, mask_path))
+        y.append(get_masked_data(densMap, mask_path))
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=testSize)
@@ -304,7 +304,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
 
     # mask index
     # if you analyze all areas, please set a white image
-    indexH, indexW = cnn_util.get_masked_index("/data/sakka/image/mask.png")
+    indexH, indexW = get_masked_index("/data/sakka/image/mask.png")
 
     # learning
     startTime = time.time()
@@ -354,7 +354,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
             for i in range(len(X_train)):
 
                 # load traing dataset
-                X_train_local, y_train_local = cnn_util.get_local_data(X_train[i], y_train[i], indexH, indexW, local_img_size=72)
+                X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], indexH, indexW, local_img_size=72)
                 X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0)
                 print("hard negative data: {}".format(hardNegativeLabel_arr.shape[0] - 1))
                 if hardNegativeLabel_arr.shape[0] > 1:
@@ -407,7 +407,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
         print("START: test")
         test_loss = 0.0
         for i in range(len(X_test)):
-            X_test_local, y_test_local = cnn_util.get_local_data(X_test[i], y_test[i], indexH, indexW, local_img_size=72)
+            X_test_local, y_test_local = get_local_data(X_test[i], y_test[i], indexH, indexW, local_img_size=72)
             X_test_local, y_test_local = under_sampling(X_test_local, y_test_local, thresh = 0)
             X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
             test_n_batches = int(len(X_test_local) / batchSize)
