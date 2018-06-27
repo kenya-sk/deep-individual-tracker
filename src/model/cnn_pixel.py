@@ -53,7 +53,7 @@ def load_data(inputImageDirPath, inputDensDirPath, testSize=0.2):
     return X_train, X_test, y_train, y_test
 
 
-def hard_negative_dataset(X, y, loss):
+def hard_negative_mining(X, y, loss):
     #get index that error is greater than the threshold
     def hard_negative_index(loss, thresh):
         index = np.where(loss > thresh)[0]
@@ -382,7 +382,7 @@ def main(X_train, X_test, y_train, y_test, modelPath):
                     train_writer.add_summary(summary, trainStep)
                     # hard negative mining
                     batchHardNegativeImage_arr, batchHardNegativeLabel_arr = \
-                            hard_negative_dataset(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_diff)
+                            hard_negative_mining(X_train_local[startIndex:endIndex], y_train_local[startIndex:endIndex], train_diff)
                     if batchHardNegativeLabel_arr.shape[0] > 0: # there are hard negative data
                         hardNegativeImage_arr = np.append(hardNegativeImage_arr, batchHardNegativeImage_arr, axis=0)
                         hardNegativeLabel_arr = np.append(hardNegativeLabel_arr, batchHardNegativeLabel_arr, axis=0)
