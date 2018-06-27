@@ -14,7 +14,7 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
     config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
     sess = tf.InteractiveSession(config=config)
 
-    saver = tf.Train.Saver()
+    saver = tf.train.Saver()
     ckpt = tf.train.get_checkpoint_state(modelPath)
     if ckpt:
         last_model = ckpt.model_checkpoint_path
@@ -83,8 +83,8 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
 
 
 if __name__ == "__main__":
-    mpdel_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
+    model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
     input_img_path = "/data/sakka/image/1h_10/*.png"
     output_direc = "/data/sakka/estimation/1h_10/model_201806142123/dens/"
     params_dict = {"skip_width": 15, "est_batch_size": 2500}
-    cnn_predit(model_path, input_img_path, output_direc, params_dict)
+    cnn_predict(model_path, input_img_path, output_direc, params_dict)
