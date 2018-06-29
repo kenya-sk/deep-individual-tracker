@@ -180,13 +180,13 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
         img = cv2.imread(img_path)
         label = np.zeros((720, 1280))
         masked_img = get_masked_data(img, mask_path)
-        mask_label = get_masked_data(label, mask_path)
+        masked_label = get_masked_data(label, mask_path)
         X_local, y_local = get_local_data(masked_img, masked_label, index_h, index_w, local_img_size=72)
 
         # local image index
         index_lst = []
         for step in range(len(index_h)):
-            if step%skip == 0:
+            if step%skip_width == 0:
                 index_lst.append(step)
 
         est_batch_size = params_dict["est_batch_size"]
@@ -216,15 +216,15 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
                 w_est = index_w[index_lst[batch*est_batch_size+i]]
                 est_dens_map[h_est,w_est] = est_arr[i]
 
-        np.save(output_direc + "{}/{}.npy".format(skip, outfile_path), est_dens_map)
+        #np.save(output_direc + "{}/{}.npy".format(skip_width, outfile_path), est_dens_map)
         print("END: estimate density map")
 
         # calculate estimation loss
         est_loss = np.mean(np.square(label - est_dens_map), dtype="float32")
         print("estimation loss: {}".format(est_loss))
 
-    with open(output_direc + "{}/time.txt".format(skip), "a") as f:
-        f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip, 35,time.time() - est_start_time)) # modify: division num
+    #with open(output_direc + "{}/time.txt".format(skip), "a") as f:
+    #    f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - est_start_time)) # modify: division num
 
 
 if __name__ == "__main__":
