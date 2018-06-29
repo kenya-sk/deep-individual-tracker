@@ -18,15 +18,11 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
 
     # ------------------------------- MODEL ------------------------------------
     # input image
-    with tf.name_scope("input"):
-        with tf.name_scope("X"):
-            X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
-        # answer image
-        with tf.name_scope("y_"):
-            y_ = tf.placeholder(tf.float32, [None, 1], name="label")
-        # status: True(lerning) or False(test)
-        with tf.name_scope("is_training"):
-            is_training = tf.placeholder(tf.bool, name="is_training")
+    X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
+    # answer image
+    y_ = tf.placeholder(tf.float32, [None, 1], name="label")
+    # status: True(lerning) or False(test)
+    is_training = tf.placeholder(tf.bool, name="is_training")
 
 
     # first layer
