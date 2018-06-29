@@ -10,12 +10,7 @@ import numpy as np
 import tensorflow as tf
 from cnn_util import *
 
-
-def cnn_predict(model_path, input_img_path, output_direc, params_dict):
-    # start session
-    config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
-    sess = tf.InteractiveSession(config=config)
-
+def model(sess):
     # ------------------------------- MODEL -----------------------------------
     # input image
     with tf.name_scope("input"):
@@ -158,6 +153,14 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
         #train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
         train_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
 
+    return sess
+
+def cnn_predict(model_path, input_img_path, output_direc, params_dict):
+    # start session
+    config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
+    sess = tf.InteractiveSession(config=config)
+
+    sess = model(sess)
 
     saver = tf.train.Saver()
     ckpt = tf.train.get_checkpoint_state(model_path)
