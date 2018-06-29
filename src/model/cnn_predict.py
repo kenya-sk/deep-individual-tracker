@@ -8,7 +8,7 @@ import glob
 import time
 import numpy as np
 import tensorflow as tf
-from cnn_util import get_masked_data, get_masked_index
+from cnn_util import *
 
 
 def cnn_predict(model_path, input_img_path, output_direc, params_dict):
@@ -179,7 +179,7 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
     for img_path in img_file_lst:
         img = cv2.imread(img_path)
         label = np.zeros((720, 1280))
-        mask_img = get_masked_data(img, mask_path)
+        masked_img = get_masked_data(img, mask_path)
         mask_label = get_masked_data(label, mask_path)
         X_local, y_local = get_local_data(masked_img, masked_label, index_h, index_w, local_img_size=72)
 
