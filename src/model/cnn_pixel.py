@@ -15,7 +15,7 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
-from cnn_util import get_masked_data, get_masked_index, get_local_data
+from cnn_util import *
 
 ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
@@ -37,6 +37,10 @@ def load_data(inputImageDirPath, inputDensDirPath, testSize=0.2):
     y = []
     mask_path = "/data/sakka/image/mask.png" #引数で受け取るべき
     file_lst = get_file_path(inputImageDirPath)
+    if len(file_lst) == 0:
+        sys.stderr.write("Error: not found input image")
+        sys.exit(1)
+
     for path in file_lst:
         img = cv2.imread(inputImageDirPath + path)
         if img is None:

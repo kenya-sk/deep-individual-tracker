@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 # coding: utf-8
 
-import numpy as np
+import math
 import cv2
+import numpy as np
+
 
 ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
@@ -64,3 +66,64 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size):
         local_img_mat[idx] = pad_img[h:h+2*pad,w:w+2*pad]
         density_arr[idx] = dens_map[h, w]
     return local_img_mat, density_arr
+
+# processing variables and it output tensorboard
+def variable_summaries(var):
+    # output scalar (mean, stddev, max, min, histogram)
+    with tf.name_scope('summaries'):
+        mean = tf.reduce_mean(var)
+        tf.summary.scalar('mean', mean)
+        with tf.name_scope('stddev'):
+            stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+        tf.summary.scalar('stddev', stddev)
+        tf.summary.scalar('max', tf.reduce_max(var))
+        tf.summary.scalar('min', tf.reduce_min(var))
+
+
+# initialize weight by He initialization
+def weight_variable(shape, name=None):
+    # He initialization
+    if len(shape) == 4:
+        #convolution layer
+        n = shape[1] * shape[2] * shape[3]
+    elif len(shape) == 2:
+        # fully conected layer
+        n = shape[0]
+    else:
+        sys.stderr.write("Error: shape is not correct !")
+        sys.exit(1)
+    stddev = math.sqrt(2/n)
+    initial = tf.random_normal(shape, stddev=stddev, dtype=tf.float32)
+    if name is None:
+        return tf.Variable(initial)
+    else:
+        return tf.Variable(initial, name=name)
+
+
+# initialize bias by normal distribution (standard deviation: 0.1)
+def bias_variable(shape, name=None):
+    initial = tf.constant(0.1, shape=shape)
+    if name is None:
+        return tf.Variable(initial)
+    else:
+        return tf.Variable(initial, name=name)
+
+
+# convolutional layer
+def conv2d(x, W):
+    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding="SAME")
+
+
+# pooling layer
+def max_pool_2x2(x):
+    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
+
+# batch normalization
+def batch_norm(X, axes, shape, is_training):
+    if is_training is False:
+        return X
+    epsilon  = 1e-5
+    mean, variance = tf.nn.moments(X, axes)
+    scale = tf.Variable(tf.ones([shape]))
+    offset = tf.Variable(tf.zeros([shape]))
+    return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
