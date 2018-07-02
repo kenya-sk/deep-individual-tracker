@@ -12,23 +12,36 @@ ANALYSIS_WIDTH = (0, 1280)
 
 def get_masked_data(data, mask_path):
     """
-    data: image or density map
-    mask: 3channel mask image. the value is 0 or 1
+    input:
+        data: image or density map
+        mask_path: binary mask path
+
+    output:
+        masked image or density map
     """
-    #mask = cv2.imread("/data/sakka/image/mask.png")
+
+    # mask: 3channel mask image. the value is 0 or 1
     mask = cv2.imread(mask_path)
     if mask is None:
         sys.stderr.write("Error: can not read mask image")
         sys.exit(1)
 
     if len(data.shape) == 3:
-        mask_data = data*mask
+        masked_data = data*mask
     else:
-        mask_data = mask[:,:,0]*data
-    return mask_data
+        masked_data = mask[:,:,0]*data
+    return masked_data
 
 
 def get_masked_index(mask_path=None):
+    """
+    input:
+        mask_path: binay mask path
+
+    output:
+        valid index list (heiht and width)
+    """
+
     if mask_path is None:
          mask = np.ones((720, 1280))
     else:
@@ -44,10 +57,20 @@ def get_masked_index(mask_path=None):
     return index_h, index_w
 
 
-def get_local_data(img, dens_map, index_h, index_w, local_img_size):
+def get_local_data(img, dens_map, index_h, index_w, local_img_size=72):
     """
-    ret: localImg_mat([#locals, local_img_size, local_img_size, img.shape[2]]), density_arr([#locals])
+    input:
+        img: original image
+        dens_map: answer label
+        index_h: valid height index (returned get_masked_index)
+        index_w: valid width index (returned get_masked_index)
+        local_img_size: square local image size (default: 72 pixel)
+
+    output:
+        localImg_mat: ([#locals, local_img_size, local_img_size, img.shape[2]])
+        density_arr: ([#locals])
     """
+
     assert len(img.shape) == 3
     # trim original image
     img = img[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
@@ -61,16 +84,25 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size):
     local_img_mat = np.zeros((len(index_w), local_img_size, local_img_size, img.shape[2]), dtype="uint8")
     density_arr = np.zeros((len(index_w)), dtype="float32")
     for idx in range(len(index_w)):
-        # fix index(padImage)
+        # fix index(pad_img)
         h = index_h[idx]
         w = index_w[idx]
         local_img_mat[idx] = pad_img[h:h+2*pad,w:w+2*pad]
         density_arr[idx] = dens_map[h, w]
     return local_img_mat, density_arr
 
-# processing variables and it output tensorboard
+
 def variable_summaries(var):
-    # output scalar (mean, stddev, max, min, histogram)
+    """
+    processing variables and it output tensorboard
+
+    input:
+        var: value of several layer
+
+    output:
+        mean, stddev, max, min, histogram
+    """
+
     with tf.name_scope('summaries'):
         mean = tf.reduce_mean(var)
         tf.summary.scalar('mean', mean)
@@ -81,8 +113,18 @@ def variable_summaries(var):
         tf.summary.scalar('min', tf.reduce_min(var))
 
 
-# initialize weight by He initialization
 def weight_variable(shape, name=None):
+    """
+    initialize weight by He initialization
+
+    input:
+        shape: size of weight filter
+        name: variable name
+
+    output:
+        weight filter
+    """
+
     # He initialization
     if len(shape) == 4:
         #convolution layer
@@ -101,8 +143,18 @@ def weight_variable(shape, name=None):
         return tf.Variable(initial, name=name)
 
 
-# initialize bias by normal distribution (standard deviation: 0.1)
 def bias_variable(shape, name=None):
+    """
+    initialize bias by normal distribution (standard deviation: 0.1)
+
+    input:
+        shape: size of bias
+        name: variable name
+
+    output:
+        bias
+    """
+
     initial = tf.constant(0.1, shape=shape)
     if name is None:
         return tf.Variable(initial)
@@ -110,17 +162,49 @@ def bias_variable(shape, name=None):
         return tf.Variable(initial, name=name)
 
 
-# convolutional layer
 def conv2d(x, W):
+    """
+    2d convolutional layer
+
+    input:
+        x: input value
+        W: weight
+
+    output:
+        convolved value
+    """
+
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding="SAME")
 
 
-# pooling layer
 def max_pool_2x2(x):
+    """
+    2x2 maximum pooling layer
+
+    input:
+        x: input value
+
+    output:
+        pooled value
+    """
+
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
-# batch normalization
+
 def batch_norm(X, axes, shape, is_training):
+    """
+    batch normalization
+
+    input:
+        X: input value
+        axes: order of dimension
+        shape: chanel number
+        is_training: True or False
+
+    output:
+        batch normalized value
+    """
+
     if is_training is False:
         return X
     epsilon  = 1e-5
@@ -128,3 +212,4 @@ def batch_norm(X, axes, shape, is_training):
     scale = tf.Variable(tf.ones([shape]))
     offset = tf.Variable(tf.zeros([shape]))
     return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
+    

@@ -122,6 +122,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
 
     #---------------------------------------------------------------------------
 
+    # ------------------------------- PREDICT ----------------------------------
     saver = tf.train.Saver()
     ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
@@ -179,12 +180,14 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
                 w_est = index_w[index_lst[batch*est_batch_size+i]]
                 est_dens_map[h_est,w_est] = est_arr[i]
 
-        #np.save(output_dirc_path + "{}/{}.npy".format(skip_width, outfile_path), est_dens_map)
+        np.save(output_dirc_path + "{}/{}.npy".format(skip_width, outfile_path), est_dens_map)
         print("END: estimate density map")
 
         # calculate estimation loss
         est_loss = np.mean(np.square(label - est_dens_map), dtype="float32")
         print("estimation loss: {}".format(est_loss))
+
+    #---------------------------------------------------------------------------
 
     with open(output_dirc_path + "{}/time.txt".format(skip), "a") as f:
         f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - est_start_time)) # modify: division num
