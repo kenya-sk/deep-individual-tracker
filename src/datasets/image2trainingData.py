@@ -14,22 +14,22 @@ S_KEY = 0x73
 
 class ImgMotion(movie2trainingData.Motion):
     # constructor
-    def __init__(self, inputFilePath):
-        super().__init__(inputFilePath)
+    def __init__(self, input_file_path):
+        super().__init__(input_file_path)
 
     def run(self):
-        self.frame = cv2.imread(self.inputFilePath)
+        self.frame = cv2.imread(self.input_file_path)
         if self.frame is None:
             sys.stderr.write("Error: Can not open image file")
             sys.exit(1)
 
-        self.frameNum = self.get_frameNum()
+        self.frame_num = self.get_frame_num()
         self.width = self.frame.shape[1]
         self.height = self.frame.shape[0]
-        self.cordinateMatrix = np.zeros((self.width, self.height, 2), dtype="int64")
+        self.cordinate_matrix = np.zeros((self.width, self.height, 2), dtype="int64")
         for i in range(self.width):
             for j in range(self.height):
-                self.cordinateMatrix[i][j] = [i, j]
+                self.cordinate_matrix[i][j] = [i, j]
 
 
         cv2.imshow("select feature points", self.frame)
@@ -41,29 +41,29 @@ class ImgMotion(movie2trainingData.Motion):
         cv2.destroyAllWindows()
 
 
-    def get_frameNum(self):
-        return self.inputFilePath.split("/")[-1].split(".")[0]
+    def get_frame_num(self):
+        return self.input_file_path.split("/")[-1].split(".")[0]
 
 
-def batch_processing(inputDirPath):
-    if not(os.path.isdir(inputDirPath)):
+def batch_processing(input_dirc_path):
+    if not(os.path.isdir(input_dirc_path)):
         sys.stderr.write("Error: Do not exist directory")
         sys.exit(1)
 
-    file_lst = os.listdir(inputDirPath)
+    file_lst = os.listdir(input_dirc_path)
     pattern = r"^(?!._).*(.png)$"
     repattern = re.compile(pattern)
     print("Number of total file: {}".format(len(file_lst)))
 
-    fileNum = 1
-    for fileName in file_lst:
-        if re.search(repattern, fileName):
-            filePath = inputDirPath + "/" + fileName
-            print("Number: {0}, File name: {1}".format(fileNum, filePath))
+    file_num = 1
+    for file_name in file_lst:
+        if re.search(repattern, file_name):
+            filePath = input_dirc_path + "/" + file_name
+            print("Number: {0}, File name: {1}".format(file_num, filePath))
             ImgMotion(filePath).run()
-            fileNum += 1
+            file_num += 1
 
 
 if __name__ == "__main__":
-    inputDirPath = input("input image directory path: ")
-    batch_processing(inputDirPath)
+    input_dirc_path = input("input image directory path: ")
+    batch_processing(input_dirc_path)

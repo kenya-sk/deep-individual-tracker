@@ -17,10 +17,10 @@ INTERVAL = 1
 
 class Motion:
     # constructor
-    def __init__(self, inputFilePath):
+    def __init__(self, input_file_path):
         cv2.namedWindow("select feature points")
         cv2.setMouseCallback("select feature points", self.mouse_event)
-        self.inputFilePath = inputFilePath
+        self.input_file_path = input_file_path
         self.video = None
         self.interval = INTERVAL
         self.frame = None
@@ -28,13 +28,13 @@ class Motion:
         self.height = None
         self.features = None
         self.status = None
-        self.cordinateMatrix = None
-        self.frameNum = 0
+        self.cordinate_matrix = None
+        self.frame_num = 0
 
 
     # main method
     def run(self):
-        self.video = cv2.VideoCapture(self.inputFilePath)
+        self.video = cv2.VideoCapture(self.input_file_path)
         if not(self.video.isOpened()):
             sys.stderr.write("Error: Can not read movie file")
             sys.exit(1)
@@ -43,14 +43,14 @@ class Motion:
         ret, self.frame = self.video.read()
         self.width = self.frame.shape[1]
         self.height = self.frame.shape[0]
-        self.cordinateMatrix = np.zeros((self.width, self.height, 2), dtype="int64")
+        self.cordinate_matrix = np.zeros((self.width, self.height, 2), dtype="int64")
         for i in range(self.width):
             for j in range(self.height):
-                self.cordinateMatrix[i][j] = [i, j]
+                self.cordinate_matrix[i][j] = [i, j]
 
         while ret:
             self.features = None
-            self.frameNum += 1
+            self.frame_num += 1
             # display image
             cv2.imshow("select feature points", self.frame)
             # processing of next frame
@@ -63,7 +63,7 @@ class Motion:
             elif key == P_KEY:
                 self.interval = 0
                 # save original image
-                cv2.imwrite("../../image/original/{}.png".format(self.frameNum), self.frame)
+                cv2.imwrite("../../image/original/{}.png".format(self.frame_num), self.frame)
             elif key == S_KEY:
                 self.save_data()
                 self.interval = INTERVAL
@@ -101,27 +101,27 @@ class Motion:
         if self.features is None:
             print("Error: Not select feature point")
         else:
-            cv2.imwrite("../../image/grandTruth/20170422/{}.png".format(self.frameNum), self.frame)
-            np.savetxt("../../data/cord/20170422/{}.csv".format(self.frameNum), self.features, delimiter=",", fmt="%d")
-            self.gauss_kernel(sigmaPow=25)
-            print("save data frame number: {}".format(self.frameNum))
+            cv2.imwrite("../../image/grandTruth/20170422/{}.png".format(self.frame_num), self.frame)
+            np.savetxt("../../data/cord/20170422/{}.csv".format(self.frame_num), self.features, delimiter=",", fmt="%d")
+            self.gauss_kernel(sigma_pow=25)
+            print("save data frame number: {}".format(self.frame_num))
         return
 
     # calculate density map by gauss kernel
-    def gauss_kernel(self, sigmaPow):
+    def gauss_kernel(self, sigma_pow):
         kernel = np.zeros((self.width, self.height))
 
         for point in self.features:
-            tmpCordMatrix = np.array(self.cordinateMatrix)
-            pointMatrix = np.full((self.width, self.height, 2), point)
-            diffMatrix = tmpCordMatrix - pointMatrix
-            powMatrix = diffMatrix * diffMatrix
-            norm = powMatrix[:, :, 0] + powMatrix[:, :, 1]
-            kernel += np.exp(-norm/ (2 * sigmaPow))
+            tmp_cord_matrix = np.array(self.cordinate_matrix)
+            point_matrix = np.full((self.width, self.height, 2), point)
+            diff_matrix = tmp_cord_matrix - point_matrix
+            pow_matrix = diff_matrix * diff_matrix
+            norm = pow_matrix[:, :, 0] + pow_matrix[:, :, 1]
+            kernel += np.exp(-norm/ (2 * sigma_pow))
 
-        np.save("../../data/dens/20170422/{}".format(self.frameNum), kernel.T)
+        np.save("../../data/dens/20170422/{}".format(self.frame_num), kernel.T)
 
 
 if __name__ == "__main__":
-    inputFilePath = input("input movie file path: ")
-    Motion(inputFilePath).run()
+    input_file_path = input("input movie file path: ")
+    Motion(input_file_path).run()
