@@ -9,8 +9,8 @@
 
 using namespace std;
 
-void movie_to_image(std::string inputFilePath, std::string outputDirPath){
-    cv::VideoCapture capture(inputFilePath);
+void movie_to_image(std::string input_file_path, std::string output_dirc_path){
+    cv::VideoCapture capture(input_file_path);
     if(!capture.isOpened()){
         cout << "Error: can not open movie file." << endl;
         cout << "Please check input movie file path." << endl;
@@ -22,22 +22,21 @@ void movie_to_image(std::string inputFilePath, std::string outputDirPath){
     cout << "Input movie fps: " << fps << endl;
 
     cv::Mat frame;
-    //int interval = fps * 60; //interval at which images are saved.
-    int interval = 30; //interval at which images are saved.
-    int frameNum = 0;
-    string outputFilePath = "";
+    int interval = fps * 60; //interval at which images are saved.
+    int frame_num = 0;
+    string output_file_path = "";
 
     while(true){
         capture >> frame;
         if (frame.empty()){
             break;
         }
-        frameNum++;
+        frame_num++;
 
-        if(frameNum % interval == 0){
-            outputFilePath = outputDirPath + to_string(frameNum) + ".png";
-            cv::imwrite(outputFilePath, frame);
-            cout << "Saved image(frame number: " << frameNum << ")" << endl;
+        if(frame_num % interval == 0){
+            output_file_path = output_dirc_path + to_string(frame_num) + ".png";
+            cv::imwrite(output_file_path, frame);
+            cout << "Saved image(frame number: " << frame_num << ")" << endl;
         }
     }
 
@@ -45,14 +44,14 @@ void movie_to_image(std::string inputFilePath, std::string outputDirPath){
 }
 
 int main(int argc, char **argv) {
-    string inputFilePath, outputDirPath;
+    string input_file_path, output_dirc_path;
     cout << "Input movie file path: ";
-    cin >> inputFilePath;
+    cin >> input_file_path;
     cout << "\nOutput directory path: ";
-    cin >> outputDirPath;
+    cin >> output_dirc_path;
     cout << endl;
 
-    movie_to_image(inputFilePath, outputDirPath);
+    movie_to_image(input_file_path, output_dirc_path);
 
     return 0;
 }

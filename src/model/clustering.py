@@ -12,11 +12,11 @@ import glob
 from sklearn.cluster import MeanShift
 
 
-def clustering(densMap, bandwidth, thresh=0):
+def clustering(dens_map, band_width, thresh=0):
     # search high value cordinates
     while True:
         # point[0]: y  point[1]: x
-        point = np.where(densMap > thresh)
+        point = np.where(dens_map > thresh)
         # X[:, 0]: x  X[:,1]: y
         X = np.vstack((point[1], point[0])).T
         if X.shape[0] > 0:
@@ -29,7 +29,7 @@ def clustering(densMap, bandwidth, thresh=0):
 
     # MeanShift clustering
     print("START: clustering")
-    ms = MeanShift(bandwidth=bandwidth, seeds=X)
+    ms = MeanShift(bandwidth=band_width, seeds=X)
     ms.fit(X)
     labels = ms.labels_
     cluster_centers = ms.cluster_centers_
@@ -42,11 +42,11 @@ def clustering(densMap, bandwidth, thresh=0):
 
     return centroid_arr.astype(np.int32)
 
-def plot_estimation_box(img, centroid_arr,hour, minute, boxSize=12):
+def plot_estimation_box(img, centroid_arr,hour, minute, box_size=12):
     # get cordinates of vertex(lert top and right bottom)
-    def get_rect_vertex(x, y, boxSize):
+    def get_rect_vertex(x, y, box_size):
         vertex = np.zeros((2, 2), dtype=np.uint16)
-        shift = int(boxSize/2)
+        shift = int(box_size/2)
         # left top corner
         vertex[0][0] = x - shift
         vertex[0][1] = y - shift
@@ -61,7 +61,7 @@ def plot_estimation_box(img, centroid_arr,hour, minute, boxSize=12):
         x = int(centroid_arr[i][0])
         y = int(centroid_arr[i][1])
         img = cv2.circle(img, (x, y), 2, (0, 0, 255), -1, cv2.LINE_AA)
-        vertex = get_rect_vertex(x, y, boxSize)
+        vertex = get_rect_vertex(x, y, box_size)
         img = cv2.rectangle(img, (vertex[0][0], vertex[0][1]), (vertex[1][0], vertex[1][1]), (0, 0, 255), 3)
 
     cv2.imwrite("/data/sakka/image/estBox/{0}_{1}.png".format(hour, minute), img)
@@ -71,15 +71,15 @@ def plot_estimation_box(img, centroid_arr,hour, minute, boxSize=12):
 if __name__ == "__main__":
     # for hour in range(10, 17):
     #     for minute in range(1, 62):
-    #         estDensMap = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
+    #         est_dens_map = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
     #         img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
-    #         centroid_arr = clustering(estDensMap, 20, 0.7)
-    #         plot_estimation_box(img, centroid_arr, hour, minute, boxSize=12)
+    #         centroid_arr = clustering(est_dens_map, 20, 0.7)
+    #         plot_estimation_box(img, centroid_arr, hour, minute, box_size=12)
 
     # check 1h data
     file_lst = glob.glob("/data/sakka/estimation/1h_10/model_201804151507/dens/15/*.npy")
     for file_path in file_lst:
-        estDensMap = np.load(file_path)
-        centroid_arr = clustering(estDensMap, 25, 0.4)
+        est_dens_map = np.load(file_path)
+        centroid_arr = clustering(est_dens_map, 25, 0.4)
         file_num = file_path.split("/")[-1][:-4]
         np.save("/data/sakka/estimation/1h_10/model_201804151507/cord/15/{}.npy".format(file_num), centroid_arr)

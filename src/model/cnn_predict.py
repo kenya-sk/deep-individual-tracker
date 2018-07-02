@@ -12,7 +12,7 @@ import tensorflow as tf
 from cnn_util import *
 
 
-def cnn_predict(model_path, input_img_path, output_direc, params_dict):
+def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
     # start session
     config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
     sess = tf.InteractiveSession(config=config)
@@ -169,9 +169,9 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
 
             # esimate each local image
             est_arr = sess.run(y, feed_dict={
-                X: X_skip,
-                y_: y_skip,
-                is_training: False}).reshape(est_batch_size)
+                                        X: X_skip,
+                                        y_: y_skip,
+                                        is_training: False}).reshape(est_batch_size)
             print("DONE: batch {}".format(batch))
 
             for i in range(est_batch_size):
@@ -179,20 +179,20 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
                 w_est = index_w[index_lst[batch*est_batch_size+i]]
                 est_dens_map[h_est,w_est] = est_arr[i]
 
-        #np.save(output_direc + "{}/{}.npy".format(skip_width, outfile_path), est_dens_map)
+        #np.save(output_dirc_path + "{}/{}.npy".format(skip_width, outfile_path), est_dens_map)
         print("END: estimate density map")
 
         # calculate estimation loss
         est_loss = np.mean(np.square(label - est_dens_map), dtype="float32")
         print("estimation loss: {}".format(est_loss))
 
-    with open(output_direc + "{}/time.txt".format(skip), "a") as f:
+    with open(output_dirc_path + "{}/time.txt".format(skip), "a") as f:
         f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - est_start_time)) # modify: division num
 
 
 if __name__ == "__main__":
     model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
     input_img_path = "/data/sakka/image/1h_10/*.png"
-    output_direc = "/data/sakka/estimation/1h_10/model_201806142123/dens/"
+    output_dirc_path = "/data/sakka/estimation/1h_10/model_201806142123/dens/"
     params_dict = {"skip_width": 15, "est_batch_size": 2500}
-    cnn_predict(model_path, input_img_path, output_direc, params_dict)
+    cnn_predict(model_path, input_img_path, output_dirc_path, params_dict)
