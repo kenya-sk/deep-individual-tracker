@@ -124,7 +124,6 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
     #---------------------------------------------------------------------------
 
     saver = tf.train.Saver()
-    chkp.print_tensors_in_checkpoint_file(model_path, tensor_name="")
     ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
         last_model = ckpt.model_checkpoint_path
@@ -134,6 +133,8 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
         sys.stderr("Eroor: Not exist model!")
         sys.stderr("Please check model_path")
         sys.exit(1)
+
+    chkp.print_tensors_in_checkpoint_file(last_model, tensor_name="", all_tensors=False)
 
     skip_width = params_dict["skip_width"]
     img_file_lst = glob.glob(input_img_path)
