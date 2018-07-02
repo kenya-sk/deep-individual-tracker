@@ -9,6 +9,7 @@ from scipy import optimize
 from clustering import clustering
 from cnn_pixel import get_masked_index
 
+
 def get_ground_truth(ground_truth_path, mask_path=None):
     """
     plots the coordinates of answer label on the black image(all value 0) and
@@ -86,6 +87,7 @@ def accuracy(est_centroid_arr, ground_truth_arr, dist_treshold):
     print("******************************************\n")
 
     return accuracy
+
 
 if __name__ == "__main__":
     band_width = 25

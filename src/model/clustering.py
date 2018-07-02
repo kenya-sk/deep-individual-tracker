@@ -42,6 +42,7 @@ def clustering(dens_map, band_width, thresh=0):
 
     return centroid_arr.astype(np.int32)
 
+
 def plot_prediction_box(img, centroid_arr,hour, minute, box_size=12):
     # get cordinates of vertex(lert top and right bottom)
     def get_rect_vertex(x, y, box_size):

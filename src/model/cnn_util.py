@@ -10,6 +10,7 @@ import tensorflow as tf
 ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
 
+
 def get_masked_data(data, mask_path):
     """
     input:
@@ -212,4 +213,3 @@ def batch_norm(X, axes, shape, is_training):
     scale = tf.Variable(tf.ones([shape]))
     offset = tf.Variable(tf.zeros([shape]))
     return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
-    
