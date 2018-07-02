@@ -42,7 +42,7 @@ def clustering(dens_map, band_width, thresh=0):
 
     return centroid_arr.astype(np.int32)
 
-def plot_estimation_box(img, centroid_arr,hour, minute, box_size=12):
+def plot_prediction_box(img, centroid_arr,hour, minute, box_size=12):
     # get cordinates of vertex(lert top and right bottom)
     def get_rect_vertex(x, y, box_size):
         vertex = np.zeros((2, 2), dtype=np.uint16)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     #         est_dens_map = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
     #         img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
     #         centroid_arr = clustering(est_dens_map, 20, 0.7)
-    #         plot_estimation_box(img, centroid_arr, hour, minute, box_size=12)
+    #         plot_prediction_box(img, centroid_arr, hour, minute, box_size=12)
 
     # check 1h data
     file_lst = glob.glob("/data/sakka/estimation/1h_10/model_201804151507/dens/15/*.npy")

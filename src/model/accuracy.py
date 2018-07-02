@@ -75,9 +75,9 @@ def accuracy(est_centroid_arr, ground_truth_arr, dist_treshold):
 
     true_count = 0
     for i in range(len(match_indexes)):
-        est_index = match_indexes[i][0]
+        pred_index = match_indexes[i][0]
         truth_index = match_indexes[i][1]
-        if dist_matrix[est_index][truth_index] <= dist_treshold:
+        if dist_matrix[pred_index][truth_index] <= dist_treshold:
             true_count += 1
 
     accuracy = true_count / n
@@ -93,8 +93,8 @@ if __name__ == "__main__":
     for skip in skip_lst:
         accuracy_lst = []
         for file_num in range(1, 36):
-            est_dens_map = np.load("/data/sakka/estimation/test_image/model_201806142123/dens/{0}/{1}.npy".format(skip, file_num))
-            centroid_arr = clustering(est_dens_map, band_width, thresh=0.4)
+            pred_dens_map = np.load("/data/sakka/estimation/test_image/model_201806142123/dens/{0}/{1}.npy".format(skip, file_num))
+            centroid_arr = clustering(pred_dens_map, band_width, thresh=0.4)
             np.save("/data/sakka/estimation/test_image/model_201806142123/cord/{0}/{1}.npy".format(skip, file_num), centroid_arr)
             if centroid_arr.shape[0] == 0:
                 print("Not found point of centroid\nAccuracy is 0.0")

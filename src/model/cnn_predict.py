@@ -138,7 +138,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
     img_file_lst = glob.glob(input_img_path)
     mask_path = "/data/sakka/image/mask.png"
     index_h, index_w = get_masked_index(mask_path)
-    est_start_time = time.time()
+    pred_start_time = time.time()
 
     for img_path in img_file_lst:
         img = cv2.imread(img_path)
@@ -153,49 +153,49 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
             if step%skip_width == 0:
                 index_lst.append(step)
 
-        est_batch_size = params_dict["est_batch_size"]
-        est_n_batches = int(len(index_lst)/est_batch_size)
-        est_arr = np.zeros(est_batch_size)
-        est_dens_map = np.zeros((720,1280), dtype="float32")
+        pred_batch_size = params_dict["pred_batch_size"]
+        pred_n_batches = int(len(index_lst)/pred_batch_size)
+        pred_arr = np.zeros(pred_batch_size)
+        pred_dens_map = np.zeros((720,1280), dtype="float32")
 
-        print("STSRT: estimate density map")
-        for batch in range(est_n_batches):
+        print("STSRT: predict density map")
+        for batch in range(pred_n_batches):
             # array of skiped local image
-            X_skip = np.zeros((est_batch_size,72,72,3))
-            y_skip = np.zeros((est_batch_size,1))
-            for index_cord,index_local in enumerate(range(est_batch_size)):
-                current_index = index_lst[batch*est_batch_size+index_local]
+            X_skip = np.zeros((pred_batch_size,72,72,3))
+            y_skip = np.zeros((pred_batch_size,1))
+            for index_cord,index_local in enumerate(range(pred_batch_size)):
+                current_index = index_lst[batch*pred_batch_size+index_local]
                 X_skip[index_cord] = X_local[current_index]
                 y_skip[index_cord] = y_local[current_index]
 
             # esimate each local image
-            est_arr = sess.run(y, feed_dict={
+            pred_arr = sess.run(y, feed_dict={
                                         X: X_skip,
                                         y_: y_skip,
-                                        is_training: False}).reshape(est_batch_size)
+                                        is_training: False}).reshape(pred_batch_size)
             print("DONE: batch {}".format(batch))
 
-            for i in range(est_batch_size):
-                h_est = index_h[index_lst[batch*est_batch_size+i]]
-                w_est = index_w[index_lst[batch*est_batch_size+i]]
-                est_dens_map[h_est,w_est] = est_arr[i]
+            for i in range(pred_batch_size):
+                h_est = index_h[index_lst[batch*pred_batch_size+i]]
+                w_est = index_w[index_lst[batch*pred_batch_size+i]]
+                pred_dens_map[h_est,w_est] = pred_arr[i]
 
-        np.save(output_dirc_path + "{}/{}.npy".format(skip_width, outfile_path), est_dens_map)
-        print("END: estimate density map")
+        np.save(output_dirc_path + "{}/{}.npy".format(skip_width, outfile_path), pred_dens_map)
+        print("END: predict density map")
 
-        # calculate estimation loss
-        est_loss = np.mean(np.square(label - est_dens_map), dtype="float32")
-        print("estimation loss: {}".format(est_loss))
+        # calculate prediction loss
+        est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
+        print("prediction loss: {}".format(est_loss))
 
     #---------------------------------------------------------------------------
 
     with open(output_dirc_path + "{}/time.txt".format(skip), "a") as f:
-        f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - est_start_time)) # modify: division num
+        f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - pred_start_time)) # modify: division num
 
 
 if __name__ == "__main__":
     model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
     input_img_path = "/data/sakka/image/1h_10/*.png"
     output_dirc_path = "/data/sakka/estimation/1h_10/model_201806142123/dens/"
-    params_dict = {"skip_width": 15, "est_batch_size": 2500}
+    params_dict = {"skip_width": 15, "pred_batch_size": 2500}
     cnn_predict(model_path, input_img_path, output_dirc_path, params_dict)
