@@ -28,18 +28,26 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
     # first layer
     # convlution -> ReLU -> max pooling
     # input 72x72x3 -> output 36x36x32
-    with tf.name_scope("conv1"):
-        # 7x7x3 filter
-        with tf.name_scope("weight1"):
-            W_conv1 = weight_variable([7,7,3,32])
-        with tf.name_scope("batchNorm1"):
-            conv1 = conv2d(X, W_conv1)
-            conv1_bn = batch_norm(conv1, [0, 1, 2], 32, is_training)
-        with tf.name_scope("leakyRelu1"):
-            h_conv1 = tf.nn.leaky_relu(conv1_bn)
+    # with tf.name_scope("conv1"):
+    #     # 7x7x3 filter
+    #     with tf.name_scope("weight1"):
+    #         W_conv1 = weight_variable([7,7,3,32])
+    #     with tf.name_scope("batchNorm1"):
+    #         conv1 = conv2d(X, W_conv1)
+    #         conv1_bn = batch_norm(conv1, [0, 1, 2], 32, is_training)
+    #     with tf.name_scope("leakyRelu1"):
+    #         h_conv1 = tf.nn.leaky_relu(conv1_bn)
+    #
+    # with tf.name_scope("pool1"):
+    #     h_pool1 = max_pool_2x2(h_conv1)
 
-    with tf.name_scope("pool1"):
-        h_pool1 = max_pool_2x2(h_conv1)
+    # 7x7x3 filter
+    W_conv1 = weight_variable([7,7,3,32], name="conv1/weight1/Variable:0")
+    conv1 = conv2d(X, W_conv1, name="conv1/batchNorm1/batchnorm/add_1:0")
+    conv1_bn = batch_norm(conv1, [0, 1, 2], 32, is_training, name="conv1/batchNorm1/batchnorm/add_1:0")
+    h_conv1 = tf.nn.leaky_relu(conv1_bn, name="conv1/leakyRelu1/LeakyRelu/Maximum:0")
+    h_pool1 = max_pool_2x2(h_conv1, name="pool1/MaxPool:0")
+
 
 
     # second layer
