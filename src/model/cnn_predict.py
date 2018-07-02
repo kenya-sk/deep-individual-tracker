@@ -8,7 +8,6 @@ import glob
 import time
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.tools import inspect_checkpoint as chkp
 
 from cnn_util import *
 
@@ -134,8 +133,6 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
         sys.stderr("Please check model_path")
         sys.exit(1)
 
-    chkp.print_tensors_in_checkpoint_file(last_model, tensor_name="", all_tensors=False)
-
     skip_width = params_dict["skip_width"]
     img_file_lst = glob.glob(input_img_path)
     mask_path = "/data/sakka/image/mask.png"
@@ -189,8 +186,8 @@ def cnn_predict(model_path, input_img_path, output_direc, params_dict):
         est_loss = np.mean(np.square(label - est_dens_map), dtype="float32")
         print("estimation loss: {}".format(est_loss))
 
-    #with open(output_direc + "{}/time.txt".format(skip), "a") as f:
-    #    f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - est_start_time)) # modify: division num
+    with open(output_direc + "{}/time.txt".format(skip), "a") as f:
+        f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - est_start_time)) # modify: division num
 
 
 if __name__ == "__main__":
