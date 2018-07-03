@@ -15,7 +15,7 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
-from cnn_util import *
+from cnn_util import get_masked_data, get_masked_index, get_local_data
 from cnn_model import CNN_model
 
 ANALYSIS_HEIGHT = (0, 470)

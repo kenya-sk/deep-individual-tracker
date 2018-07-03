@@ -131,15 +131,15 @@ class CNN_model(object):
                 b_fc7 = self.__bias_variable([1])
                 self.__variable_summaries(b_fc7)
             with tf.name_scope("flat7"):
-                y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
+                self.y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
                 self.__variable_summaries(y)
 
         # output
-        tf.summary.histogram("output", y)
+        tf.summary.histogram("output", self.y)
 
         # loss function
         with tf.name_scope("loss"):
-            self.diff = tf.square(self.y_ - y)
+            self.diff = tf.square(self.y_ - self.y)
             self.loss = tf.reduce_mean(self.diff)
             tf.summary.scalar("loss", self.loss)
 
@@ -247,7 +247,7 @@ class CNN_model(object):
         mean, variance = tf.nn.moments(X, axes)
         scale = tf.Variable(tf.ones([shape]))
         offset = tf.Variable(tf.zeros([shape]))
-        return tf.nn.__batch_normalization(X, mean, variance, offset, scale, epsilon)
+        return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
 
 
     def __variable_summaries(self, var):
