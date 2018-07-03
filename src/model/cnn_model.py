@@ -1,24 +1,11 @@
 #! /usr/bin/env python
 #coding: utf-8
 
-import os
-import re
-import time
-import sys
-import cv2
-import math
-import glob
 import numpy as np
-import pandas as pd
 import tensorflow as tf
-from datetime import datetime
-from sklearn.model_selection import train_test_split
-from sklearn.utils import shuffle
 
 from cnn_util import *
 
-ANALYSIS_HEIGHT = (0, 470)
-ANALYSIS_WIDTH = (0, 1280)
 
 class CNN_model(object):
     def __init__(self):
