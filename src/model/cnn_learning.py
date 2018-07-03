@@ -101,7 +101,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
     sess = tf.InteractiveSession(config=config)
     cnn_model = CNN_model()
 
-"""
+    """
     # ------------------------------- MODEL -----------------------------------
     # input image
     with tf.name_scope("input"):
@@ -114,7 +114,6 @@ def main(X_train, X_test, y_train, y_test, model_path):
         # status: True(lerning) or False(test)
         with tf.name_scope("is_training"):
             is_training = tf.placeholder(tf.bool, name="is_training")
-
 
     # first layer
     # convlution -> ReLU -> max pooling
@@ -244,7 +243,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
         #train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
         learning_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
     # -------------------------------------------------------------------------
-"""
+    """
 
 
     # mask index
@@ -317,14 +316,14 @@ def main(X_train, X_test, y_train, y_test, model_path):
                     end_index = start_index + batch_size
 
                     train_diff = sess.run(cnn_model.diff, feed_dict={
-                            X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
-                            y_: y_train_local[start_index:end_index].reshape(-1, 1),
-                            is_training: True})
+                            cnn_model.X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
+                            cnn_model.y_: y_train_local[start_index:end_index].reshape(-1, 1),
+                            cnn_model.is_training: True})
 
                     train_summary, _ = sess.run([merged, cnn_model.learning_step],feed_dict={
-                            X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
-                            y_: y_train_local[start_index:end_index].reshape(-1, 1),
-                            is_training: True})
+                            cnn_model.X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
+                            cnn_model.y_: y_train_local[start_index:end_index].reshape(-1, 1),
+                            cnn_model.is_training: True})
                     train_writer.add_summary(train_summary, train_step)
 
                     # hard negative mining

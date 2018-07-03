@@ -25,14 +25,14 @@ class CNN_model(object):
         # input image
         with tf.name_scope("input"):
             with tf.name_scope("X"):
-                X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
+                self.X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
                 _ = tf.summary.image("X", X[:, :, :, :], 5)
             # answer image
             with tf.name_scope("y_"):
-                y_ = tf.placeholder(tf.float32, [None, 1], name="label")
+                self.y_ = tf.placeholder(tf.float32, [None, 1], name="label")
             # status: True(lerning) or False(test)
             with tf.name_scope("is_training"):
-                is_training = tf.placeholder(tf.bool, name="is_training")
+                self.is_training = tf.placeholder(tf.bool, name="is_training")
 
         # first layer
         # convlution -> ReLU -> max pooling
@@ -153,15 +153,11 @@ class CNN_model(object):
 
         # loss function
         with tf.name_scope("loss"):
-            diff = tf.square(y_ - y)
-            loss = tf.reduce_mean(diff)
-            tf.summary.scalar("loss", loss)
+            self.diff = tf.square(self.y_ - y)
+            self.loss = tf.reduce_mean(self.diff)
+            tf.summary.scalar("loss", self.loss)
 
         # learning algorithm (learning rate: 0.0001)
         with tf.name_scope("train"):
             #train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
-            learning_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
-
-        self.diff = diff
-        self.loss = loss
-        self.learning_step = learning_step
+            self.learning_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(self.loss)
