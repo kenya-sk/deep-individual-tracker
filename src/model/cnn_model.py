@@ -26,7 +26,7 @@ class CNN_model(object):
         with tf.name_scope("input"):
             with tf.name_scope("X"):
                 self.X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
-                _ = tf.summary.image("X", X[:, :, :, :], 5)
+                _ = tf.summary.image("X", self.X[:, :, :, :], 5)
             # answer image
             with tf.name_scope("y_"):
                 self.y_ = tf.placeholder(tf.float32, [None, 1], name="label")
@@ -44,8 +44,8 @@ class CNN_model(object):
                 variable_summaries(W_conv1)
                 _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=3)
             with tf.name_scope("batchNorm1"):
-                conv1 = conv2d(X, W_conv1)
-                conv1_bn = batch_norm(conv1, [0, 1, 2], 32, is_training)
+                conv1 = conv2d(self.X, W_conv1)
+                conv1_bn = batch_norm(conv1, [0, 1, 2], 32, self.is_training)
             with tf.name_scope("leakyRelu1"):
                 h_conv1 = tf.nn.leaky_relu(conv1_bn)
                 variable_summaries(h_conv1)
@@ -66,7 +66,7 @@ class CNN_model(object):
                 _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=3)
             with tf.name_scope("batchNorm2"):
                 conv2 = conv2d(h_pool1, W_conv2)
-                conv2_bn = batch_norm(conv2, [0, 1, 2], 32, is_training)
+                conv2_bn = batch_norm(conv2, [0, 1, 2], 32, self.is_training)
             with tf.name_scope("leakyRelu2"):
                 h_conv2 = tf.nn.leaky_relu(conv2_bn)
                 variable_summaries(h_conv2)
@@ -86,7 +86,7 @@ class CNN_model(object):
                 _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=3)
             with tf.name_scope("batchNorm3"):
                 conv3 = conv2d(h_pool2, W_conv3)
-                conv3_bn = batch_norm(conv3, [0, 1, 2], 64, is_training)
+                conv3_bn = batch_norm(conv3, [0, 1, 2], 64, self.is_training)
             with tf.name_scope("leakyRelu3"):
                 h_conv3 = tf.nn.leaky_relu(conv3_bn)
                 variable_summaries(h_conv3)
@@ -101,7 +101,7 @@ class CNN_model(object):
             with tf.name_scope("batchNorm4"):
                 h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
                 fc4 = tf.matmul(h_conv3_flat, W_fc4)
-                fc4_bn = batch_norm(fc4, [0], 1000, is_training)
+                fc4_bn = batch_norm(fc4, [0], 1000, self.is_training)
             with tf.name_scope("flat4"):
                 h_fc4 = tf.nn.leaky_relu(fc4_bn)
                 variable_summaries(h_fc4)
@@ -115,7 +115,7 @@ class CNN_model(object):
                 variable_summaries(W_fc5)
             with tf.name_scope("batchNorm5"):
                 fc5 = tf.matmul(h_fc4, W_fc5)
-                fc5_bn = batch_norm(fc5, [0], 400, is_training)
+                fc5_bn = batch_norm(fc5, [0], 400, self.is_training)
             with tf.name_scope("flat5"):
                 h_fc5 = tf.nn.leaky_relu(fc5_bn)
                 variable_summaries(h_fc5)
@@ -129,7 +129,7 @@ class CNN_model(object):
                 variable_summaries(W_fc6)
             with tf.name_scope("batchNorm6"):
                 fc6 = tf.matmul(h_fc5, W_fc6)
-                fc6_bn = batch_norm(fc6, [0], 324, is_training)
+                fc6_bn = batch_norm(fc6, [0], 324, self.is_training)
             with tf.name_scope("flat6"):
                 h_fc6 = tf.nn.leaky_relu(fc6_bn)
                 variable_summaries(h_fc6)
