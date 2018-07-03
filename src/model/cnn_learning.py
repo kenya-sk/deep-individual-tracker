@@ -318,12 +318,6 @@ def main(X_train, X_test, y_train, y_test, model_path):
                             y_: y_train_local[start_index:end_index].reshape(-1, 1),
                             is_training: True})
 
-                    # train_summary, _ = sess.run([merged, train_step], feed_dict={
-                    #         X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
-                    #         y_: y_train_local[start_index:end_index].reshape(-1, 1),
-                    #         is_training: True})
-                    # train_writer.add_summary(train_summary, train_step)
-
                     # hard negative mining
                     batch_hard_negative_image_arr, batch_hard_negative_label_arr = \
                             hard_negative_mining(X_train_local[start_index:end_index], y_train_local[start_index:end_index], train_diff)
@@ -341,6 +335,14 @@ def main(X_train, X_test, y_train, y_test, model_path):
                         print("label mean: {}".format(np.mean(y_train_local[start_index:end_index])))
                         print("loss: {}".format(np.mean(train_diff)))
                         print("************************************************\n")
+
+            # save summary on tensorboard
+            train_summary, _ = sess.run([merged, train_step], feed_dict={
+                    X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
+                    y_: y_train_local[start_index:end_index].reshape(-1, 1),
+                    is_training: True})
+            train_writer.add_summary(train_summary, train_step)
+
 
         saver.save(sess, "/data/sakka/tensor_model/" + date_dirc + "/model.ckpt")
         print("END: learning")
