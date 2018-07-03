@@ -79,9 +79,8 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
                 pred_dens_map[h_est,w_est] = pred_arr[i]
 
         out_file_path = img_path.split("/")[-1][:-4]
-        print(out_file_path)
-        #np.save(output_dirc_path + "{}/{}.npy".format(skip_width, out_file_path), pred_dens_map)
-        #print("END: predict density map")
+        np.save(output_dirc_path + "{}/{}.npy".format(skip_width, out_file_path), pred_dens_map)
+        print("END: predict density map")
 
         # calculate prediction loss
         est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
@@ -89,8 +88,8 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
 
     #---------------------------------------------------------------------------
 
-    #with open(output_dirc_path + "{}/time.txt".format(skip), "a") as f:
-    #    f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - pred_start_time)) # modify: division num
+    with open(output_dirc_path + "{}/time.txt".format(skip), "a") as f:
+        f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - pred_start_time)) # modify: division num
 
 
 if __name__ == "__main__":
