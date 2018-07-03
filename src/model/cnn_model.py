@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 #coding: utf-8
 
+import math
 import numpy as np
 import tensorflow as tf
 
@@ -25,19 +26,19 @@ class CNN_model(object):
         with tf.name_scope("conv1"):
             # 7x7x3 filter
             with tf.name_scope("weight1"):
-                W_conv1 = self.weight_variable([7,7,3,32])
-                self.variable_summaries(W_conv1)
+                W_conv1 = self.__weight_variable([7,7,3,32])
+                self.__variable_summaries(W_conv1)
                 _ = tf.summary.image("image1", tf.transpose(W_conv1, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=3)
             with tf.name_scope("batchNorm1"):
-                conv1 = self.conv2d(self.X, W_conv1)
-                conv1_bn = self.batch_norm(conv1, [0, 1, 2], 32, self.is_training)
+                conv1 = self.__conv2d(self.X, W_conv1)
+                conv1_bn = self.__batch_norm(conv1, [0, 1, 2], 32, self.is_training)
             with tf.name_scope("leakyRelu1"):
                 h_conv1 = tf.nn.leaky_relu(conv1_bn)
-                self.variable_summaries(h_conv1)
+                self.__variable_summaries(h_conv1)
 
         with tf.name_scope("pool1"):
-            h_pool1 = self.max_pool_2x2(h_conv1)
-            self.variable_summaries(h_pool1)
+            h_pool1 = self.__max_pool_2x2(h_conv1)
+            self.__variable_summaries(h_pool1)
 
 
         # second layer
@@ -46,19 +47,19 @@ class CNN_model(object):
         with tf.name_scope("conv2"):
             # 7x7x32 filter
             with tf.name_scope("weight2"):
-                W_conv2 = self.weight_variable([7,7,32,32])
-                self.variable_summaries(W_conv2)
+                W_conv2 = self.__weight_variable([7,7,32,32])
+                self.__variable_summaries(W_conv2)
                 _ = tf.summary.image("image2", tf.transpose(W_conv2, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=3)
             with tf.name_scope("batchNorm2"):
-                conv2 = self.conv2d(h_pool1, W_conv2)
-                conv2_bn = self.batch_norm(conv2, [0, 1, 2], 32, self.is_training)
+                conv2 = self.__conv2d(h_pool1, W_conv2)
+                conv2_bn = self.__batch_norm(conv2, [0, 1, 2], 32, self.is_training)
             with tf.name_scope("leakyRelu2"):
                 h_conv2 = tf.nn.leaky_relu(conv2_bn)
-                self.variable_summaries(h_conv2)
+                self.__variable_summaries(h_conv2)
 
         with tf.name_scope("pool2"):
-            h_pool2 = self.max_pool_2x2(h_conv2)
-            self.variable_summaries(h_pool2)
+            h_pool2 = self.__max_pool_2x2(h_conv2)
+            self.__variable_summaries(h_pool2)
 
         # third layer
         # convolution -> ReLU
@@ -66,72 +67,72 @@ class CNN_model(object):
         with tf.name_scope("conv3"):
             # 5x5x32 filter
             with tf.name_scope("weight3"):
-                W_conv3 = self.weight_variable([5,5,32,64])
-                variable_summaries(W_conv3)
+                W_conv3 = self.__weight_variable([5,5,32,64])
+                self.__variable_summaries(W_conv3)
                 _ = tf.summary.image("image3", tf.transpose(W_conv3, perm=[3, 0, 1, 2])[:,:,:,0:1], max_outputs=3)
             with tf.name_scope("batchNorm3"):
-                conv3 = self.conv2d(h_pool2, W_conv3)
-                conv3_bn = self.batch_norm(conv3, [0, 1, 2], 64, self.is_training)
+                conv3 = self.__conv2d(h_pool2, W_conv3)
+                conv3_bn = self.__batch_norm(conv3, [0, 1, 2], 64, self.is_training)
             with tf.name_scope("leakyRelu3"):
                 h_conv3 = tf.nn.leaky_relu(conv3_bn)
-                self.variable_summaries(h_conv3)
+                self.__variable_summaries(h_conv3)
 
         # fourth layer
         # fully connected layer
         # input 18x18x64 -> output 1000
         with tf.name_scope("fc4"):
             with tf.name_scope("weight4"):
-                W_fc4 = self.weight_variable([18*18*64, 1000])
-                self.variable_summaries(W_fc4)
+                W_fc4 = self.__weight_variable([18*18*64, 1000])
+                self.__variable_summaries(W_fc4)
             with tf.name_scope("batchNorm4"):
                 h_conv3_flat = tf.reshape(h_conv3, [-1, 18*18*64])
                 fc4 = tf.matmul(h_conv3_flat, W_fc4)
-                fc4_bn = self.batch_norm(fc4, [0], 1000, self.is_training)
+                fc4_bn = self.__batch_norm(fc4, [0], 1000, self.is_training)
             with tf.name_scope("flat4"):
                 h_fc4 = tf.nn.leaky_relu(fc4_bn)
-                self.variable_summaries(h_fc4)
+                self.__variable_summaries(h_fc4)
 
         # fifth layer
         # fully connected layer
         # input 1000 -> output 400
         with tf.name_scope("fc5"):
             with tf.name_scope("weight5"):
-                W_fc5 = self.weight_variable([1000, 400])
-                self.variable_summaries(W_fc5)
+                W_fc5 = self.__weight_variable([1000, 400])
+                self.__variable_summaries(W_fc5)
             with tf.name_scope("batchNorm5"):
                 fc5 = tf.matmul(h_fc4, W_fc5)
-                fc5_bn = self.batch_norm(fc5, [0], 400, self.is_training)
+                fc5_bn = self.__batch_norm(fc5, [0], 400, self.is_training)
             with tf.name_scope("flat5"):
                 h_fc5 = tf.nn.leaky_relu(fc5_bn)
-                self.variable_summaries(h_fc5)
+                self.__variable_summaries(h_fc5)
 
         # sixth layer
         # fully connected layer
         # input 400 -> output 324
         with tf.name_scope("fc6"):
             with tf.name_scope("weight6"):
-                W_fc6 = self.weight_variable([400, 324])
-                self.variable_summaries(W_fc6)
+                W_fc6 = self.__weight_variable([400, 324])
+                self.__variable_summaries(W_fc6)
             with tf.name_scope("batchNorm6"):
                 fc6 = tf.matmul(h_fc5, W_fc6)
-                fc6_bn = self.batch_norm(fc6, [0], 324, self.is_training)
+                fc6_bn = self.__batch_norm(fc6, [0], 324, self.is_training)
             with tf.name_scope("flat6"):
                 h_fc6 = tf.nn.leaky_relu(fc6_bn)
-                self.variable_summaries(h_fc6)
+                self.__variable_summaries(h_fc6)
 
         # seven layer
         # fully connected layer
         # input 324 -> output 1
         with tf.name_scope("fc7"):
             with tf.name_scope("weight7"):
-                W_fc7 = self.weight_variable([324, 1])
-                self.variable_summaries(W_fc7)
+                W_fc7 = self.__weight_variable([324, 1])
+                self.__variable_summaries(W_fc7)
             with tf.name_scope("bias7"):
-                b_fc7 = self.bias_variable([1])
-                self.variable_summaries(b_fc7)
+                b_fc7 = self.__bias_variable([1])
+                self.__variable_summaries(b_fc7)
             with tf.name_scope("flat7"):
                 y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
-                self.variable_summaries(y)
+                self.__variable_summaries(y)
 
         # output
         tf.summary.histogram("output", y)
@@ -148,7 +149,7 @@ class CNN_model(object):
             self.learning_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(self.loss)
 
 
-    def weight_variable(self, shape, name=None):
+    def __weight_variable(self, shape, name=None):
         """
         initialize weight by He initialization
 
@@ -178,7 +179,7 @@ class CNN_model(object):
             return tf.Variable(initial, name=name)
 
 
-    def bias_variable(self, shape, name=None):
+    def __bias_variable(self, shape, name=None):
         """
         initialize bias by normal distribution (standard deviation: 0.1)
 
@@ -197,7 +198,7 @@ class CNN_model(object):
             return tf.Variable(initial, name=name)
 
 
-    def conv2d(self, X, W):
+    def __conv2d(self, X, W):
         """
         2d convolutional layer
 
@@ -212,7 +213,7 @@ class CNN_model(object):
         return tf.nn.conv2d(X, W, strides=[1, 1, 1, 1], padding="SAME")
 
 
-    def max_pool_2x2(self, X):
+    def __max_pool_2x2(self, X):
         """
         2x2 maximum pooling layer
 
@@ -226,7 +227,7 @@ class CNN_model(object):
         return tf.nn.max_pool(X, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
 
-    def batch_norm(self, X, axes, shape, is_training):
+    def __batch_norm(self, X, axes, shape, is_training):
         """
         batch normalization
 
@@ -246,10 +247,10 @@ class CNN_model(object):
         mean, variance = tf.nn.moments(X, axes)
         scale = tf.Variable(tf.ones([shape]))
         offset = tf.Variable(tf.zeros([shape]))
-        return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
+        return tf.nn.__batch_normalization(X, mean, variance, offset, scale, epsilon)
 
 
-    def variable_summaries(self, var):
+    def __variable_summaries(self, var):
         """
         processing variables and it output tensorboard
 
