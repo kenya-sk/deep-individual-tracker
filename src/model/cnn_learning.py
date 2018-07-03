@@ -239,7 +239,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
     # learning algorithm (learning rate: 0.0001)
     with tf.name_scope("train"):
         #train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
-        train_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
+        learing_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
     # -------------------------------------------------------------------------
 
 
@@ -313,7 +313,12 @@ def main(X_train, X_test, y_train, y_test, model_path):
                     start_index = batch * batch_size
                     end_index = start_index + batch_size
 
-                    train_summary, train_diff = sess.run([merged, diff], feed_dict={
+                    train_diff = sess.run(diff, feed_dict={
+                            X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
+                            y_: y_train_local[start_index:end_index].reshape(-1, 1),
+                            is_training: True})
+
+                    train_summary, _ = sess.run([merged, learning_step],feed_dict={
                             X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
                             y_: y_train_local[start_index:end_index].reshape(-1, 1),
                             is_training: True})
