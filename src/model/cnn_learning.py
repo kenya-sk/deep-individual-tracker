@@ -239,7 +239,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
     # learning algorithm (learning rate: 0.0001)
     with tf.name_scope("train"):
         #train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
-        learing_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
+        learning_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
     # -------------------------------------------------------------------------
 
 
