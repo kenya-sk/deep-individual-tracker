@@ -316,12 +316,14 @@ def main(X_train, X_test, y_train, y_test, model_path):
                     train_diff = sess.run(diff, feed_dict={
                             X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
                             y_: y_train_local[start_index:end_index].reshape(-1, 1),
-                            is_training:True})
-                    summary, _ = sess.run([merged, train_step], feed_dict={
-                            X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
-                            y_: y_train_local[start_index:end_index].reshape(-1, 1),
-                            is_training:True})
-                    train_writer.add_summary(summary, train_step)
+                            is_training: True})
+
+                    # train_summary, _ = sess.run([merged, train_step], feed_dict={
+                    #         X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
+                    #         y_: y_train_local[start_index:end_index].reshape(-1, 1),
+                    #         is_training: True})
+                    # train_writer.add_summary(train_summary, train_step)
+
                     # hard negative mining
                     batch_hard_negative_image_arr, batch_hard_negative_label_arr = \
                             hard_negative_mining(X_train_local[start_index:end_index], y_train_local[start_index:end_index], train_diff)
@@ -357,11 +359,11 @@ def main(X_train, X_test, y_train, y_test, model_path):
                 start_index = batch * batch_size
                 end_index = start_index + batch_size
 
-                summary, tmp_loss = sess.run([merged, loss], feed_dict={
+                test_summary, tmp_loss = sess.run([merged, loss], feed_dict={
                                     X: X_test_local[start_index:end_index].reshape(-1, 72, 72, 3),
                                     y_: y_test_local[start_index:end_index].reshape(-1, 1),
                                     is_training:False})
-                test_writer.add_summary(summary, test_step)
+                test_writer.add_summary(test_summary, test_step)
                 test_loss += tmp_loss
                 test_step += 1
 
