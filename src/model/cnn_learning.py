@@ -297,7 +297,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
 
                 # load traing dataset
                 X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], index_h, index_w, local_img_size=72)
-                X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.5)
+                X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.2)
                 print("hard negative data: {}".format(hard_negative_label_arr.shape[0] - 1))
                 if hard_negative_label_arr.shape[0] > 1:
                     X_train_local = np.append(X_train_local, hard_negative_image_arr[1:], axis=0)
@@ -317,6 +317,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
                             X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
                             y_: y_train_local[start_index:end_index].reshape(-1, 1),
                             is_training: True})
+                    train_writer.add_summary(train_summary, train_step)
 
                     # hard negative mining
                     batch_hard_negative_image_arr, batch_hard_negative_label_arr = \
@@ -336,12 +337,6 @@ def main(X_train, X_test, y_train, y_test, model_path):
                         print("loss: {}".format(np.mean(train_diff)))
                         print("************************************************\n")
 
-                # save summary on tensorboard
-                # train_summary, _ = sess.run([merged, train_step], feed_dict={
-                #         X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
-                #         y_: y_train_local[start_index:end_index].reshape(-1, 1),
-                #         is_training: True})
-                train_writer.add_summary(train_summary, train_step)
 
 
         saver.save(sess, "/data/sakka/tensor_model/" + date_dirc + "/model.ckpt")
@@ -358,6 +353,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
             X_test_local, y_test_local = shuffle(X_test_local, y_test_local)
             test_n_batches = int(len(X_test_local) / batch_size)
             for batch in range(test_n_batches):
+                test_step += 1
                 start_index = batch * batch_size
                 end_index = start_index + batch_size
 
@@ -367,7 +363,6 @@ def main(X_train, X_test, y_train, y_test, model_path):
                                     is_training:False})
                 test_writer.add_summary(test_summary, test_step)
                 test_loss += tmp_loss
-                test_step += 1
 
         print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
         print("END: test")
