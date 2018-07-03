@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 from cnn_util import *
+from cnn_model import CNN_model
 
 ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
@@ -98,7 +99,9 @@ def main(X_train, X_test, y_train, y_test, model_path):
     # start session
     config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5))
     sess = tf.InteractiveSession(config=config)
+    cnn_model = CNN_model()
 
+"""
     # ------------------------------- MODEL -----------------------------------
     # input image
     with tf.name_scope("input"):
@@ -241,7 +244,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
         #train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
         learning_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(loss)
     # -------------------------------------------------------------------------
-
+"""
 
 
     # mask index
@@ -313,12 +316,12 @@ def main(X_train, X_test, y_train, y_test, model_path):
                     start_index = batch * batch_size
                     end_index = start_index + batch_size
 
-                    train_diff = sess.run(diff, feed_dict={
+                    train_diff = sess.run(cnn_model.diff, feed_dict={
                             X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
                             y_: y_train_local[start_index:end_index].reshape(-1, 1),
                             is_training: True})
 
-                    train_summary, _ = sess.run([merged, learning_step],feed_dict={
+                    train_summary, _ = sess.run([merged, cnn_model.learning_step],feed_dict={
                             X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
                             y_: y_train_local[start_index:end_index].reshape(-1, 1),
                             is_training: True})
@@ -362,7 +365,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
                 start_index = batch * batch_size
                 end_index = start_index + batch_size
 
-                test_summary, tmp_loss = sess.run([merged, loss], feed_dict={
+                test_summary, tmp_loss = sess.run([merged, cnn_model.loss], feed_dict={
                                     X: X_test_local[start_index:end_index].reshape(-1, 72, 72, 3),
                                     y_: y_test_local[start_index:end_index].reshape(-1, 1),
                                     is_training:False})
