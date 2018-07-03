@@ -94,27 +94,6 @@ def under_sampling(local_img_mat, density_arr, thresh):
     return local_img_mat[msk], density_arr[msk]
 
 
-def variable_summaries(var):
-    """
-    processing variables and it output tensorboard
-
-    input:
-        var: value of several layer
-
-    output:
-        mean, stddev, max, min, histogram
-    """
-
-    with tf.name_scope('summaries'):
-        mean = tf.reduce_mean(var)
-        tf.summary.scalar('mean', mean)
-        with tf.name_scope('stddev'):
-            stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-        tf.summary.scalar('stddev', stddev)
-        tf.summary.scalar('max', tf.reduce_max(var))
-        tf.summary.scalar('min', tf.reduce_min(var))
-
-
 def main(X_train, X_test, y_train, y_test, model_path):
     # start session
     config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5))
@@ -334,7 +313,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
                     start_index = batch * batch_size
                     end_index = start_index + batch_size
 
-                    train_diff = sess.run(diff, feed_dict={
+                    train_summary, train_diff = sess.run([merged, diff], feed_dict={
                             X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
                             y_: y_train_local[start_index:end_index].reshape(-1, 1),
                             is_training: True})
@@ -358,10 +337,10 @@ def main(X_train, X_test, y_train, y_test, model_path):
                         print("************************************************\n")
 
                 # save summary on tensorboard
-                train_summary, _ = sess.run([merged, train_step], feed_dict={
-                        X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
-                        y_: y_train_local[start_index:end_index].reshape(-1, 1),
-                        is_training: True})
+                # train_summary, _ = sess.run([merged, train_step], feed_dict={
+                #         X: X_train_local[start_index:end_index].reshape(-1, 72, 72, 3),
+                #         y_: y_train_local[start_index:end_index].reshape(-1, 1),
+                #         is_training: True})
                 train_writer.add_summary(train_summary, train_step)
 
 
