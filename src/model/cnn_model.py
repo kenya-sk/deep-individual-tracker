@@ -132,7 +132,7 @@ class CNN_model(object):
                 self.__variable_summaries(b_fc7)
             with tf.name_scope("flat7"):
                 self.y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
-                self.__variable_summaries(y)
+                self.__variable_summaries(self.y)
 
         # output
         tf.summary.histogram("output", self.y)

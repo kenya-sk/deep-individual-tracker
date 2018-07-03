@@ -67,10 +67,10 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
                 y_skip[index_cord] = y_local[current_index]
 
             # esimate each local image
-            pred_arr = sess.run(self.y, feed_dict={
-                                        X: X_skip,
-                                        y_: y_skip,
-                                        is_training: False}).reshape(pred_batch_size)
+            pred_arr = sess.run(cnn_model.y, feed_dict={
+                                        cnn_model.X: X_skip,
+                                        cnn_model.y_: y_skip,
+                                        cnn_model.is_training: False}).reshape(pred_batch_size)
             print("DONE: batch {}".format(batch))
 
             for i in range(pred_batch_size):
@@ -78,8 +78,10 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
                 w_est = index_w[index_lst[batch*pred_batch_size+i]]
                 pred_dens_map[h_est,w_est] = pred_arr[i]
 
-        np.save(output_dirc_path + "{}/{}.npy".format(skip_width, outfile_path), pred_dens_map)
-        print("END: predict density map")
+        out_file_path = img_path.split("/")[-1][:-4]
+        print(out_file_path)
+        #np.save(output_dirc_path + "{}/{}.npy".format(skip_width, out_file_path), pred_dens_map)
+        #print("END: predict density map")
 
         # calculate prediction loss
         est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
