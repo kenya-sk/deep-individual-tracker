@@ -148,7 +148,7 @@ class CNN_model(object):
             self.learning_step = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False).minimize(self.loss)
 
 
-    def weight_variable(shape, name=None):
+    def weight_variable(self, shape, name=None):
         """
         initialize weight by He initialization
 
@@ -178,7 +178,7 @@ class CNN_model(object):
             return tf.Variable(initial, name=name)
 
 
-    def bias_variable(shape, name=None):
+    def bias_variable(self, shape, name=None):
         """
         initialize bias by normal distribution (standard deviation: 0.1)
 
@@ -197,36 +197,36 @@ class CNN_model(object):
             return tf.Variable(initial, name=name)
 
 
-    def conv2d(x, W):
+    def conv2d(self, X, W):
         """
         2d convolutional layer
 
         input:
-            x: input value
+            X: input value
             W: weight
 
         output:
             convolved value
         """
 
-        return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding="SAME")
+        return tf.nn.conv2d(X, W, strides=[1, 1, 1, 1], padding="SAME")
 
 
-    def max_pool_2x2(x):
+    def max_pool_2x2(self, X):
         """
         2x2 maximum pooling layer
 
         input:
-            x: input value
+            X: input value
 
         output:
             pooled value
         """
 
-        return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
+        return tf.nn.max_pool(X, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME")
 
 
-    def batch_norm(X, axes, shape, is_training):
+    def batch_norm(self, X, axes, shape, is_training):
         """
         batch normalization
 
@@ -249,7 +249,7 @@ class CNN_model(object):
         return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
 
 
-    def variable_summaries(var):
+    def variable_summaries(self, var):
         """
         processing variables and it output tensorboard
 
