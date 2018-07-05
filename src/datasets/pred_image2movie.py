@@ -7,13 +7,13 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 
-def pred_image2movie(image_dirc_path, cord_dirc_path, params_dict):
+def pred_image2movie(image_dirc_path, cord_dirc_path, out_video_path, params_dict):
     file_num = len(glob.glob(image_dirc_path + "/*.png"))
     fourcc = cv2.VideoWriter_fourcc("a", "v", "c", "1")
     fps = params_dict["fps"]
     width = params_dict["width"]
-    height = params_dict["height]
-    out = cv2.VideoWriter("./out_movie.mp4", int(fourcc), fps, (int(width), int(height)))
+    height = params_dict["height"]
+    out = cv2.VideoWriter(out_video_path, int(fourcc), fps, (int(width), int(height)))
 
     for i in tqdm(range(1,file_num+1)):
         img = cv2.imread(image_dirc_path + "/{}.png".format(i))
@@ -24,10 +24,11 @@ def pred_image2movie(image_dirc_path, cord_dirc_path, params_dict):
         out.write(img)
 
     cv2.destroyAllWindows()
-    print("SAVE: prediction movie (./out_movie.mp4)")
+    print("SAVE: prediction movie (./{})".format(out_video_path))
 
 if __name__ == "__main__":
     image_dirc_path = input("Input path of estimate image direcory: ")
     cord_dirc_path = input("Input path of estimate cordinate direcory: ")
+    out_video_path = "./out_pred_movie.mp4"
     params_dict = {"fps": 30, "width": 1280, "height": 720}
-    pred_image2movie(image_dirc_path, cord_dirc_path)
+    pred_image2movie(image_dirc_path, cord_dirc_path, out_video_path ,params_dict)
