@@ -43,7 +43,7 @@ def clustering(dens_map, band_width, thresh=0):
     return centroid_arr.astype(np.int32)
 
 
-def plot_prediction_box(img, centroid_arr,hour, minute, box_size=12):
+def plot_prediction_box(img, centroid_arr,hour, minute, out_pred_box_dirc,box_size=12):
     # get cordinates of vertex(lert top and right bottom)
     def get_rect_vertex(x, y, box_size):
         vertex = np.zeros((2, 2), dtype=np.uint16)
@@ -65,22 +65,26 @@ def plot_prediction_box(img, centroid_arr,hour, minute, box_size=12):
         vertex = get_rect_vertex(x, y, box_size)
         img = cv2.rectangle(img, (vertex[0][0], vertex[0][1]), (vertex[1][0], vertex[1][1]), (0, 0, 255), 3)
 
-    cv2.imwrite("/data/sakka/image/estBox/{0}_{1}.png".format(hour, minute), img)
+    cv2.imwrite(out_pred_box_dirc + "{0}_{1}.png".format(hour, minute), img)
     print("Done({0}:{1}): plot estimation box\n".format(hour, minute))
 
 
 if __name__ == "__main__":
+    dens_map_path = "/data/sakka/estimation/1h_10/model_201804151507/dens/15/*.npy"
+    out_clustering_dirc = "/data/sakka/estimation/1h_10/model_201804151507/cord/15/"
+    out_pred_box_dirc = "/data/sakka/image/estBox/"
+    
     # for hour in range(10, 17):
     #     for minute in range(1, 62):
     #         est_dens_map = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
     #         img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
     #         centroid_arr = clustering(est_dens_map, 20, 0.7)
-    #         plot_prediction_box(img, centroid_arr, hour, minute, box_size=12)
+    #         plot_prediction_box(img, centroid_arr, hour, minute, out_pred_box_dirc,box_size=12)
 
     # check 1h data
-    file_lst = glob.glob("/data/sakka/estimation/1h_10/model_201804151507/dens/15/*.npy")
+    file_lst = glob.glob(dens_map_path)
     for file_path in file_lst:
         est_dens_map = np.load(file_path)
         centroid_arr = clustering(est_dens_map, 25, 0.4)
         file_num = file_path.split("/")[-1][:-4]
-        np.save("/data/sakka/estimation/1h_10/model_201804151507/cord/15/{}.npy".format(file_num), centroid_arr)
+        np.save(out_clustering_dirc + "{}.npy".format(file_num), centroid_arr)

@@ -22,7 +22,7 @@ ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
 
 
-def load_data(input_image_dirc_path, input_dens_dirc_path, test_size=0.2):
+def load_data(input_image_dirc_path, input_dens_dirc_path, mask_path, test_size=0.2):
     def get_file_path(input_dirc_path):
         try:
             file_lst = os.listdir(input_dirc_path)
@@ -36,7 +36,6 @@ def load_data(input_image_dirc_path, input_dens_dirc_path, test_size=0.2):
 
     X = []
     y = []
-    mask_path = "/data/sakka/image/mask.png" #引数で受け取るべき
     file_lst = get_file_path(input_image_dirc_path)
     if len(file_lst) == 0:
         sys.stderr.write("Error: not found input image")
@@ -95,7 +94,7 @@ def under_sampling(local_img_mat, density_arr, thresh):
     return local_img_mat[msk], density_arr[msk]
 
 
-def main(X_train, X_test, y_train, y_test, model_path):
+def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc):
     # start session
     config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5))
     sess = tf.InteractiveSession(config=config)
@@ -103,18 +102,18 @@ def main(X_train, X_test, y_train, y_test, model_path):
 
     # mask index
     # if you analyze all areas, please set a white image
-    index_h, index_w = get_masked_index("/data/sakka/image/mask.png")
+    index_h, index_w = get_masked_index(mask_path)
 
     # learning
     start_time = time.time()
     saver = tf.train.Saver() # save weight
-    ckpt = tf.train.get_checkpoint_state(model_path) # model exist: True or False
+    ckpt = tf.train.get_checkpoint_state(reuse_model_path) # model exist: True or False
 
     # -------------------------- PRE PROCESSING --------------------------------
     # logs of tensor board directory
     date = datetime.now()
-    date_dirc = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
-    log_dirc = "/data/sakka/tensor_log/" + date_dirc
+    learning_date = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
+    log_dirc = "/data/sakka/tensor_log/" + learning_date
 
     # delete the specified directory if it exists, recreate it
     if tf.gfile.Exists(log_dirc):
@@ -201,7 +200,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
 
 
 
-        saver.save(sess, "/data/sakka/tensor_model/" + date_dirc + "/model.ckpt")
+        saver.save(sess, out_model_dirc + learning_date + "/model.ckpt")
         print("END: learning")
         # --------------------------------------------------------------------------
 
@@ -233,7 +232,7 @@ def main(X_train, X_test, y_train, y_test, model_path):
     except KeyboardInterrupt:
         print("\nPressed \"Ctrl + C\"")
         print("exit problem, save learning model")
-        saver.save(sess, "/data/sakka/tensor_model/" + date_dirc + "/model.ckpt")
+        saver.save(sess, out_model_dirc + learning_date + "/model.ckpt")
 
     train_writer.close()
     test_writer.close()
@@ -246,6 +245,8 @@ def main(X_train, X_test, y_train, y_test, model_path):
 if __name__ == "__main__":
     input_image_dirc_path = "/data/sakka/image/original/20170422/"
     input_dens_dirc_path = "/data/sakka/dens/20170422/"
-    model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
-    X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, test_size=0.2)
-    main(X_train, X_test, y_train, y_test, model_path)
+    mask_path = "/data/sakka/image/mask.png"
+    reuse_model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
+    out_model_dirc = "/data/sakka/tensor_model/"
+    X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, mask_path, test_size=0.2)
+    cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc)
