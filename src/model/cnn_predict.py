@@ -13,7 +13,7 @@ from cnn_util import get_masked_data, get_masked_index, get_local_data
 from cnn_model import CNN_model
 
 
-def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
+def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict):
     # start session
     config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
     sess = tf.InteractiveSession(config=config)
@@ -34,7 +34,6 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, params_dict):
 
     skip_width = params_dict["skip_width"]
     img_file_lst = glob.glob(input_img_path)
-    mask_path = "/data/sakka/image/mask.png"
     index_h, index_w = get_masked_index(mask_path)
     pred_start_time = time.time()
 
@@ -96,5 +95,6 @@ if __name__ == "__main__":
     model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
     input_img_path = "/data/sakka/image/1h_10/*.png"
     output_dirc_path = "/data/sakka/estimation/1h_10/model_201806142123/dens/"
+    mask_path = "/data/sakka/image/mask.png"
     params_dict = {"skip_width": 15, "pred_batch_size": 2500}
-    cnn_predict(model_path, input_img_path, output_dirc_path, params_dict)
+    cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict)

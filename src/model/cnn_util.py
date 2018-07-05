@@ -11,7 +11,7 @@ ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
 
 
-def get_masked_data(data, mask_path):
+def get_masked_data(data, mask_path=None):
     """
     input:
         data: image or density map
@@ -24,13 +24,15 @@ def get_masked_data(data, mask_path):
     # mask: 3channel mask image. the value is 0 or 1
     mask = cv2.imread(mask_path)
     if mask is None:
-        sys.stderr.write("Error: can not read mask image")
-        sys.exit(1)
+        mask = np.ones((720, 1280, 3))
+    else:
+        mask = cv2.imread(mask_path)
 
     if len(data.shape) == 3:
         masked_data = data*mask
     else:
-        masked_data = mask[:,:,0]*data
+        masked_data = data*mask[:,:,0]
+
     return masked_data
 
 
@@ -55,6 +57,7 @@ def get_masked_index(mask_path=None):
     index_h = index[0]
     index_w = index[1]
     assert len(index_h) == len(index_w)
+
     return index_h, index_w
 
 
@@ -90,4 +93,5 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size=72):
         w = index_w[idx]
         local_img_mat[idx] = pad_img[h:h+2*pad,w:w+2*pad]
         density_arr[idx] = dens_map[h, w]
+
     return local_img_mat, density_arr

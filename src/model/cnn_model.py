@@ -40,7 +40,6 @@ class CNN_model(object):
             h_pool1 = self.__max_pool_2x2(h_conv1)
             self.__variable_summaries(h_pool1)
 
-
         # second layer
         # convlution -> ReLU -> max pooling
         # input 36x36x32 -> output 18x18x32

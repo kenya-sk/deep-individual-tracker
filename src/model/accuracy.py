@@ -7,7 +7,7 @@ import csv
 from scipy import optimize
 
 from clustering import clustering
-from cnn_pixel import get_masked_index
+from cnn_util import get_masked_index
 
 
 def get_ground_truth(ground_truth_path, mask_path=None):
@@ -90,26 +90,32 @@ def accuracy(est_centroid_arr, ground_truth_arr, dist_treshold):
 
 
 if __name__ == "__main__":
+    dens_map_dirc = "/data/sakka/estimation/test_image/model_201806142123/dens/"
+    out_clustering_dirc = "/data/sakka/estimation/test_image/model_201806142123/cord/"
+    ground_truth_dirc = "/data/sakka/cord/test_image/"
+    mask_path = "/data/sakka/image/mask.png"
+    out_accuracy_dirc = "/data/sakka/estimation/test_image/model_201806142123/accuracy/"
+
     band_width = 25
     skip_lst = [15]
     for skip in skip_lst:
         accuracy_lst = []
         for file_num in range(1, 36):
-            pred_dens_map = np.load("/data/sakka/estimation/test_image/model_201806142123/dens/{0}/{1}.npy".format(skip, file_num))
+            pred_dens_map = np.load(dens_map_dirc + "{0}/{1}.npy".format(skip, file_num))
             centroid_arr = clustering(pred_dens_map, band_width, thresh=0.4)
-            np.save("/data/sakka/estimation/test_image/model_201806142123/cord/{0}/{1}.npy".format(skip, file_num), centroid_arr)
+            np.save(out_clustering_dirc + "{0}/{1}.npy".format(skip, file_num), centroid_arr)
             if centroid_arr.shape[0] == 0:
                 print("Not found point of centroid\nAccuracy is 0.0")
                 accuracy_lst.append(0.0)
             else:
-                ground_truth_arr = get_ground_truth("/data/sakka/cord/test_image/{0}.csv".format(file_num), mask_path="/data/sakka/image/mask.png")
+                ground_truth_arr = get_ground_truth(ground_truth_dirc + "{0}.csv".format(file_num), mask_path)
                 accuracy_lst.append(accuracy(centroid_arr, ground_truth_arr, band_width))
 
         print("\n******************************************")
         print("Toal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
         print("******************************************")
 
-        with open("/data/sakka/estimation/test_image/model_201806142123/accuracy/{}/accuracy.csv".format(skip), "w") as f:
+        with open(out_accuracy_dirc + "{}/accuracy.csv".format(skip), "w") as f:
             writer = csv.writer(f)
             writer.writerow(accuracy_lst)
         print("SAVE: accuracy data")

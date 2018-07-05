@@ -30,7 +30,10 @@ class Motion:
         self.status = None
         self.cordinate_matrix = None
         self.frame_num = 0
-
+        self.original_img_dirc = "../../image/original/"
+        self.out_truth_img_dirc = "../../image/grandTruth/20170422/"
+        self.out_truth_cord_dirc = "../../data/cord/20170422/"
+        self.out_answer_label_dirc = "../../data/dens/20170422/"
 
     # main method
     def run(self):
@@ -63,7 +66,7 @@ class Motion:
             elif key == P_KEY:
                 self.interval = 0
                 # save original image
-                cv2.imwrite("../../image/original/{}.png".format(self.frame_num), self.frame)
+                cv2.imwrite(self.original_img_dirc + "{}.png".format(self.frame_num), self.frame)
             elif key == S_KEY:
                 self.save_data()
                 self.interval = INTERVAL
@@ -101,8 +104,8 @@ class Motion:
         if self.features is None:
             print("Error: Not select feature point")
         else:
-            cv2.imwrite("../../image/grandTruth/20170422/{}.png".format(self.frame_num), self.frame)
-            np.savetxt("../../data/cord/20170422/{}.csv".format(self.frame_num), self.features, delimiter=",", fmt="%d")
+            cv2.imwrite(self.out_truth_img_dirc + "{}.png".format(self.frame_num), self.frame)
+            np.savetxt(self.out_truth_cord_dirc + "{}.csv".format(self.frame_num), self.features, delimiter=",", fmt="%d")
             self.gauss_kernel(sigma_pow=25)
             print("save data frame number: {}".format(self.frame_num))
         return
@@ -119,7 +122,7 @@ class Motion:
             norm = pow_matrix[:, :, 0] + pow_matrix[:, :, 1]
             kernel += np.exp(-norm/ (2 * sigma_pow))
 
-        np.save("../../data/dens/20170422/{}".format(self.frame_num), kernel.T)
+        np.save(self.out_answer_label_dirc + "{}.npy".format(self.frame_num), kernel.T)
 
 
 if __name__ == "__main__":
