@@ -31,4 +31,4 @@ if __name__ == "__main__":
     cord_dirc_path = input("Input path of estimate cordinate direcory: ")
     out_video_path = "./out_pred_movie.mp4"
     params_dict = {"fps": 30, "width": 1280, "height": 720}
-    pred_image2movie(image_dirc_path, cord_dirc_path, out_video_path ,params_dict)
+    pred_image2movie(image_dirc_path, cord_dirc_path, out_video_path, params_dict)
