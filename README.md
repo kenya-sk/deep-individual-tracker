@@ -1,12 +1,40 @@
 ## Introduction
 This repository performs individual detection in consideration of overlap by using CNN in pixel units.
 
+## Directory structure
+root/  
+&emsp;├ data/  
+&emsp;│&emsp;&ensp;├ cord/  
+&emsp;│&emsp;&ensp;├ dens/  
+&emsp;│&emsp;&ensp;└ pred/  
+&emsp;│&emsp;&ensp;  
+&emsp;├ image/  
+&emsp;├ movie/  
+&emsp;└  src/  
+&emsp;&emsp;&ensp;├ datasets/  
+&emsp;&emsp;&ensp;│&emsp;├ Makefile   
+&emsp;&emsp;&ensp;│&emsp;├ movie2image.cpp   
+&emsp;&emsp;&ensp;│&emsp;├ movie2training_data.py   
+&emsp;&emsp;&ensp;│&emsp;├ image2training_data.py   
+&emsp;&emsp;&ensp;│&emsp;├ cord2dens.py   
+&emsp;&emsp;&ensp;│&emsp;└ pred_image2movie.py   
+&emsp;&emsp;&ensp;│   
+&emsp;&emsp;&ensp;└ model/  
+&emsp;&emsp;&emsp;&emsp;&emsp;├ cnn_util.py   
+&emsp;&emsp;&emsp;&emsp;&emsp;├ cnn_model.py  
+&emsp;&emsp;&emsp;&emsp;&emsp;├ cnn_learning.py  
+&emsp;&emsp;&emsp;&emsp;&emsp;├ cnn_predict.py  
+&emsp;&emsp;&emsp;&emsp;&emsp;├ clustering.py  
+&emsp;&emsp;&emsp;&emsp;&emsp;└ accuracy.py
+
 ## Requirement
 * Python3
 * C++
 * OpenCV
+* Scikit-learn
 * TensorFlow
 
+<!--
 ## Source code
 1. movie2image.cpp
     * To get images from movie at arbitrary interval (default: 1 min).
@@ -32,7 +60,7 @@ This repository performs individual detection in consideration of overlap by usi
 7. accuracy.py
     * To calculate the accuracy. If the distance between the estimation and ground truth is
     less than threshold (arg:distThreshold), it is regarded as the correct estimation.
-
+-->
 
 ## Learning Data
 To create learning data in the following procedure.
