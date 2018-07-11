@@ -4,9 +4,6 @@
 #Whitelist anything that's a directory
 !*/
 
-#ignore certain directory
-movie/
-
 #And all the file types I'm interested in.
 !.gitignore
 !*.py
