@@ -87,4 +87,4 @@ if __name__ == "__main__":
         est_dens_map = np.load(file_path)
         centroid_arr = clustering(est_dens_map, 25, 0.4)
         file_num = file_path.split("/")[-1][:-4]
-        np.save(out_clustering_dirc + "{}.npy".format(file_num), centroid_arr)
+        np.savetxt(out_clustering_dirc + "{}.npy".format(file_num), centroid_arr, fmt="%i", delimiter=",")

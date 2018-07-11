@@ -1,6 +1,4 @@
 #include <iostream>
-#include <cv.h>
-#include <highgui.h>
 #include <ctype.h>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
