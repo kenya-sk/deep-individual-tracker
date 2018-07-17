@@ -28,6 +28,7 @@ def clustering(dens_map, band_width, thresh=0):
                 return np.zeros((0, 2))
 
     # MeanShift clustering
+    print("**************************************")
     print("START: clustering")
     ms = MeanShift(bandwidth=band_width, seeds=X)
     ms.fit(X)
@@ -39,6 +40,7 @@ def clustering(dens_map, band_width, thresh=0):
     for k in range(n_clusters):
         centroid_arr[k] = cluster_centers[k]
     print("DONE: clustering")
+    print("***************************************")
 
     return centroid_arr.astype(np.int32)
 
@@ -83,7 +85,8 @@ if __name__ == "__main__":
 
     # check 1h data
     file_lst = glob.glob(dens_map_path)
-    for file_path in file_lst:
+    for i, file_path in enumerate(file_lst):
+        print("current data: {} / {}".format(i, len(file_lst)))
         est_dens_map = np.load(file_path)
         centroid_arr = clustering(est_dens_map, 25, 0.4)
         file_num = file_path.split("/")[-1][:-4]
