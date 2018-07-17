@@ -37,7 +37,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
     index_h, index_w = get_masked_index(mask_path)
     pred_start_time = time.time()
 
-    for img_path in img_file_lst:
+    for i, img_path in enumerate(img_file_lst):
         img = cv2.imread(img_path)
         label = np.zeros((720, 1280))
         masked_img = get_masked_data(img, mask_path)
@@ -56,7 +56,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
         pred_dens_map = np.zeros((720,1280), dtype="float32")
 
         print("*************************************************")
-        print("STSRT: predict density map")
+        print("STSRT: predict density map ({}/{})".format(i+1, len(img_file_lst)))
         for batch in range(pred_n_batches):
             # array of skiped local image
             X_skip = np.zeros((pred_batch_size,72,72,3))
@@ -71,7 +71,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
                                         cnn_model.X: X_skip,
                                         cnn_model.y_: y_skip,
                                         cnn_model.is_training: False}).reshape(pred_batch_size)
-            print("DONE: batch {}".format(batch))
+            print("DONE: batch {}/{}".format(batch, pred_n_batches))
 
             for i in range(pred_batch_size):
                 h_est = index_h[index_lst[batch*pred_batch_size+i]]
@@ -80,11 +80,11 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
 
         out_file_path = img_path.split("/")[-1][:-4]
         np.save(output_dirc_path + "{}.npy".format(out_file_path), pred_dens_map)
-        print("END: predict density map")
 
         # calculate prediction loss
         est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
         print("prediction loss: {}".format(est_loss))
+        print("END: predict density map")
         print("**************************************************\n")
 
     #---------------------------------------------------------------------------
