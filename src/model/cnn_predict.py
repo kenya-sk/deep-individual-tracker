@@ -55,6 +55,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
         pred_arr = np.zeros(pred_batch_size)
         pred_dens_map = np.zeros((720,1280), dtype="float32")
 
+        print("*************************************************")
         print("STSRT: predict density map")
         for batch in range(pred_n_batches):
             # array of skiped local image
@@ -84,6 +85,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
         # calculate prediction loss
         est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
         print("prediction loss: {}".format(est_loss))
+        print("**************************************************\n")
 
     #---------------------------------------------------------------------------
 
