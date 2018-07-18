@@ -71,7 +71,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
                                         cnn_model.X: X_skip,
                                         cnn_model.y_: y_skip,
                                         cnn_model.is_training: False}).reshape(pred_batch_size)
-            print("DONE: batch {}/{}".format(batch, pred_n_batches))
+            print("DONE: batch {}/{}".format(batch+1, pred_n_batches))
 
             for i in range(pred_batch_size):
                 h_est = index_h[index_lst[batch*pred_batch_size+i]]
