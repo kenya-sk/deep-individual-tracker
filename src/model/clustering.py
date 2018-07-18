@@ -40,7 +40,7 @@ def clustering(dens_map, band_width, thresh=0):
     for k in range(n_clusters):
         centroid_arr[k] = cluster_centers[k]
     print("DONE: clustering")
-    print("***************************************")
+    print("***************************************\n")
 
     return centroid_arr.astype(np.int32)
 
@@ -72,8 +72,8 @@ def plot_prediction_box(img, centroid_arr,hour, minute, out_pred_box_dirc,box_si
 
 
 if __name__ == "__main__":
-    dens_map_path = "/data/sakka/estimation/1h_10/model_201804151507/dens/15/*.npy"
-    out_clustering_dirc = "/data/sakka/estimation/1h_10/model_201804151507/cord/15/"
+    dens_map_path = "/data/sakka/estimation/20170421/9/dens/*.npy"
+    out_clustering_dirc = "/data/sakka/estimation/20170421/9/cord/"
     out_pred_box_dirc = "/data/sakka/image/estBox/"
     
     # for hour in range(10, 17):
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     # check 1h data
     file_lst = glob.glob(dens_map_path)
     for i, file_path in enumerate(file_lst):
-        print("current data: {} / {}".format(i, len(file_lst)))
+        print("current data: {} / {}".format(i+1, len(file_lst)))
         est_dens_map = np.load(file_path)
         centroid_arr = clustering(est_dens_map, 25, 0.4)
         file_num = file_path.split("/")[-1][:-4]
