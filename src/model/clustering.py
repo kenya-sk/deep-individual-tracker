@@ -75,7 +75,7 @@ if __name__ == "__main__":
     dens_map_path = "/data/sakka/estimation/20170421/9/dens/*.npy"
     out_clustering_dirc = "/data/sakka/estimation/20170421/9/cord/"
     out_pred_box_dirc = "/data/sakka/image/estBox/"
-    
+
     # for hour in range(10, 17):
     #     for minute in range(1, 62):
     #         est_dens_map = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
@@ -90,4 +90,4 @@ if __name__ == "__main__":
         est_dens_map = np.load(file_path)
         centroid_arr = clustering(est_dens_map, 25, 0.4)
         file_num = file_path.split("/")[-1][:-4]
-        np.savetxt(out_clustering_dirc + "{}.npy".format(file_num), centroid_arr, fmt="%i", delimiter=",")
+        np.savetxt(out_clustering_dirc + "{}.csv".format(file_num), centroid_arr, fmt="%i", delimiter=",")
