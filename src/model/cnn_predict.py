@@ -37,7 +37,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
     index_h, index_w = get_masked_index(mask_path)
     pred_start_time = time.time()
 
-    for img_path in img_file_lst:
+    for i, img_path in enumerate(img_file_lst):
         img = cv2.imread(img_path)
         label = np.zeros((720, 1280))
         masked_img = get_masked_data(img, mask_path)
@@ -55,7 +55,8 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
         pred_arr = np.zeros(pred_batch_size)
         pred_dens_map = np.zeros((720,1280), dtype="float32")
 
-        print("STSRT: predict density map")
+        print("*************************************************")
+        print("STSRT: predict density map ({}/{})".format(i+1, len(img_file_lst)))
         for batch in range(pred_n_batches):
             # array of skiped local image
             X_skip = np.zeros((pred_batch_size,72,72,3))
@@ -70,7 +71,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
                                         cnn_model.X: X_skip,
                                         cnn_model.y_: y_skip,
                                         cnn_model.is_training: False}).reshape(pred_batch_size)
-            print("DONE: batch {}".format(batch))
+            print("DONE: batch {}/{}".format(batch, pred_n_batches))
 
             for i in range(pred_batch_size):
                 h_est = index_h[index_lst[batch*pred_batch_size+i]]
@@ -84,6 +85,8 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
         # calculate prediction loss
         est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
         print("prediction loss: {}".format(est_loss))
+        print("END: predict density map")
+        print("**************************************************\n")
 
     #---------------------------------------------------------------------------
 
@@ -93,8 +96,8 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
 
 if __name__ == "__main__":
     model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
-    input_img_path = "/data/sakka/image/1h_10/*.png"
-    output_dirc_path = "/data/sakka/estimation/1h_10/model_201806142123/dens/"
+    input_img_path = "/data/sakka/image/original/20170421/9/*.png"
+    output_dirc_path = "/data/sakka/estimation/20170421/9/dens/"
     mask_path = "/data/sakka/image/mask.png"
     params_dict = {"skip_width": 15, "pred_batch_size": 2500}
     cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict)
