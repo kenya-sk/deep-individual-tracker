@@ -78,7 +78,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
                 pred_dens_map[h_est,w_est] = pred_arr[i]
 
         out_file_path = img_path.split("/")[-1][:-4]
-        np.save(output_dirc_path + "{}/{}.npy".format(skip_width, out_file_path), pred_dens_map)
+        np.savetxt(output_dirc_path + "{}/{}.csv".format(skip_width, out_file_path), pred_dens_map, fmt="%i", delimiter=",")
         print("END: predict density map")
 
         # calculate prediction loss
