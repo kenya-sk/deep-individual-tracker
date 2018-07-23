@@ -8,7 +8,7 @@ import sys
 import cv2
 import math
 import glob
-import tqdm
+from tqdm import trange
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -158,7 +158,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
         for epoch in range(n_epochs):
             print("elapsed time: {0:.3f} [sec]".format(time.time() - start_time))
             train_loss = 0.0
-            for train_i in tqdm(range(len(X_train))):
+            for train_i in trange(len(X_train), desc="training data"):
                 # load traing dataset
                 # data augmentation (horizontal flip)
                 flip_prob = 0.5 # probality of horizontal flip
