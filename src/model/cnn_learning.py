@@ -224,7 +224,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             print("************************************************")
             print("epoch: {0}".format(epoch))
             print("train loss: {}".format(train_loss/(len(X_train)*train_n_batches)))
-            print("validation loss: {}".format(val_loss_lst[epoch])
+            print("validation loss: {}".format(val_loss_lst[epoch])))
             print("************************************************\n")
 
             # early stopping
