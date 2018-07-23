@@ -103,7 +103,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     # mask index
     # if you analyze all areas, please set a white image
     index_h, index_w = get_masked_index(mask_path, horizontal_flip=False)
-    flip_index_h, filp_index_w = get_masked_index(mask_path, horizontal_flip=True)
+    flip_index_h, flip_index_w = get_masked_index(mask_path, horizontal_flip=True)
 
     # learning
     start_time = time.time()
@@ -153,12 +153,13 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             for i in range(len(X_train)):
                 # load traing dataset
                 # data augmentation (horizontal flip)
-                filp_prob = 0.5 # probality of horizontal flip
+                flip_prob = 0.5 # probality of horizontal flip
                 if np.random.rand() < flip_prob:
-                    X_train_local, y_train_local = get_local_data(X_train[i][:,::-1,:], y_train[i][:,::-1], flip_index_h, filp_index_w, local_img_size=72)
+                    X_train_local, y_train_local = get_local_data(X_train[i][:,::-1,:], y_train[i][:,::-1], flip_index_h, flip_index_w, local_img_size=72)
                 else:
                     X_train_local, y_train_local = get_local_data(X_train[i], y_train[i], index_h, index_w, local_img_size=72)
                 X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.2)
+
                 print("hard negative data: {}".format(hard_negative_label_arr.shape[0] - 1))
                 if hard_negative_label_arr.shape[0] > 1:
                     X_train_local = np.append(X_train_local, hard_negative_image_arr[1:], axis=0)

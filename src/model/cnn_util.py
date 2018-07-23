@@ -53,6 +53,7 @@ def get_masked_index(mask_path=None, horizontal_flip=False):
     if mask.shape[2] == 3:
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
+    # index of data augumentation 
     if horizontal_flip:
         mask = mask[:,::-1]
 
