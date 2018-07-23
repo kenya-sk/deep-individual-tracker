@@ -36,11 +36,11 @@ def get_masked_data(data, mask_path=None):
     return masked_data
 
 
-def get_masked_index(mask_path=None):
+def get_masked_index(mask_path=None, horizontal_flip=False):
     """
     input:
         mask_path: binay mask path
-
+        horizontal_flip: default "NO" data augumentation
     output:
         valid index list (heiht and width)
     """
@@ -52,6 +52,10 @@ def get_masked_index(mask_path=None):
 
     if mask.shape[2] == 3:
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+    # index of data augumentation 
+    if horizontal_flip:
+        mask = mask[:,::-1]
 
     index = np.where(mask > 0)
     index_h = index[0]
