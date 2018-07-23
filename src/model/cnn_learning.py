@@ -183,7 +183,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                     train_end_index = train_start_index + batch_size
 
                     train_diff = sess.run(cnn_model.diff, feed_dict={
-                            cnn_model.X: X_train_local[tran_start_index:train_end_index].reshape(-1, 72, 72, 3),
+                            cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, 72, 72, 3),
                             cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
                             cnn_model.is_training: True})
 
@@ -193,7 +193,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                             cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, 72, 72, 3),
                             cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
                             cnn_model.is_training: True})
-                    train_writer.add_summary(train_summary, train_step)
+                    #train_writer.add_summary(train_summary, train_step)
 
                     # hard negative mining
                     batch_hard_negative_image_arr, batch_hard_negative_label_arr = \
@@ -203,6 +203,8 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                         hard_negative_label_arr = np.append(hard_negative_label_arr, batch_hard_negative_label_arr, axis=0)
                     else:
                         pass
+
+            train_writer.add_summary(train_summary, epoch)
 
             # validation
             val_loss = 0.0
