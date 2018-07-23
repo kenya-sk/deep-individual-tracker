@@ -8,6 +8,7 @@ import sys
 import cv2
 import math
 import glob
+import tqdm
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -157,7 +158,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
         for epoch in range(n_epochs):
             print("elapsed time: {0:.3f} [sec]".format(time.time() - start_time))
             train_loss = 0.0
-            for train_i in range(len(X_train)):
+            for train_i in tqdm(range(len(X_train))):
                 # load traing dataset
                 # data augmentation (horizontal flip)
                 flip_prob = 0.5 # probality of horizontal flip
@@ -167,7 +168,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                     X_train_local, y_train_local = get_local_data(X_train[train_i], y_train[train_i], index_h, index_w, local_img_size=72)
                 X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.2)
 
-                print("hard negative data (training {}/{}): {}".format(train_i, len(X_train), hard_negative_label_arr.shape[0] - 1))
+                #print("hard negative data (training {}/{}): {}".format(train_i, len(X_train), hard_negative_label_arr.shape[0] - 1))
                 if hard_negative_label_arr.shape[0] > 1:
                     X_train_local = np.append(X_train_local, hard_negative_image_arr[1:], axis=0)
                     y_train_local = np.append(y_train_local, hard_negative_label_arr[1:], axis=0)
