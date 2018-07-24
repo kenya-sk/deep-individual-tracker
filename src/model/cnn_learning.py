@@ -217,9 +217,9 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                     val_end_index = val_start_index + batch_size
 
                     tmp_val_loss = sess.run(cnn_model.loss, feed_dict={
-                                        X: X_val_local[start_val_index:val_end_index].reshape(-1, 72, 72, 3),
-                                        y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
-                                        is_training:False})
+                                        cnn_model.X: X_val_local[val_start_index:val_end_index].reshape(-1, 72, 72, 3),
+                                        cnn_model.y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
+                                        cnn_model.is_training:False})
                     val_loss += tmp_val_loss
             val_loss_lst.append((val_loss/len(X_val)*val_n_batches))
 
@@ -261,9 +261,9 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                 test_end_index = test_start_index + batch_size
 
                 test_summary, tmp_test_loss = sess.run([merged, cnn_model.loss], feed_dict={
-                                    X: X_test_local[test_start_index:test_end_index].reshape(-1, 72, 72, 3),
-                                    y_: y_test_local[test_start_index:test_end_index].reshape(-1, 1),
-                                    is_training:False})
+                                    cnn_model.X: X_test_local[test_start_index:test_end_index].reshape(-1, 72, 72, 3),
+                                    cnn_model.y_: y_test_local[test_start_index:test_end_index].reshape(-1, 1),
+                                    cnn_model.is_training:False})
                 test_writer.add_summary(test_summary, test_step)
                 test_loss += tmp_test_loss
 
