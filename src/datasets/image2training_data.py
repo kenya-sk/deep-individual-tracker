@@ -59,7 +59,7 @@ def batch_processing(input_dirc_path):
     for file_name in file_lst:
         if re.search(repattern, file_name):
             filePath = input_dirc_path + "/" + file_name
-            print("Number: {0}, File name: {1}".format(file_num, filePath))
+            print("File name: {0}, Number: {1}/{2}".format(filePath, file_num, len(file_lst)))
             ImgMotion(filePath).run()
             file_num += 1
 
