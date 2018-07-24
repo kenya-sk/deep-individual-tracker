@@ -2,7 +2,6 @@
 #coding: utf-8
 
 import os
-import re
 import time
 import sys
 import cv2
@@ -24,34 +23,25 @@ ANALYSIS_WIDTH = (0, 1280)
 
 
 def load_data(input_image_dirc_path, input_dens_dirc_path, mask_path, test_size=0.2):
-    def get_file_path(input_dirc_path):
-        try:
-            file_lst = os.listdir(input_dirc_path)
-        except FileNotFoundError:
-            sys.stderr.write("Error: not found directory")
-            sys.exit(1)
-        pattern = r"^(?!._).*(.png)$"
-        repattern = re.compile(pattern)
-        file_lst = [name for name in file_lst if repattern.match(name)]
-        return file_lst
-
     X = []
     y = []
     file_lst = get_file_path(input_image_dirc_path)
+    file_lst = glob.glob(input_image_dirc_path + "*.png")
     if len(file_lst) == 0:
         sys.stderr.write("Error: not found input image")
         sys.exit(1)
 
     for path in file_lst:
-        img = cv2.imread(input_image_dirc_path + path)
+        img = cv2.imread(path)
         if img is None:
             sys.stderr.write("Error: can not read image")
             sys.exit(1)
         else:
             X.append(get_masked_data(img, mask_path))
-        dens_path = path.replace(".png", ".npy")
+        dens_path = path.replace(".png", ".npy").split("/")[-1]
         dens_map = np.load(input_dens_dirc_path + dens_path)
         y.append(get_masked_data(dens_map, mask_path))
+
     X = np.array(X)
     y = np.array(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
