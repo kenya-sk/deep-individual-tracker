@@ -135,7 +135,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     hard_negative_image_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
     hard_negative_label_arr = np.zeros((1), dtype="float32")
     val_loss_lst = []
-    minimum_epoch = 1
+    minimum_epoch = 5
     not_improved_count = 0
     early_stopping_epoch = 3
     print("Original traning data size: {}".format(len(X_train)))
@@ -156,6 +156,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
 
     try:
         for epoch in range(n_epochs):
+            print("************************************************")
             print("elapsed time: {0:.3f} [sec]".format(time.time() - start_time))
             train_loss = 0.0
             for train_i in trange(len(X_train), desc="training data"):
@@ -221,10 +222,9 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                                         cnn_model.y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
                                         cnn_model.is_training:False})
                     val_loss += tmp_val_loss
-            val_loss_lst.append((val_loss/len(X_val)*val_n_batches))
+            val_loss_lst.append((val_loss/(len(X_val)*val_n_batches))
 
             #record loss data
-            print("************************************************")
             print("epoch: {0}".format(epoch))
             print("train loss: {}".format(train_loss/(len(X_train)*train_n_batches)))
             print("validation loss: {}".format(val_loss_lst[epoch]))
