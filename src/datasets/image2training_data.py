@@ -54,11 +54,8 @@ def batch_processing(input_dirc_path):
     print("Number of total file: {}".format(len(file_lst)))
 
     for file_num, file_name in enumerate(file_lst):
-        if re.search(repattern, file_name):
-            filePath = input_dirc_path + "/" + file_name
-            print("File name: {0}, Number: {1}/{2}".format(filePath, file_num, len(file_lst)))
-            ImgMotion(filePath).run()
-            file_num += 1
+        print("File name: {0}, Number: {1}/{2}".format(file_name, file_num, len(file_lst)))
+        ImgMotion(file_name).run()
 
 
 if __name__ == "__main__":
