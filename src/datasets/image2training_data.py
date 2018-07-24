@@ -9,6 +9,8 @@ import cv2
 
 import movie2training_data
 
+# q key (end)
+Q_KEY = 0x71
 # s key (save data and restart)
 S_KEY = 0x73
 
@@ -33,11 +35,15 @@ class ImgMotion(movie2training_data.Motion):
 
 
         cv2.imshow("select feature points", self.frame)
+        # return bool value: stop making or not
         while(True):
             key = cv2.waitKey(0) & 0xFF
             if key == S_KEY:
                 super().save_data()
-                break
+                return False
+            elif key==Q_KEY:
+                return True
+
         cv2.destroyAllWindows()
 
 
@@ -55,7 +61,10 @@ def batch_processing(input_dirc_path):
 
     for file_num, file_name in enumerate(file_lst):
         print("File name: {0}, Number: {1}/{2}".format(file_name, file_num, len(file_lst)))
-        ImgMotion(file_name).run()
+        stop_making = ImgMotion(file_name).run()
+        if  stop_making:
+            print("STOP: making datasets")
+            break
 
 
 if __name__ == "__main__":
