@@ -98,7 +98,7 @@ def under_sampling(local_img_mat, density_arr, thresh):
 def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc):
     # -------------------------- PRE PROCESSING --------------------------------
     # start session
-    config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5))
+    config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
     sess = tf.InteractiveSession(config=config)
     start_time = time.time()
     cnn_model = CNN_model()
@@ -131,7 +131,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
 
     # -------------------------- LEARNING STEP --------------------------------
     n_epochs = 10
-    batch_size = 100
+    batch_size = 500
     hard_negative_image_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
     hard_negative_label_arr = np.zeros((1), dtype="float32")
     val_loss_lst = []
@@ -222,7 +222,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                                         cnn_model.y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
                                         cnn_model.is_training:False})
                     val_loss += tmp_val_loss
-            val_loss_lst.append((val_loss/(len(X_val)*val_n_batches))
+            val_loss_lst.append(val_loss/(len(X_val)*val_n_batches))
 
             #record loss data
             print("epoch: {0}".format(epoch))
