@@ -25,7 +25,6 @@ ANALYSIS_WIDTH = (0, 1280)
 def load_data(input_image_dirc_path, input_dens_dirc_path, mask_path, test_size=0.2):
     X = []
     y = []
-    file_lst = get_file_path(input_image_dirc_path)
     file_lst = glob.glob(input_image_dirc_path + "*.png")
     if len(file_lst) == 0:
         sys.stderr.write("Error: not found input image")
