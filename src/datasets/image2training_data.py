@@ -3,7 +3,7 @@
 
 import os.path
 import sys
-import re
+import glob
 import numpy as np
 import cv2
 
@@ -50,13 +50,10 @@ def batch_processing(input_dirc_path):
         sys.stderr.write("Error: Do not exist directory")
         sys.exit(1)
 
-    file_lst = os.listdir(input_dirc_path)
-    pattern = r"^(?!._).*(.png)$"
-    repattern = re.compile(pattern)
+    file_lst = glob.glob(input_dirc_path+"*.png")
     print("Number of total file: {}".format(len(file_lst)))
 
-    file_num = 1
-    for file_name in file_lst:
+    for file_num, file_name in enumerate(file_lst):
         if re.search(repattern, file_name):
             filePath = input_dirc_path + "/" + file_name
             print("File name: {0}, Number: {1}/{2}".format(filePath, file_num, len(file_lst)))
