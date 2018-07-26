@@ -217,7 +217,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             print("epoch: {0}".format(epoch))
             print("train loss: {}".format(train_loss/(len(X_train)*train_n_batches)))
             print("validation loss: {}".format(val_loss_lst[epoch]))
-            print("************************************************\n")
+            
 
             # early stopping
             if epoch > minimum_epoch:
@@ -229,8 +229,11 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                     not_improved_count += 1
                 
             if not_improved_count >= early_stopping_epoch:
-                print("Early stopping duw to no improvement after {} epochs.".format(early_stopping_epoch))
+                print("Early stopping due to no improvement after {} epochs.".format(early_stopping_epoch))
                 break
+
+            print("not improved count/early stopping epoch: {}/{}".format(not_improved_count, early_stopping_epoch))
+            print("************************************************\n")
 
 
         saver.save(sess, out_model_dirc + learning_date + "/model.ckpt")
