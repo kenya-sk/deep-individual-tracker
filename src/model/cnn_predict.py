@@ -79,7 +79,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
                 pred_dens_map[h_est,w_est] = pred_arr[i]
 
         out_file_path = img_path.split("/")[-1][:-4]
-        np.save(output_dirc_path + "{}.csv".format(out_file_path), pred_dens_map)
+        np.savetxt(output_dirc_path + "{}.csv".format(out_file_path), pred_dens_map, delimiter=",")
         print("END: predict density map")
 
         # calculate prediction loss
@@ -90,14 +90,14 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
 
     #---------------------------------------------------------------------------
 
-    with open(output_dirc_path + "{}/time.txt".format(skip), "a") as f:
+    with open(output_dirc_path + "time.txt", "a") as f:
         f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - pred_start_time)) # modify: division num
 
 
 if __name__ == "__main__":
-    model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
-    input_img_path = "/data/sakka/image/original/20170421/9/*.png"
-    output_dirc_path = "/data/sakka/estimation/20170421/9/dens/"
+    model_path = "/data/sakka/tensor_model/2018_7_24_20_41/"
+    input_img_path = "/data/sakka/image/1min/*.png"
+    output_dirc_path = "/data/sakka/estimation/1min/dens/model_20180724/"
     mask_path = "/data/sakka/image/mask.png"
     params_dict = {"skip_width": 15, "pred_batch_size": 2500}
     cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict)
