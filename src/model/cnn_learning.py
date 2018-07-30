@@ -126,7 +126,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     val_loss_lst = []
     minimum_epoch = 5
     not_improved_count = 0
-    early_stopping_epoch = 3
+    early_stopping_epoch = 2
     print("Original traning data size: {}".format(len(X_train)))
 
     # check if the ckpt exist
