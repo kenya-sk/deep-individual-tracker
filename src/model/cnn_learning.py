@@ -214,7 +214,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             val_loss_lst.append(val_loss/(len(X_val)*val_n_batches))
 
             #record loss data
-            print("epoch: {0}".format(epoch))
+            print("epoch: {0}".format(epoch+1))
             print("train loss: {}".format(train_loss/(len(X_train)*train_n_batches)))
             print("validation loss: {}".format(val_loss_lst[epoch]))
             
