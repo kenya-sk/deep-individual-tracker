@@ -217,11 +217,11 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             print("epoch: {0}".format(epoch+1))
             print("train loss: {}".format(train_loss/(len(X_train)*train_n_batches)))
             print("validation loss: {}".format(val_loss_lst[epoch]))
-            
+        
 
             # early stopping
             if epoch > minimum_epoch:
-                best_epoch_loss = np.argmax(val_loss_lst[:-1])
+                best_epoch_loss = np.argmin(val_loss_lst[:-1])
                 if val_loss_lst[epoch] <= val_loss_lst[best_epoch_loss]:
                     # learning is going well
                     not_improved_count = 0
@@ -277,10 +277,10 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     # --------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    input_image_dirc_path = "/data/sakka/image/original/20170422/"
-    input_dens_dirc_path = "/data/sakka/dens/20170422/"
+    input_image_dirc_path = "/data/sakka/image/original/total/"
+    input_dens_dirc_path = "/data/sakka/dens/total/"
     mask_path = "/data/sakka/image/mask.png"
-    reuse_model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
+    reuse_model_path = "/data/sakka/tensor_model/2018_7_24_20_41/"
     out_model_dirc = "/data/sakka/tensor_model/"
     X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, mask_path, test_size=0.2)
     cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc)
