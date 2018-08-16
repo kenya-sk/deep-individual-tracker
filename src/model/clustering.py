@@ -38,7 +38,7 @@ def clustering(dens_map, band_width, thresh=0):
     centroid_arr = np.zeros((n_clusters, 2))
     for k in range(n_clusters):
         centroid_arr[k] = cluster_centers[k]
-    print("DONE: clustering")
+    print("DONE: clustering\n")
 
     return centroid_arr.astype(np.int32)
 

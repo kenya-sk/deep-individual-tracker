@@ -82,7 +82,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
         out_file_path = img_path.split("/")[-1][:-4]
         if save_map:
             np.save(output_dirc_path + "dens/" + "{}.npy".format(out_file_path), pred_dens_map)
-        print("END: predict density map")
+        print("END: predict density map\n")
 
         # calculate centroid by clustering 
         centroid_arr = clustering(pred_dens_map, params_dict["band_width"], params_dict["cluster_thresh"])
