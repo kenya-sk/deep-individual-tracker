@@ -11,9 +11,10 @@ import tensorflow as tf
 
 from cnn_util import get_masked_data, get_masked_index, get_local_data
 from cnn_model import CNN_model
+from clustering import clustering
 
 
-def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict):
+def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict, save_map=False):
     # start session
     config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
     sess = tf.InteractiveSession(config=config)
@@ -79,8 +80,14 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
                 pred_dens_map[h_est,w_est] = pred_arr[i]
 
         out_file_path = img_path.split("/")[-1][:-4]
-        np.save(output_dirc_path + "{}.npy".format(out_file_path), pred_dens_map)
+        if save_map:
+            np.save(output_dirc_path + "dens/" + "{}.npy".format(out_file_path), pred_dens_map)
         print("END: predict density map")
+
+        print("START: clustering")
+        centroid_arr = clustering(pred_dens_map, params_dict["band_width"], params_dict["cluster_thresh"])
+        np.savetxt(out_dirc_path + "cord/" + "{}.csv".format(out_file_path),centroid_arr, fmt="%i", delimiter=",")
+        print("END: clustring")
 
         # calculate prediction loss
         est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
@@ -99,5 +106,5 @@ if __name__ == "__main__":
     input_img_path = "/data/sakka/image/1min/*.png"
     output_dirc_path = "/data/sakka/estimation/1min/dens/model_20180724/"
     mask_path = "/data/sakka/image/mask.png"
-    params_dict = {"skip_width": 15, "pred_batch_size": 2500}
-    cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict)
+    params_dict = {"skip_width": 15, "pred_batch_size": 2500, "band_width":25, "cluster_thresh":0.4}
+    cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict, save_map=False)
