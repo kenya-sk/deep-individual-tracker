@@ -84,10 +84,9 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
             np.save(output_dirc_path + "dens/" + "{}.npy".format(out_file_path), pred_dens_map)
         print("END: predict density map")
 
-        print("START: clustering")
+        # calculate centroid by clustering 
         centroid_arr = clustering(pred_dens_map, params_dict["band_width"], params_dict["cluster_thresh"])
         np.savetxt(output_dirc_path + "cord/" + "{}.csv".format(out_file_path),centroid_arr, fmt="%i", delimiter=",")
-        print("END: clustring")
 
         # calculate prediction loss
         est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
