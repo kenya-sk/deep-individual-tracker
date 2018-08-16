@@ -103,8 +103,8 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
 
 if __name__ == "__main__":
     model_path = "/data/sakka/tensor_model/2018_7_24_20_41/"
-    input_img_path = "/data/sakka/image/1min/*.png"
-    output_dirc_path = "/data/sakka/estimation/1min/dens/model_20180724/"
+    input_img_path = "/data/sakka/image/1h_10/*.png"
+    output_dirc_path = "/data/sakka/estimation/model_20180724/1h_10/"
     mask_path = "/data/sakka/image/mask.png"
-    params_dict = {"skip_width": 15, "pred_batch_size": 2500, "band_width":25, "cluster_thresh":0.4}
+    params_dict = {"skip_width": 15, "pred_batch_size": 2500, "band_width":25, "cluster_thresh":0.8}
     cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict, save_map=False)
