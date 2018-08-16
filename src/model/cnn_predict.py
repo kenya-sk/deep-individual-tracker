@@ -86,7 +86,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
 
         print("START: clustering")
         centroid_arr = clustering(pred_dens_map, params_dict["band_width"], params_dict["cluster_thresh"])
-        np.savetxt(out_dirc_path + "cord/" + "{}.csv".format(out_file_path),centroid_arr, fmt="%i", delimiter=",")
+        np.savetxt(output_dirc_path + "cord/" + "{}.csv".format(out_file_path),centroid_arr, fmt="%i", delimiter=",")
         print("END: clustring")
 
         # calculate prediction loss
