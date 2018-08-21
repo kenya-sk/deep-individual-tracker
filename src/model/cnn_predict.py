@@ -87,7 +87,7 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, pa
         est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
         print("prediction loss: {}".format(est_loss))
         print("END: predict density map")
-        print("**************************************************\n")
+        print("***************************************************\n")
 
     #---------------------------------------------------------------------------
 
