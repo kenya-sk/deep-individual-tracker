@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
+from cnn_model import CNN_model
 
 ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
@@ -106,7 +107,7 @@ def load_model(model_path, memory_fraction_rate=0.9):
         per_process_gpu_memory_fraction=memory_fraction_rate))
     sess = tf.InteractiveSession(config=config)
 
-    cnn_model = CNN_model()
+    model = CNN_model()
     saver = tf.train.Saver()
     ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
@@ -118,4 +119,4 @@ def load_model(model_path, memory_fraction_rate=0.9):
         sys.stderr("Please check model_path")
         sys.exit(1)
 
-    return cnn_model, sess
+    return model, sess
