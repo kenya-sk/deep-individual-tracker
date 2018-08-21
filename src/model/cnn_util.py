@@ -99,3 +99,22 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size=72):
         density_arr[idx] = dens_map[h, w]
 
     return local_img_mat, density_arr
+
+
+def load_model(model_path, memory_fraction_rate=0.9):
+    config = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=memory_fraction_rate))
+    sess = tf.InteractiveSession(config=config)
+
+    cnn_model = CNN_model()
+    saver = tf.train.Saver()
+    ckpt = tf.train.get_checkpoint_state(model_path)
+    if ckpt:
+        last_model = ckpt.model_checkpoint_path
+        print("LODE MODEL: {}".format(last_model))
+        saver.restore(sess, last_model)
+    else:
+        sys.stderr("Eroor: Not exist model!")
+        sys.stderr("Please check model_path")
+        sys.exit(1)
+
+    return cnn_model, sess

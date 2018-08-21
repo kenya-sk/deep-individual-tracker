@@ -10,33 +10,18 @@ import time
 import numpy as np
 import tensorflow as tf
 
-from cnn_util import get_masked_data, get_masked_index, get_local_data
+from cnn_util import get_masked_data, get_masked_index, get_local_data, load_data
 from cnn_model import CNN_model
 from clustering import clustering
 
 
-def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict, save_map=False):
+def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, params_dict, save_map=False):
     
     # ------------------------------- PRE PROCWSSING ----------------------------------
-    config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
-    sess = tf.InteractiveSession(config=config)
-
-    print("*************************************************")
-    cnn_model = CNN_model()
-    saver = tf.train.Saver()
-    ckpt = tf.train.get_checkpoint_state(model_path)
-    if ckpt:
-        last_model = ckpt.model_checkpoint_path
-        print("LODE MODEL: {}".format(last_model))
-        saver.restore(sess, last_model)
-    else:
-        sys.stderr("Eroor: Not exist model!")
-        sys.stderr("Please check model_path")
-        sys.exit(1)
-
     skip_width = params_dict["skip_width"]
     img_file_lst = glob.glob(input_img_path)
     index_h, index_w = get_masked_index(mask_path)
+    print("*************************************************")
     print("INPUT IMG DIRC: {}".format(input_img_path))
     print("OUTPUT DIRC: {}".format(output_dirc_path))
     print("SKIP WIDTH: {}".format(params_dict["skip_width"]))
@@ -113,6 +98,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
 
 if __name__ == "__main__":
     model_path = "/data/sakka/tensor_model/2018_7_24_20_41/"
+    cnn_model, sess = load_model(model_path, memory_fraction_rate=0.9)
     input_img_root_dirc = "/data/sakka/image/20170416/"
     output_root_dirc = "/data/sakka/estimation/model_20180724/20170416/"
     mask_path = "/data/sakka/image/mask.png"
@@ -122,4 +108,4 @@ if __name__ == "__main__":
     for dirc in input_img_dirc_lst:
         input_img_path = input_img_root_dirc + dirc + "/*.png"
         output_dirc_path = output_root_dirc + dirc  + "/"
-        cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict, save_map=True)
+        cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, params_dict, save_map=True)
