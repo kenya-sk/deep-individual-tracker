@@ -40,7 +40,7 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
     print("INPUT IMG DIRC: {}".format(input_img_path))
     print("OUTPUT DIRC: {}".format(output_dirc_path))
     print("SKIP WIDTH: {}".format(params_dict["skip_width"]))
-    print("PRED BATCH SIZE: {}".foramt(params_dict["pred_batch_size"]))
+    print("PRED BATCH SIZE: {}".format(params_dict["pred_batch_size"]))
     print("BAND WIDTH: {}".format(params_dict["band_width"]))
     print("CLUSTER THRESH: {}".format(params_dict["cluster_thresh"]))
     print("SAVE DENS MAP: {}".format(save_map))
@@ -120,6 +120,6 @@ if __name__ == "__main__":
     
     input_img_dirc_lst = [f for f in os.listdir(input_img_root_dirc) if not f.startswith(".")]
     for dirc in input_img_dirc_lst:
-        input_ing_path = input_img_root_dirc + dirc + "/*.png"
+        input_img_path = input_img_root_dirc + dirc + "/*.png"
         output_dirc_path = output_root_dirc + dirc  + "/"
         cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict, save_map=True)
