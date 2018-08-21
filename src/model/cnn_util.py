@@ -102,7 +102,8 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size=72):
 
 
 def load_model(model_path, memory_fraction_rate=0.9):
-    config = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=memory_fraction_rate))
+    config = tf.ConfigProto(gpu_options=tf.GPUOptions(
+        per_process_gpu_memory_fraction=memory_fraction_rate))
     sess = tf.InteractiveSession(config=config)
 
     cnn_model = CNN_model()

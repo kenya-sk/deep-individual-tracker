@@ -93,7 +93,7 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, pa
     #---------------------------------------------------------------------------
 
     with open(output_dirc_path + "time.txt", "a") as f:
-        f.write("skip: {0}, frame num: {1} total time: {2}\n".format(skip_width, 35,time.time() - pred_start_time)) # modify: division num
+        f.write("skip: {0}, frame num: {1} total tme: {2}\n".format(skip_width, len(img_file_lst), time.time() - pred_start_time))
 
 
 if __name__ == "__main__":
