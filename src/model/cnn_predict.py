@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import os
 import math
 import sys
 import cv2
@@ -15,18 +16,18 @@ from clustering import clustering
 
 
 def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict, save_map=False):
-    # start session
+    
+    # ------------------------------- PRE PROCWSSING ----------------------------------
     config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
     sess = tf.InteractiveSession(config=config)
 
+    print("*************************************************")
     cnn_model = CNN_model()
-
-    # ------------------------------- PREDICT ----------------------------------
     saver = tf.train.Saver()
     ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
         last_model = ckpt.model_checkpoint_path
-        print("LODE: {}".format(last_model))
+        print("LODE MODEL: {}".format(last_model))
         saver.restore(sess, last_model)
     else:
         sys.stderr("Eroor: Not exist model!")
@@ -36,8 +37,18 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
     skip_width = params_dict["skip_width"]
     img_file_lst = glob.glob(input_img_path)
     index_h, index_w = get_masked_index(mask_path)
-    pred_start_time = time.time()
+    print("INPUT IMG DIRC: {}".format(input_img_path))
+    print("OUTPUT DIRC: {}".format(output_dirc_path))
+    print("SKIP WIDTH: {}".format(params_dict["skip_width"]))
+    print("PRED BATCH SIZE: {}".foramt(params_dict["pred_batch_size"]))
+    print("BAND WIDTH: {}".format(params_dict["band_width"]))
+    print("CLUSTER THRESH: {}".format(params_dict["cluster_thresh"]))
+    print("SAVE DENS MAP: {}".format(save_map))
+    print("*************************************************\n")
+    # --------------------------------------------------------------------------
 
+    # ------------------------------- PREDICT ----------------------------------
+    pred_start_time = time.time()
     for i, img_path in enumerate(img_file_lst):
         img = cv2.imread(img_path)
         label = np.zeros((720, 1280))
@@ -102,8 +113,13 @@ def cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_
 
 if __name__ == "__main__":
     model_path = "/data/sakka/tensor_model/2018_7_24_20_41/"
-    input_img_path = "/data/sakka/image/1h_10/*.png"
-    output_dirc_path = "/data/sakka/estimation/model_20180724/1h_10/"
+    input_img_root_dirc = "/data/sakka/image/20170416/"
+    output_root_dirc = "/data/sakka/estimation/model_20180724/20170416/"
     mask_path = "/data/sakka/image/mask.png"
     params_dict = {"skip_width": 15, "pred_batch_size": 2500, "band_width":25, "cluster_thresh":0.8}
-    cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict, save_map=False)
+    
+    input_img_dirc_lst = [f for f in os.listdir(input_img_root_dirc) if not f.startswith(".")]
+    for dirc in input_img_dirc_lst:
+        input_ing_path = input_img_root_dirc + dirc + "/*.png"
+        output_dirc_path = output_root_dirc + dirc  + "/"
+        cnn_predict(model_path, input_img_path, output_dirc_path, mask_path, params_dict, save_map=True)
