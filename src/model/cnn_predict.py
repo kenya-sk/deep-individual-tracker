@@ -10,7 +10,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
-from cnn_util import get_masked_data, get_masked_index, get_local_data, load_data
+from cnn_util import get_masked_data, get_masked_index, get_local_data, load_model
 from cnn_model import CNN_model
 from clustering import clustering
 
