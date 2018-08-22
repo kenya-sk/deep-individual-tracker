@@ -21,7 +21,7 @@ class CNN_model(object):
                 self.is_training = tf.placeholder(tf.bool, name="is_training")
 
         # first layer
-        # convlution -> ReLU -> max pooling
+        # convlution -> Leaky ReLU -> max pooling
         # input 72x72x3 -> output 36x36x32
         with tf.name_scope("conv1"):
             # 7x7x3 filter
@@ -41,7 +41,7 @@ class CNN_model(object):
             self.__variable_summaries(h_pool1)
 
         # second layer
-        # convlution -> ReLU -> max pooling
+        # convlution -> Leaky ReLU -> max pooling
         # input 36x36x32 -> output 18x18x32
         with tf.name_scope("conv2"):
             # 7x7x32 filter
@@ -61,7 +61,7 @@ class CNN_model(object):
             self.__variable_summaries(h_pool2)
 
         # third layer
-        # convolution -> ReLU
+        # convolution -> Leaky ReLU
         # input 18x18x32 -> output 18x18x64
         with tf.name_scope("conv3"):
             # 5x5x32 filter
