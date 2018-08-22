@@ -121,9 +121,3 @@ def load_model(model_path, memory_fraction_rate=0.9):
         sys.exit(1)
 
     return model, sess
-
-
-def my_makedirs(dirc_path):
-    if not os.path.isdir(dirc_path):
-        print("MAKE DIRECTORY: {}".format(dirc_path))
-        os.makedirs(dirc_path)

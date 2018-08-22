@@ -10,7 +10,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
-from cnn_util import get_masked_data, get_masked_index, get_local_data, load_model, my_makedirs
+from cnn_util import get_masked_data, get_masked_index, get_local_data, load_model
 from clustering import clustering
 
 
@@ -107,6 +107,6 @@ if __name__ == "__main__":
     for dirc in input_img_dirc_lst:
         input_img_path = input_img_root_dirc + dirc + "/*.png"
         output_dirc_path = output_root_dirc + dirc  + "/"
-        my_makedirs(output_dirc_path+"/dens")
-        my_makedirs(output_dirc_path+"/cord")
+        os.makedirs(output_dirc_path+"/dens", exist_ok=True)
+        os.makedirs(output_dirc_path+"/cord", exist_ok=True)
         cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, params_dict, save_map=True)
