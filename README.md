@@ -60,7 +60,6 @@ root/
 7. accuracy.py
     * To calculate the accuracy. If the distance between the estimation and ground truth is
     less than threshold (arg:distThreshold), it is regarded as the correct estimation.
--->
 
 ## Learning Data
 To create learning data in the following procedure.
@@ -109,3 +108,5 @@ To set path of estimation file and path of groundTruth file.
 ```
 python3 accuracy.py
 ```
+
+->
