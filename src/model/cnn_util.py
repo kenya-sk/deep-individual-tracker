@@ -104,6 +104,17 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size=72):
 
 
 def load_model(model_path, memory_fraction_rate=0.9):
+    """
+    input:
+        model_path: path of learned model
+        memory_fraction_rate: rate of GPU memory (0.0-1.0)
+
+    output:
+        model: CNN model (defined TensorFlow graph)
+        sess: TensorFlow session
+
+    """
+
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(
         per_process_gpu_memory_fraction=memory_fraction_rate))
     sess = tf.InteractiveSession(config=config)
