@@ -41,7 +41,7 @@ def get_ground_truth(ground_truth_path, mask_path=None):
         return np.array(valid_ground_truth_lst)
 
 
-def accuracy(est_centroid_arr, ground_truth_arr, dist_treshold):
+def evaluate(est_centroid_arr, ground_truth_arr, dist_treshold):
     """
     the distance between the estimation and groundtruth is less than distThreshold --> True
 
@@ -55,7 +55,9 @@ def accuracy(est_centroid_arr, ground_truth_arr, dist_treshold):
     """
 
     # make distance matrix
-    n = max(len(est_centroid_arr), len(ground_truth_arr))
+    est_centroid_num = len(est_centroid_arr)
+    ground_truth_num = len(ground_truth_arr)
+    n = max(est_centroid_num, ground_truth_num)
     dist_matrix = np.zeros((n,n))
     for i in range(len(est_centroid_arr)):
         for j in range(len(ground_truth_arr)):
@@ -74,19 +76,44 @@ def accuracy(est_centroid_arr, ground_truth_arr, dist_treshold):
     else:
         match_indexes = list(filter((lambda index : index[0] in valid_lst), indexes))
 
-    true_count = 0
+    true_positive = 0
+    if est_centroid_num > ground_truth_num:
+        false_positive = est_centroid_num - ground_truth_num
+        false_negative = 0
+    else:
+        false_positive = 0
+        false_negative = ground_truth_num - est_centroid_num
+        
     for i in range(len(match_indexes)):
         pred_index = match_indexes[i][0]
         truth_index = match_indexes[i][1]
         if dist_matrix[pred_index][truth_index] <= dist_treshold:
-            true_count += 1
-
-    accuracy = true_count / n
+            true_positive += 1
+        else:
+            false_positive += 1
+            
+    
+    print("                         GROUND TRUTH          ")
+    print("                    |     P   |     N    |           ")
+    print("          -----------------------------------------")
+    print("                P   |     {0}   |     {1}    |           ".format(true_positive, false_positive))
+    print("PRED      -----------------------------------------")
+    print("                N   |     {0}   |     /    |           ".format(false_negative))
+    print("          -----------------------------------------")
+    
+    accuracy = true_positive / n
+    precision = true_positive / (true_positive+false_positive)
+    recall = true_positive / (true_positive+false_negative)
+    f_value = (2*recall*precision)/(recall+precision)
+    
     print("******************************************")
     print("Accuracy: {}".format(accuracy))
+    print("Precision: {}".format(precision))
+    print("Recall: {}".format(recall))
+    print("F Valuse: {}".format(f_value))
     print("******************************************\n")
 
-    return accuracy
+    return accuracy, precision, recall, f_value
 
 
 if __name__ == "__main__":
@@ -100,6 +127,9 @@ if __name__ == "__main__":
     skip_lst = [15]
     for skip in skip_lst:
         accuracy_lst = []
+        precision_lst = []
+        recall_lst = []
+        f_value_lst = []
         for file_num in range(1, 36):
             pred_dens_map = np.load(dens_map_dirc + "{0}/{1}.npy".format(skip, file_num))
             centroid_arr = clustering(pred_dens_map, band_width, thresh=0.4)
@@ -107,13 +137,23 @@ if __name__ == "__main__":
             if centroid_arr.shape[0] == 0:
                 print("Not found point of centroid\nAccuracy is 0.0")
                 accuracy_lst.append(0.0)
+                precision_lst.append(0.0)
+                recall_lst.append(0.0)
+                f_value_lst.append(0.0)
             else:
                 ground_truth_arr = get_ground_truth(ground_truth_dirc + "{0}.csv".format(file_num), mask_path)
-                accuracy_lst.append(accuracy(centroid_arr, ground_truth_arr, band_width))
+                accuracy, precision, recall, f_value = evaluate(centroid_arr, ground_truth_arr, band_width))
+                accuracy_lst.append(accuracy)
+                precision_lst.append(precision)
+                recall_lst.append(recall)
+                f_value_lst.append(f_value)
 
-        print("\n******************************************")
+        print("\n**************************************************************")
         print("Toal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
-        print("******************************************")
+        print("Toal Precision (data size {0}, sikp size {1}): {2}".format(len(precision_lst), skip, sum(precision_lst)/len(precision_lst)))
+        print("Toal Recall (data size {0}, sikp size {1}): {2}".format(len(recall_lst), skip, sum(recall_lst)/len(recall_lst)))
+        print("Toal F value (data size {0}, sikp size {1}): {2}".format(len(f_value_lst), skip, sum(f_value_lst)/len(f_value_lst)))
+        print("****************************************************************")
 
         with open(out_accuracy_dirc + "{}/accuracy.csv".format(skip), "w") as f:
             writer = csv.writer(f)
