@@ -9,6 +9,15 @@ from scipy import optimize
 from clustering import clustering
 from cnn_util import get_masked_index
 
+def pretty_print(true_positive, false_positive, false_negative):
+    print("                        GROUND TRUTH          ")
+    print("                    |     P   |     N    |           ")
+    print("          -----------------------------------------")
+    print("                P   |     {0}   |     {1}    |           ".format(true_positive, false_positive))
+    print("PRED      -----------------------------------------")
+    print("                N   |     {0}   |     /    |           ".format(false_negative))
+    print("          -----------------------------------------")
+
 
 def get_ground_truth(ground_truth_path, mask_path=None):
     """
@@ -92,21 +101,13 @@ def evaluate(est_centroid_arr, ground_truth_arr, dist_treshold):
         else:
             false_positive += 1
             
-    
-    print("                         GROUND TRUTH          ")
-    print("                    |     P   |     N    |           ")
-    print("          -----------------------------------------")
-    print("                P   |     {0}   |     {1}    |           ".format(true_positive, false_positive))
-    print("PRED      -----------------------------------------")
-    print("                N   |     {0}   |     /    |           ".format(false_negative))
-    print("          -----------------------------------------")
-    
     accuracy = true_positive / n
     precision = true_positive / (true_positive+false_positive)
     recall = true_positive / (true_positive+false_negative)
     f_value = (2*recall*precision)/(recall+precision)
     
     print("******************************************")
+    pretty_print(true_positive, false_positive, false_negative)
     print("Accuracy: {}".format(accuracy))
     print("Precision: {}".format(precision))
     print("Recall: {}".format(recall))
