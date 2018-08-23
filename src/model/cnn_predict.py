@@ -96,12 +96,12 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, pa
 
 
 if __name__ == "__main__":
-    model_path = "/data/sakka/tensor_model/2018_7_24_20_41/"
+    model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
     cnn_model, sess = load_model(model_path, memory_fraction_rate=0.9)
     input_img_root_dirc = "/data/sakka/image/20170416/"
-    output_root_dirc = "/data/sakka/estimation/model_20180724/20170416/"
+    output_root_dirc = "/data/sakka/estimation/model_201804151507/20170416/"
     mask_path = "/data/sakka/image/mask.png"
-    params_dict = {"skip_width": 15, "pred_batch_size": 2500, "band_width":25, "cluster_thresh":0.8}
+    params_dict = {"skip_width": 15, "pred_batch_size": 2500, "band_width":25, "cluster_thresh":0.4}
     
     input_img_dirc_lst = [f for f in os.listdir(input_img_root_dirc) if not f.startswith(".")]
     for dirc in input_img_dirc_lst:
