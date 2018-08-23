@@ -25,7 +25,7 @@ root/
 &emsp;&emsp;&emsp;&emsp;&emsp;├ cnn_learning.py  
 &emsp;&emsp;&emsp;&emsp;&emsp;├ cnn_predict.py  
 &emsp;&emsp;&emsp;&emsp;&emsp;├ clustering.py  
-&emsp;&emsp;&emsp;&emsp;&emsp;└ accuracy.py
+&emsp;&emsp;&emsp;&emsp;&emsp;└ evaluation.py
 
 ## Requirement
 * Python3
