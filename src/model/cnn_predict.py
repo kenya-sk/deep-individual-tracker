@@ -10,7 +10,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
-from cnn_util import get_masked_data, get_masked_index, get_local_data, load_model
+from cnn_util import display_data_info, get_masked_data, get_masked_index, get_local_data, load_model
 from clustering import clustering
 
 
@@ -20,15 +20,7 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, pa
     skip_width = params_dict["skip_width"]
     img_file_lst = glob.glob(input_img_path)
     index_h, index_w = get_masked_index(mask_path)
-    print("*************************************************")
-    print("INPUT IMG DIRC: {}".format(input_img_path))
-    print("OUTPUT DIRC: {}".format(output_dirc_path))
-    print("SKIP WIDTH: {}".format(params_dict["skip_width"]))
-    print("PRED BATCH SIZE: {}".format(params_dict["pred_batch_size"]))
-    print("BAND WIDTH: {}".format(params_dict["band_width"]))
-    print("CLUSTER THRESH: {}".format(params_dict["cluster_thresh"]))
-    print("SAVE DENS MAP: {}".format(save_map))
-    print("*************************************************\n")
+    display_data_info(input_img_path, output_dirc_path, params_dict, save_map)
     # --------------------------------------------------------------------------
 
     # ------------------------------- PREDICT ----------------------------------
