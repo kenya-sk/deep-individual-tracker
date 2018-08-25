@@ -60,7 +60,7 @@ def batch_processing(input_dirc_path):
     print("Number of total file: {}".format(len(file_lst)))
 
     for file_num, file_name in enumerate(file_lst):
-        print("File name: {0}, Number: {1}/{2}".format(file_name, file_num, len(file_lst)))
+        print("File name: {0}, Number: {1}/{2}".format(file_name, file_num+1, len(file_lst)))
         stop_making = ImgMotion(file_name).run()
         if stop_making:
             print("STOP: making datasets")
