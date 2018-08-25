@@ -7,16 +7,7 @@ import csv
 from scipy import optimize
 
 from clustering import clustering
-from cnn_util import get_masked_index
-
-def pretty_print(true_positive, false_positive, false_negative):
-    print("                        GROUND TRUTH          ")
-    print("                    |     P   |     N    |           ")
-    print("          -----------------------------------------")
-    print("                P   |     {0}   |     {1}    |           ".format(true_positive, false_positive))
-    print("PRED      -----------------------------------------")
-    print("                N   |     {0}   |     /    |           ".format(false_negative))
-    print("          -----------------------------------------")
+from cnn_util import get_masked_index, pretty_print
 
 
 def get_ground_truth(ground_truth_path, mask_path=None):
