@@ -67,6 +67,9 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, pa
                 pred_dens_map[h_est,w_est] = pred_arr[i]
 
         out_file_path = img_path.split("/")[-1][:-4]
+        if "_" in out_file_path:
+            out_file_path = out_file_path.split("_")[-1]
+            
         if save_map:
             np.save(output_dirc_path + "dens/" + "{}.npy".format(out_file_path), pred_dens_map)
         print("END: predict density map\n")
