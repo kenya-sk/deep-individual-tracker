@@ -128,7 +128,7 @@ def load_model(model_path, gpu_config_dict):
     """
 
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(
-        visible_device_lst = gpu_config_dict["visible_device"]
+        visible_device_list = gpu_config_dict["visible_device"],
         per_process_gpu_memory_fraction=gpu_config_dict["memory_rate"]))
     sess = tf.InteractiveSession(config=config)
 
