@@ -115,7 +115,7 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size=72):
     return local_img_mat, density_arr
 
 
-def load_model(model_path, memory_fraction_rate=0.9):
+def load_model(model_path, gpu_config_dict):
     """
     input:
         model_path: path of learned model
@@ -128,7 +128,8 @@ def load_model(model_path, memory_fraction_rate=0.9):
     """
 
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(
-        per_process_gpu_memory_fraction=memory_fraction_rate))
+        visible_device_lst = gpu_config_dict["visible_device"]
+        per_process_gpu_memory_fraction=gpu_config_dict["memory_rate"]))
     sess = tf.InteractiveSession(config=config)
 
     model = CNN_model()

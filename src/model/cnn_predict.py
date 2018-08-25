@@ -89,7 +89,8 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, pa
 
 if __name__ == "__main__":
     model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
-    cnn_model, sess = load_model(model_path, memory_fraction_rate=0.9)
+    gpu_config_dict = {"visible_divice":"0,1", "memory_rate":0.9}
+    cnn_model, sess = load_model(model_path, gpu_config_dict)
     input_img_root_dirc = "/data/sakka/image/20170416/"
     output_root_dirc = "/data/sakka/estimation/model_201804151507/20170416/"
     mask_path = "/data/sakka/image/mask.png"

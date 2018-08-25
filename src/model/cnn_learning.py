@@ -87,7 +87,7 @@ def under_sampling(local_img_mat, density_arr, thresh):
 def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc):
     # -------------------------- PRE PROCESSING --------------------------------
     # start session
-    config = tf.ConfigProto(gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
+    config = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
     sess = tf.InteractiveSession(config=config)
     start_time = time.time()
     cnn_model = CNN_model()
