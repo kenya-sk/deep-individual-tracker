@@ -6,7 +6,6 @@ import pandas as pd
 import csv
 from scipy import optimize
 
-from clustering import clustering
 from cnn_util import get_masked_index, pretty_print
 
 
@@ -91,6 +90,7 @@ def evaluate(est_centroid_arr, ground_truth_arr, dist_treshold):
             true_positive += 1
         else:
             false_positive += 1
+            false_negative += 1
             
     accuracy = true_positive / n
     precision = true_positive / (true_positive+false_positive)
@@ -99,33 +99,39 @@ def evaluate(est_centroid_arr, ground_truth_arr, dist_treshold):
     
     print("******************************************")
     pretty_print(true_positive, false_positive, false_negative)
-    print("Accuracy: {}".format(accuracy))
+    print("\nAccuracy: {}".format(accuracy))
     print("Precision: {}".format(precision))
     print("Recall: {}".format(recall))
     print("F Valuse: {}".format(f_value))
     print("******************************************\n")
 
-    return accuracy, precision, recall, f_value
+    return accuracy, precision, recall, f_value, true_positive, false_positive, false_negative
 
 
 if __name__ == "__main__":
-    dens_map_dirc = "/data/sakka/estimation/test_image/model_201806142123/dens/"
-    out_clustering_dirc = "/data/sakka/estimation/test_image/model_201806142123/cord/"
-    ground_truth_dirc = "/data/sakka/cord/test_image/"
-    mask_path = "/data/sakka/image/mask.png"
-    out_accuracy_dirc = "/data/sakka/estimation/test_image/model_201806142123/accuracy/"
+    # pred_centroid_dirc = "/data/sakka/estimation/model_201804151507/eval/"
+    # ground_truth_dirc = "/data/sakka/cord/eval_image/"
+    # mask_path = "/data/sakka/image/mask.png"
+    # out_accuracy_dirc = "/data/sakka/estimation/test_image/model_201806142123/accuracy/"
+
+    pred_centroid_dirc = "/Users/sakka/cnn_by_density_map/data/pred/eval_image/eval/"
+    ground_truth_dirc = "/Users/sakka/cnn_by_density_map/data/cord/eval/"
+    mask_path = "/Users/sakka/cnn_by_density_map/image/mask.png"
+    out_accuracy_dirc = "/Users/sakka/cnn_by_density_map/data/acc/"
 
     band_width = 25
     skip_lst = [15]
+    true_positive = 0
+    false_positive = 0
+    false_negative = 0
     for skip in skip_lst:
         accuracy_lst = []
         precision_lst = []
         recall_lst = []
         f_value_lst = []
-        for file_num in range(1, 36):
-            pred_dens_map = np.load(dens_map_dirc + "{0}/{1}.npy".format(skip, file_num))
-            centroid_arr = clustering(pred_dens_map, band_width, thresh=0.4)
-            np.savetxt(out_clustering_dirc + "{0}/{1}.npy".format(skip, file_num), centroid_arr, fmt="%i", delimiter=",")
+        for file_num in range(1, 85):
+            print("/Users/sakka/cnn_by_density_map/data/pred/eval_image/eval/{}.png".format(file_num))
+            centroid_arr = np.loadtxt(pred_centroid_dirc+"{}.csv".format(file_num), delimiter=",")
             if centroid_arr.shape[0] == 0:
                 print("Not found point of centroid\nAccuracy is 0.0")
                 accuracy_lst.append(0.0)
@@ -134,14 +140,18 @@ if __name__ == "__main__":
                 f_value_lst.append(0.0)
             else:
                 ground_truth_arr = get_ground_truth(ground_truth_dirc + "{0}.csv".format(file_num), mask_path)
-                accuracy, precision, recall, f_value = evaluate(centroid_arr, ground_truth_arr, band_width))
+                accuracy, precision, recall, f_value, tp, fp, fn = evaluate(centroid_arr, ground_truth_arr, band_width)
+                true_positive += tp
+                false_positive += fp
+                false_negative += fn
                 accuracy_lst.append(accuracy)
                 precision_lst.append(precision)
                 recall_lst.append(recall)
                 f_value_lst.append(f_value)
 
         print("\n**************************************************************")
-        print("Toal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
+        pretty_print(true_positive, false_positive, false_negative)
+        print("\nToal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
         print("Toal Precision (data size {0}, sikp size {1}): {2}".format(len(precision_lst), skip, sum(precision_lst)/len(precision_lst)))
         print("Toal Recall (data size {0}, sikp size {1}): {2}".format(len(recall_lst), skip, sum(recall_lst)/len(recall_lst)))
         print("Toal F value (data size {0}, sikp size {1}): {2}".format(len(f_value_lst), skip, sum(f_value_lst)/len(f_value_lst)))
