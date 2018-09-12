@@ -20,9 +20,13 @@ void movie_to_image(std::string input_file_path, std::string output_dirc_path){
     cout << "Input movie fps: " << fps << endl;
 
     cv::Mat frame;
-    int interval = fps*60; //interval at which images are saved.
+    int interval = 30; //interval at which images are saved.
     int frame_num = 0;
     string output_file_path = "";
+
+    for(int i=0;i<3*fps;i++){
+        capture >> frame;
+    }
 
     while(true){
         capture >> frame;
@@ -43,13 +47,21 @@ void movie_to_image(std::string input_file_path, std::string output_dirc_path){
 
 int main(int argc, char **argv) {
     string input_file_path, output_dirc_path;
-    cout << "Input movie file path: ";
-    cin >> input_file_path;
-    cout << "\nOutput directory path: ";
-    cin >> output_dirc_path;
-    cout << endl;
+    // cout << "Input movie file path: ";
+    // cin >> input_file_path;
+    // cout << "\nOutput directory path: ";
+    // cin >> output_dirc_path;
+    // cout << endl;
 
-    movie_to_image(input_file_path, output_dirc_path);
+    for (int i = 9; i < 10; i++){
+        if (i==9) {
+            input_file_path = "/Volumes/HDD-IO/Tuna_conv/20170422/201704220"+to_string(i)+"00.mp4";
+        }else{
+            input_file_path = "/Volumes/HDD-IO/Tuna_conv/20170422/20170422"+to_string(i)+"00.mp4";
+        }
+        output_dirc_path = "/Users/sakka/cnn_by_density_map/image/original/20170422/" + to_string(i) + "/";
+        movie_to_image(input_file_path, output_dirc_path);
+    }
 
     return 0;
 }

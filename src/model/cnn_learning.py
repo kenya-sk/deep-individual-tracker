@@ -112,6 +112,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     test_step = 0
     merged = tf.summary.merge_all()
     train_writer = tf.summary.FileWriter(log_dirc + "/train", sess.graph)
+    val_writer = tf.summary.FileWriter(log_dir + "/val")
     test_writer = tf.summary.FileWriter(log_dirc + "/test")
 
     # split data: validation or test
@@ -119,7 +120,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     # --------------------------------------------------------------------------
 
     # -------------------------- LEARNING STEP --------------------------------
-    n_epochs = 10
+    n_epochs = 30
     batch_size = 500
     hard_negative_image_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
     hard_negative_label_arr = np.zeros((1), dtype="float32")
@@ -184,7 +185,6 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                             cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, 72, 72, 3),
                             cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
                             cnn_model.is_training: True})
-                    #train_writer.add_summary(train_summary, train_step)
 
                     # hard negative mining
                     batch_hard_negative_image_arr, batch_hard_negative_label_arr = \
@@ -214,6 +214,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             val_loss_lst.append(val_loss/(len(X_val)*val_n_batches))
 
             #record loss data
+            val_writer.add_summary(val_loss_lst[-1], train_step)
             print("epoch: {0}".format(epoch+1))
             print("train loss: {}".format(train_loss/(len(X_train)*train_n_batches)))
             print("validation loss: {}".format(val_loss_lst[epoch]))
@@ -267,12 +268,11 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
         print("\nPressed \"Ctrl + C\"")
         print("exit problem, save learning model")
         saver.save(sess, out_model_dirc + learning_date + "/model.ckpt")
-
-    train_writer.close()
-    test_writer.close()
     # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
+    train_writer.close()
+    test_writer.close()
     sess.close()
     # --------------------------------------------------------------------------
 
@@ -280,7 +280,7 @@ if __name__ == "__main__":
     input_image_dirc_path = "/data/sakka/image/original/total/"
     input_dens_dirc_path = "/data/sakka/dens/total/"
     mask_path = "/data/sakka/image/mask.png"
-    reuse_model_path = "/data/sakka/tensor_model/2018_7_24_20_41/"
+    reuse_model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
     out_model_dirc = "/data/sakka/tensor_model/"
     X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, mask_path, test_size=0.2)
     cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc)
