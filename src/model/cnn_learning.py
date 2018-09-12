@@ -112,7 +112,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     test_step = 0
     merged = tf.summary.merge_all()
     train_writer = tf.summary.FileWriter(log_dirc + "/train", sess.graph)
-    val_writer = tf.summary.FileWriter(log_dir + "/val")
+    val_writer = tf.summary.FileWriter(log_dirc + "/val")
     test_writer = tf.summary.FileWriter(log_dirc + "/test")
 
     # split data: validation or test
