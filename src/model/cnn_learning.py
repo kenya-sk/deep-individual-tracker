@@ -84,10 +84,13 @@ def under_sampling(local_img_mat, density_arr, thresh):
     return local_img_mat[msk], density_arr[msk]
 
 
-def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc):
+def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, params_dict):
+
     # -------------------------- PRE PROCESSING --------------------------------
     # start session
-    config = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
+    config = tf.ConfigProto(gpu_options=tf.GPUOptions(
+            visible_device_list=gpu_config_dict["visible_device"],
+            per_process_gpu_memory_fraction=gpu_config_dict["memory_rate"]))
     sess = tf.InteractiveSession(config=config)
     start_time = time.time()
     cnn_model = CNN_model()
@@ -120,14 +123,15 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     # --------------------------------------------------------------------------
 
     # -------------------------- LEARNING STEP --------------------------------
-    n_epochs = 30
-    batch_size = 500
-    hard_negative_image_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
+    local_size = params_dict["local_img_size"]
+    n_epochs = params_dict["n_epochs"]
+    batch_size = params_dict["batch_size"]
+    hard_negative_image_arr = np.zeros((1, local_size, local_size, 3),dtype="uint8")
     hard_negative_label_arr = np.zeros((1), dtype="float32")
     val_loss_lst = []
-    minimum_epoch = 5
+    minimum_epoch = params_dict["minimum_epoch"]
     not_improved_count = 0
-    early_stopping_epoch = 2
+    early_stopping_epoch = params_dict["early_stopping_epoch"]
     print("Original traning data size: {}".format(len(X_train)))
 
     # check if the ckpt exist
@@ -152,21 +156,36 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             for train_i in trange(len(X_train), desc="training data"):
                 # load traing dataset
                 # data augmentation (horizontal flip)
-                flip_prob = 0.5 # probality of horizontal flip
+                flip_prob = params_dict["flip_prob"]
                 if np.random.rand() < flip_prob:
-                    X_train_local, y_train_local = get_local_data(X_train[train_i][:,::-1,:], y_train[train_i][:,::-1], flip_index_h, flip_index_w, local_img_size=72)
+                    X_train_local, y_train_local = \
+                            get_local_data(X_train[train_i][:,::-1,:], 
+                                           y_train[train_i][:,::-1],
+                                           flip_index_h,
+                                           flip_index_w, 
+                                           local_img_size=local_size)
                 else:
-                    X_train_local, y_train_local = get_local_data(X_train[train_i], y_train[train_i], index_h, index_w, local_img_size=72)
-                X_train_local, y_train_local = under_sampling(X_train_local, y_train_local, thresh = 0.2)
+                    X_train_local, y_train_local = \
+                            get_local_data(X_train[train_i], 
+                                           y_train[train_i], 
+                                           index_h, 
+                                           index_w, 
+                                           local_img_size=local_size)
 
-                #print("hard negative data (training {}/{}): {}".format(train_i, len(X_train), hard_negative_label_arr.shape[0] - 1))
+                # under sampling
+                X_train_local, y_train_local = \
+                            under_sampling(X_train_local,
+                                           y_train_local, 
+                                           thresh=params_dict["under_sampling"])
+
+                # hard negative mining
                 if hard_negative_label_arr.shape[0] > 1:
                     X_train_local = np.append(X_train_local, hard_negative_image_arr[1:], axis=0)
                     y_train_local = np.append(y_train_local, hard_negative_label_arr[1:], axis=0)
                 X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
                 # learning by batch
-                hard_negative_image_arr = np.zeros((1, 72, 72, 3), dtype="uint8")
+                hard_negative_image_arr = np.zeros((1, local_size, local_size, 3), dtype="uint8")
                 hard_negative_label_arr = np.zeros((1), dtype="float32")
                 train_n_batches = int(len(X_train_local) / batch_size)
                 for train_batch in range(train_n_batches):
@@ -175,20 +194,24 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                     train_end_index = train_start_index + batch_size
 
                     train_diff = sess.run(cnn_model.diff, feed_dict={
-                            cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, 72, 72, 3),
-                            cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
-                            cnn_model.is_training: True})
+                        cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, local_size, local_size, 3),
+                        cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
+                        cnn_model.is_training: True
+                        })
 
                     train_loss += np.mean(train_diff)
 
                     train_summary, _ = sess.run([merged, cnn_model.learning_step],feed_dict={
-                            cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, 72, 72, 3),
-                            cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
-                            cnn_model.is_training: True})
+                        cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, local_size, local_size, 3),
+                        cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
+                        cnn_model.is_training: True
+                        })
 
                     # hard negative mining
                     batch_hard_negative_image_arr, batch_hard_negative_label_arr = \
-                            hard_negative_mining(X_train_local[train_start_index:train_end_index], y_train_local[train_start_index:train_end_index], train_diff)
+                            hard_negative_mining(X_train_local[train_start_index:train_end_index], 
+                                                 y_train_local[train_start_index:train_end_index],
+                                                 train_diff)
                     if batch_hard_negative_label_arr.shape[0] > 0: # there are hard negative data
                         hard_negative_image_arr = np.append(hard_negative_image_arr, batch_hard_negative_image_arr, axis=0)
                         hard_negative_label_arr = np.append(hard_negative_label_arr, batch_hard_negative_label_arr, axis=0)
@@ -200,16 +223,19 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             # validation
             val_loss = 0.0
             for val_i in range(len(X_val)):
-                X_val_local, y_val_local = get_local_data(X_val[val_i], y_val[val_i], index_h, index_w, local_img_size=72)
+                X_val_local, y_val_local = get_local_data(X_val[val_i], y_val[val_i],
+                                                          index_h, index_w, 
+                                                          local_img_size=local_size)
                 val_n_batches = int(len(X_val_local) / batch_size)
                 for val_batch in range(val_n_batches):
                     val_start_index = val_batch * batch_size
                     val_end_index = val_start_index + batch_size
 
                     tmp_val_loss = sess.run(cnn_model.loss, feed_dict={
-                                        cnn_model.X: X_val_local[val_start_index:val_end_index].reshape(-1, 72, 72, 3),
-                                        cnn_model.y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
-                                        cnn_model.is_training:False})
+                        cnn_model.X: X_val_local[val_start_index:val_end_index].reshape(-1, local_size, local_size, 3),
+                        cnn_model.y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
+                        cnn_model.is_training:False
+                        })
                     val_loss += tmp_val_loss
             val_loss_lst.append(val_loss/(len(X_val)*val_n_batches))
 
@@ -246,7 +272,9 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
         print("START: test")
         test_loss = 0.0
         for test_i in range(len(X_test)):
-            X_test_local, y_test_local = get_local_data(X_test[test_i], y_test[test_i], index_h, index_w, local_img_size=72)
+            X_test_local, y_test_local = get_local_data(X_test[test_i], y_test[test_i], 
+                                                        index_h, index_w, 
+                                                        local_img_size=local_size)
             test_n_batches = int(len(X_test_local) / batch_size)
             for test_batch in range(test_n_batches):
                 test_step += 1
@@ -254,9 +282,10 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                 test_end_index = test_start_index + batch_size
 
                 test_summary, tmp_test_loss = sess.run([merged, cnn_model.loss], feed_dict={
-                                    cnn_model.X: X_test_local[test_start_index:test_end_index].reshape(-1, 72, 72, 3),
-                                    cnn_model.y_: y_test_local[test_start_index:test_end_index].reshape(-1, 1),
-                                    cnn_model.is_training:False})
+                    cnn_model.X: X_test_local[test_start_index:test_end_index].reshape(-1, local_size, local_size, 3),
+                    cnn_model.y_: y_test_local[test_start_index:test_end_index].reshape(-1, 1),
+                    cnn_model.is_training:False
+                    })
                 test_writer.add_summary(test_summary, test_step)
                 test_loss += tmp_test_loss
 
@@ -282,5 +311,17 @@ if __name__ == "__main__":
     mask_path = "/data/sakka/image/mask.png"
     reuse_model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
     out_model_dirc = "/data/sakka/tensor_model/"
-    X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, mask_path, test_size=0.2)
-    cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc)
+    gpu_config_dict = {"visible_device":"0,1",  # ID of using GPU: 0-max number of available GPUs
+                       "memory_rate":0.9        # useing each GPU memory rate: 0.0-1.0
+                       }
+    params_dict = {"local_img_size":72,         # square local image size: > 0
+                   "n_epochs":30,               # number of epoch: > 0
+                   "batch_size":500,            # batch size of learning: > 0
+                   "minimum_epoch":5,           # minimum learning epoch (not apply early stopping): > 0
+                   "early_stopping_epoch":2,    # over this number, learning is stop: > 0
+                   "flip_prob":0.5,             # probability of horaizontal flip. (apply only training data): 0.0-1.0
+                   "under_sampling_thresh":0.2  # over this value, positive data: 0.0-1.0 (value of density map)
+                   }
+
+    X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, mask_path,test_size=0.2)
+    cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, params_dict)
