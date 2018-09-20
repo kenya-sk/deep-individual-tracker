@@ -25,6 +25,16 @@ def display_data_info(input_img_path, output_dirc_path, params_dict, save_map):
     print("*************************************************\n")
 
 
+def pretty_print(true_positive, false_positive, false_negative):
+    print("                        GROUND TRUTH          ")
+    print("                    |     P   |     N    |           ")
+    print("          -----------------------------------------")
+    print("                P   |     {0}   |     {1}    |           ".format(true_positive, false_positive))
+    print("PRED      -----------------------------------------")
+    print("                N   |     {0}   |     /    |           ".format(false_negative))
+    print("          -----------------------------------------")
+
+
 def get_masked_data(data, mask_path=None):
     """
     input:
