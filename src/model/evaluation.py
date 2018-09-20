@@ -102,7 +102,7 @@ def evaluate(est_centroid_arr, ground_truth_arr, dist_treshold):
     print("\nAccuracy: {}".format(accuracy))
     print("Precision: {}".format(precision))
     print("Recall: {}".format(recall))
-    print("F Valuse: {}".format(f_value))
+    print("F measure: {}".format(f_value))
     print("******************************************\n")
 
     return accuracy, precision, recall, f_value, true_positive, false_positive, false_negative
@@ -154,7 +154,7 @@ if __name__ == "__main__":
         print("\nToal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
         print("Toal Precision (data size {0}, sikp size {1}): {2}".format(len(precision_lst), skip, sum(precision_lst)/len(precision_lst)))
         print("Toal Recall (data size {0}, sikp size {1}): {2}".format(len(recall_lst), skip, sum(recall_lst)/len(recall_lst)))
-        print("Toal F value (data size {0}, sikp size {1}): {2}".format(len(f_value_lst), skip, sum(f_value_lst)/len(f_value_lst)))
+        print("Toal F measure (data size {0}, sikp size {1}): {2}".format(len(f_value_lst), skip, sum(f_value_lst)/len(f_value_lst)))
         print("****************************************************************")
 
         with open(out_accuracy_dirc + "{}/accuracy.csv".format(skip), "w") as f:
