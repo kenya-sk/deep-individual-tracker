@@ -84,7 +84,7 @@ def under_sampling(local_img_mat, density_arr, thresh):
     return local_img_mat[msk], density_arr[msk]
 
 
-def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, learning_params_dict):
+def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, params_dict):
 
     # -------------------------- PRE PROCESSING --------------------------------
     # start session
@@ -123,15 +123,15 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     # --------------------------------------------------------------------------
 
     # -------------------------- LEARNING STEP --------------------------------
-    local_size = learning_params_dict["local_img_size"]
-    n_epochs = learning_params_dict["n_epochs"]
-    batch_size = learning_params_dict["batch_size"]
+    local_size = params_dict["local_img_size"]
+    n_epochs = params_dict["n_epochs"]
+    batch_size = params_dict["batch_size"]
     hard_negative_image_arr = np.zeros((1, local_size, local_size, 3),dtype="uint8")
     hard_negative_label_arr = np.zeros((1), dtype="float32")
     val_loss_lst = []
-    minimum_epoch = learning_params_dict["minimum_epoch"]
+    minimum_epoch = params_dict["minimum_epoch"]
     not_improved_count = 0
-    early_stopping_epoch = learning_params_dict["early_stopping_epoch"]
+    early_stopping_epoch = params_dict["early_stopping_epoch"]
     print("Original traning data size: {}".format(len(X_train)))
 
     # check if the ckpt exist
@@ -156,7 +156,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             for train_i in trange(len(X_train), desc="training data"):
                 # load traing dataset
                 # data augmentation (horizontal flip)
-                flip_prob = learning_params_dict["flip_prob"]
+                flip_prob = params_dict["flip_prob"]
                 if np.random.rand() < flip_prob:
                     X_train_local, y_train_local = \
                             get_local_data(X_train[train_i][:,::-1,:], 
@@ -176,7 +176,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                 X_train_local, y_train_local = \
                             under_sampling(X_train_local,
                                            y_train_local, 
-                                           thresh=learning_params_dict["under_sampling"])
+                                           thresh=params_dict["under_sampling"])
 
                 # hard negative mining
                 if hard_negative_label_arr.shape[0] > 1:
@@ -311,17 +311,17 @@ if __name__ == "__main__":
     mask_path = "/data/sakka/image/mask.png"
     reuse_model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
     out_model_dirc = "/data/sakka/tensor_model/"
-    gpu_config_dict = {"visible_device":"0,1",           # ID of using GPU: 0-max number of available GPUs
-                       "memory_rate":0.9                 # useing each GPU memory rate: 0.0-1.0
+    gpu_config_dict = {"visible_device":"0,1",  # ID of using GPU: 0-max number of available GPUs
+                       "memory_rate":0.9        # useing each GPU memory rate: 0.0-1.0
                        }
-    learning_params_dict = {"local_img_size":72,         # square local image size: > 0
-                            "n_epochs":30,               # number of epoch: > 0
-                            "batch_size":500,            # batch size of learning: > 0
-                            "minimum_epoch":5,           # minimum learning epoch (not apply early stopping): > 0
-                            "early_stopping_epoch":2,    # over this number, learning is stop: > 0
-                            "flip_prob":0.5,             # probability of horaizontal flip. (apply only training data): 0.0-1.0
-                            "under_sampling_thresh":0.2  # over this value, positive data: 0.0-1.0 (value of density map)
-                          }
+    params_dict = {"local_img_size":72,         # square local image size: > 0
+                   "n_epochs":30,               # number of epoch: > 0
+                   "batch_size":500,            # batch size of learning: > 0
+                   "minimum_epoch":5,           # minimum learning epoch (not apply early stopping): > 0
+                   "early_stopping_epoch":2,    # over this number, learning is stop: > 0
+                   "flip_prob":0.5,             # probability of horaizontal flip. (apply only training data): 0.0-1.0
+                   "under_sampling_thresh":0.2  # over this value, positive data: 0.0-1.0 (value of density map)
+                   }
 
     X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, mask_path,test_size=0.2)
-    cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, learning_params_dict)
+    cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, params_dict)
