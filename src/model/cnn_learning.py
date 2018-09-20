@@ -176,7 +176,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                 X_train_local, y_train_local = \
                             under_sampling(X_train_local,
                                            y_train_local, 
-                                           thresh=params_dict["under_sampling"])
+                                           thresh=params_dict["under_sampling_thresh"])
 
                 # hard negative mining
                 if hard_negative_label_arr.shape[0] > 1:
