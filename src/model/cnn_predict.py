@@ -7,6 +7,7 @@ import sys
 import cv2
 import glob
 import time
+import argparse
 import numpy as np
 import tensorflow as tf
 
@@ -20,7 +21,7 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
     img_file_lst = glob.glob(input_img_path)
     index_h, index_w = get_masked_index(args.mask_path)
     display_data_info(input_img_path, output_dirc_path, args.skip_width, 
-                        args.pred_batch_size, args.cluster_thresh, args.save_map)
+                        args.pred_batch_size, args.band_width, args.cluster_thresh, args.save_map)
     # --------------------------------------------------------------------------
 
     # ------------------------------- PREDICT ----------------------------------
@@ -125,7 +126,7 @@ def make_pred_parse():
     parser.add_argument("--save_map", type=bool,
                         default=False, help="save pred density map (True of False)")
     parser.add_argument("--band_width", type=int,
-                        default=25, "band width of Mean-Shift Clustering")
+                        default=25, help="band width of Mean-Shift Clustering")
     parser.add_argument("--cluster_thresh", type=float,
                         default=0.4, help="thresh to be subjected to clustering")
 

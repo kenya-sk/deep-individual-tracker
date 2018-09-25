@@ -323,7 +323,7 @@ def make_learning_parse():
                         default="/data/sakka/dens/total/")
     parser.add_argument("--mask_path", type=str,
                         default="/data/sakka/image/mask.png")
-    parser.add_argument("--resue_model_path", type=str,
+    parser.add_argument("--reuse_model_path", type=str,
                         default="/data/sakka/tensor_model/2018_4_15_15_7/")
     parser.add_argument("--root_log_dirc", type=str,
                         default="/data/sakka/tensor_log/")
@@ -359,26 +359,6 @@ def make_learning_parse():
 
 
 if __name__ == "__main__":
-    # input_image_dirc_path = "/data/sakka/image/original/total/"
-    # input_dens_dirc_path = "/data/sakka/dens/total/"
-    # mask_path = "/data/sakka/image/mask.png"
-    # reuse_model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
-    # out_model_dirc = "/data/sakka/tensor_model/"
-    # gpu_config_dict = {"visible_device":"0,1",  # ID of using GPU: 0-max number of available GPUs
-    #                    "memory_rate":0.9        # useing each GPU memory rate: 0.0-1.0
-    #                    }
-    # params_dict = {"local_img_size":72,         # square local image size: > 0
-    #                "n_epochs":30,               # number of epoch: > 0
-    #                "batch_size":500,            # batch size of learning: > 0
-    #                "minimum_epoch":5,           # minimum learning epoch (not apply early stopping): > 0
-    #                "early_stopping_epoch":2,    # over this number, learning is stop: > 0
-    #                "flip_prob":0.5,             # probability of horaizontal flip. (apply only training data): 0.0-1.0
-    #                "under_sampling_thresh":0.2  # over this value, positive data: 0.0-1.0 (value of density map)
-    #                }
-
-    # X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, mask_path,test_size=0.2)
-    # cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, params_dict)
-
     args = make_learning_parse()
     X_train, X_test, y_train, y_test = load_data(args, test_size=0.2)
     cnn_learning(X_train, X_test, y_train, y_test, args)
