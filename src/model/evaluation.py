@@ -138,9 +138,9 @@ def make_eval_parse():
 
     # Data Argment
     parser.add_argument("--pred_centroid_dirc", type=str,
-                        default="/data/sakka/estimation/model_201804151507/eval/")
+                        default="/data/sakka/estimation/model_201804151507/test/")
     parser.add_argument("--ground_truth_dirc", type=str,
-                        default="/data/sakka/cord/eval_image/")
+                        default="/data/sakka/cord/test/")
     parser.add_argument("--mask_path", type=str,
                         default="/data/sakka/image/mask.png")
 
