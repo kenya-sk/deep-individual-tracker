@@ -14,6 +14,9 @@ from sklearn.cluster import MeanShift
 
 
 def clustering(dens_map, band_width, thresh=0):
+    """
+    clustering density map
+    """
     # search high value cordinates
     while True:
         # point[0]: y  point[1]: x
@@ -44,7 +47,24 @@ def clustering(dens_map, band_width, thresh=0):
     return centroid_arr.astype(np.int32)
 
 
+def batch_clustering(args):
+    """
+    clustering mutiple files
+    """
+    file_lst = glob.glob(args.dens_map_path)
+    for i, file_path in enumerate(file_lst):
+        print("current data: {} / {}".format(i + 1, len(file_lst)))
+        est_dens_map = np.load(file_path)
+        centroid_arr = clustering(est_dens_map, args.band_width, args.thresh)
+        file_num = file_path.split("/")[-1][:-4]
+        np.savetxt(args.out_clustering_dirc + "{}.csv".format(file_num),
+                   centroid_arr, fmt="%i", delimiter=",")
+
+
 def plot_prediction_box(img, centroid_arr,hour, minute, out_pred_box_dirc,box_size=12):
+    """
+    draw square box of predict point
+    """
     # get cordinates of vertex(lert top and right bottom)
     def get_rect_vertex(x, y, box_size):
         vertex = np.zeros((2, 2), dtype=np.uint16)
@@ -70,23 +90,34 @@ def plot_prediction_box(img, centroid_arr,hour, minute, out_pred_box_dirc,box_si
     print("Done({0}:{1}): plot estimation box\n".format(hour, minute))
 
 
+def make_clustering_parse():
+    parser = argparse.ArgumentParser(
+        prog="clustering.py",
+        usage="clustering pred point",
+        description="description",
+        epilog="end",
+        add_help=True
+    )
+
+    # Data Argment
+    parser.add_argument("--dens_map_path", type=str,
+                        default="/data/sakka/estimation/20170421/9/dens/*.npy")
+    parser.add_argument("--out_clustering_dirc", type=str,
+                        default="/data/sakka/estimation/20170421/9/cord/")
+    parser.add_argument("--out_pred_box_dirc", type=str,
+                        default="/data/sakka/image/estBox/")
+
+    # Parameter Argument
+    parser.add_argument("--band_width", type=int,
+                        default=25, help="band width of clustering")
+    parser.add_argument("--thresh", type=float,
+                        default=0.4, help="threshold to be subjected to clustering")
+
+    args = parser.parse_args()
+
+    return args
+
+
 if __name__ == "__main__":
-    dens_map_path = "/data/sakka/estimation/20170421/9/dens/*.npy"
-    out_clustering_dirc = "/data/sakka/estimation/20170421/9/cord/"
-    out_pred_box_dirc = "/data/sakka/image/estBox/"
-
-    # for hour in range(10, 17):
-    #     for minute in range(1, 62):
-    #         est_dens_map = np.load("/data/sakka/estimation/{0}_{1}.npy".format(hour, minute))
-    #         img = cv2.imread("/data/sakka/image/est/{0}_{1}.png".format(hour, minute))
-    #         centroid_arr = clustering(est_dens_map, 20, 0.7)
-    #         plot_prediction_box(img, centroid_arr, hour, minute, out_pred_box_dirc,box_size=12)
-
-    # check 1h data
-    file_lst = glob.glob(dens_map_path)
-    for i, file_path in enumerate(file_lst):
-        print("current data: {} / {}".format(i+1, len(file_lst)))
-        est_dens_map = np.load(file_path)
-        centroid_arr = clustering(est_dens_map, 25, 0.4)
-        file_num = file_path.split("/")[-1][:-4]
-        np.savetxt(out_clustering_dirc + "{}.csv".format(file_num), centroid_arr, fmt="%i", delimiter=",")
+    args = make_clustering_parse()
+    batch_clustering(args)
