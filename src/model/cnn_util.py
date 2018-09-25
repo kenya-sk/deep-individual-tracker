@@ -38,7 +38,7 @@ def pretty_print(true_positive_lst, false_positive_lst, false_negative_lst):
     recall_lst = []
     f_measure_lst = []
     for i in range(len(true_positive_lst)):
-        accuracy, precision, recall, f_value = 
+        accuracy, precision, recall, f_measure = \
                 eval_metrics(true_positive_lst[i], false_positive_lst[i], false_negative_lst[i])
         accuracy_lst.append(accuracy)
         precision_lst.append(precision)

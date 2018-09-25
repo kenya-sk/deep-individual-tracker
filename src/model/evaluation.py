@@ -143,8 +143,6 @@ def make_eval_parse():
                         default="/data/sakka/cord/eval_image/")
     parser.add_argument("--mask_path", type=str,
                         default="/data/sakka/image/mask.png")
-    parser.add_argument("--out_accuracy_dirc", type=str,
-                        default="/data/sakka/estimation/test_image/model_201806142123/accuracy/"
 
     # Parameter Argument
     parser.add_argument("--dist_thresh", type=int,
