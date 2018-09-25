@@ -319,7 +319,7 @@ def make_learning_parse():
     # Data Argument
     parser.add_argument("--input_image_dirc_path", type=str,
                         default="/data/sakka/image/original/total/")
-    paeser.add_argument("--input_dens_dirc_path", type=str,
+    parser.add_argument("--input_dens_dirc_path", type=str,
                         default="/data/sakka/dens/total/")
     parser.add_argument("--mask_path", type=str,
                         default="/data/sakka/image/mask.png")
@@ -333,7 +333,7 @@ def make_learning_parse():
     # GPU Argumant
     parser.add_argument("--visible_device", type=str,
                         default="0,1", help="ID of using GPU: 0-max number of available GPUs")
-    paseer.add_argument("--memory_rate", type=float,
+    parser.add_argument("--memory_rate", type=float,
                         default=0.9, help="useing each GPU memory rate: 0.0-1.0")
 
     # Parameter Argument
