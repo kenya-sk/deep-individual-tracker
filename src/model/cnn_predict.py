@@ -17,7 +17,6 @@ from clustering import clustering
 def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
     
     # ------------------------------- PRE PROCWSSING ----------------------------------
-    skip_width = args.skip_width
     img_file_lst = glob.glob(input_img_path)
     index_h, index_w = get_masked_index(args.mask_path)
     display_data_info(input_img_path, output_dirc_path, args.skip_width, 
@@ -36,7 +35,7 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
         # local image index
         index_lst = []
         for step in range(len(index_h)):
-            if step%skip_width == 0:
+            if step%args.skip_width == 0:
                 index_lst.append(step)
 
         pred_batch_size = args.pred_batch_size
@@ -88,7 +87,7 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
     #---------------------------------------------------------------------------
 
     with open(output_dirc_path + "time.txt", "a") as f:
-        f.write("skip: {0}, frame num: {1} total tme: {2}\n".format(skip_width, len(img_file_lst), time.time() - pred_start_time))
+        f.write("skip: {0}, frame num: {1} total tme: {2}\n".format(args.skip_width, len(img_file_lst), time.time() - pred_start_time))
 
 
 def make_pred_parse():

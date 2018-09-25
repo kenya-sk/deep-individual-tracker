@@ -297,7 +297,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     except KeyboardInterrupt:
         print("\nPressed \"Ctrl + C\"")
         print("exit problem, save learning model")
-        saver.save(sess, out_model_dirc + learning_date + "/model.ckpt")
+        saver.save(sess, args.out_model_dirc + learning_date + "/model.ckpt")
     # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
@@ -307,7 +307,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     # --------------------------------------------------------------------------
 
 
-def make_parse():
+def make_learning_parse():
     parser = argparse.ArgumentParser(
         prog="cnn_learning.py",
         usage="training model",
@@ -379,6 +379,6 @@ if __name__ == "__main__":
     # X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, mask_path,test_size=0.2)
     # cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, params_dict)
 
-    args = make_parse()
+    args = make_learning_parse()
     X_train, X_test, y_train, y_test = load_data(args, test_size=0.2)
     cnn_learning(X_train, X_test, y_train, y_test, args)
