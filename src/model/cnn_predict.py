@@ -136,23 +136,6 @@ def make_pred_parse():
 
 
 if __name__ == "__main__":
-    # model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
-    # gpu_config_dict = {"visible_device":"0,1", "memory_rate":0.9}
-    # cnn_model, sess = load_model(model_path, gpu_config_dict)
-    # input_img_root_dirc = "/data/sakka/image/20170416/"
-    # output_root_dirc = "/data/sakka/estimation/model_201804151507/20170416/"
-    # mask_path = "/data/sakka/image/mask.png"
-    # params_dict = {"skip_width": 15, "pred_batch_size": 2500, "band_width":25, "cluster_thresh":0.4}
-    
-    # input_img_dirc_lst = [f for f in os.listdir(input_img_root_dirc) if not f.startswith(".")]
-    # for dirc in input_img_dirc_lst:
-    #     input_img_path = input_img_root_dirc + dirc + "/*.png"
-    #     output_dirc_path = output_root_dirc + dirc  + "/"
-    #     os.makedirs(output_dirc_path+"/dens", exist_ok=True)
-    #     os.makedirs(output_dirc_path+"/cord", exist_ok=True)
-    #     cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, mask_path, params_dict, save_map=True)
-
-
     args = make_pred_parse()
     cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
     input_img_dirc_lst = [f for f in os.listdir(args.input_img_root_dirc) if not f.startswith(".")]
