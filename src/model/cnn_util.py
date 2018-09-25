@@ -27,6 +27,7 @@ def display_data_info(input_img_path, output_dirc_path, skip_width, pred_batch_s
 
 def pretty_print(true_positive_lst, false_positive_lst, false_negative_lst):
     def eval_metrics(true_positive, false_positive, false_negative):
+        n = true_positive + false_positive + false_negative
         accuracy = true_positive/n
         precision = true_positive/(true_positive+false_positive)
         recall = true_positive/(true_positive+false_negative)
