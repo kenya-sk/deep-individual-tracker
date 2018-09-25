@@ -40,7 +40,7 @@ def load_data(args, test_size=0.2):
             X.append(get_masked_data(img, args.mask_path))
         dens_path = path.replace(".png", ".npy").split("/")[-1]
         dens_map = np.load(args.input_dens_dirc_path + dens_path)
-        y.append(get_masked_data(args.dens_map, args.mask_path))
+        y.append(get_masked_data(dens_map, args.mask_path))
 
     X = np.array(X)
     y = np.array(y)
