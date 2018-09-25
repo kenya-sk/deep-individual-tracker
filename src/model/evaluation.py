@@ -125,7 +125,7 @@ def evaluate(args):
                 false_negative_lst.append(false_neg)
                 sample_num_lst.append(n)
 
-        pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num, skip=skip)
+        pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=skip)
 
         print("DONE: evaluation (skip={})".format(skip))
 
