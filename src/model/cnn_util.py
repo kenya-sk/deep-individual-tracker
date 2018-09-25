@@ -13,14 +13,14 @@ ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
 
 
-def display_data_info(input_img_path, output_dirc_path, params_dict, save_map):
+def display_data_info(input_img_path, output_dirc_path, skip_width, pred_batch_size, band_width, cluster_thresh, save_map):
     print("*************************************************")
     print("INPUT IMG DIRC: {}".format(input_img_path))
     print("OUTPUT DIRC: {}".format(output_dirc_path))
-    print("SKIP WIDTH: {}".format(params_dict["skip_width"]))
-    print("PRED BATCH SIZE: {}".format(params_dict["pred_batch_size"]))
-    print("BAND WIDTH: {}".format(params_dict["band_width"]))
-    print("CLUSTER THRESH: {}".format(params_dict["cluster_thresh"]))
+    print("SKIP WIDTH: {}".format(skip_width))
+    print("PRED BATCH SIZE: {}".format(pred_batch_size))
+    print("BAND WIDTH: {}".format(band_width))
+    print("CLUSTER THRESH: {}".format(cluster_thresh))
     print("SAVE DENS MAP: {}".format(save_map))
     print("*************************************************\n")
 
@@ -125,7 +125,7 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size=72):
     return local_img_mat, density_arr
 
 
-def load_model(model_path, gpu_config_dict):
+def load_model(model_path, device_id, memory_rate):
     """
     input:
         model_path: path of learned model
@@ -138,8 +138,8 @@ def load_model(model_path, gpu_config_dict):
     """
 
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(
-        visible_device_list = gpu_config_dict["visible_device"],
-        per_process_gpu_memory_fraction=gpu_config_dict["memory_rate"]))
+        visible_device_list = device_id,
+        per_process_gpu_memory_fraction=memory_rate))
     sess = tf.InteractiveSession(config=config)
 
     model = CNN_model()
