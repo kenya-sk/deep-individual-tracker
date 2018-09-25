@@ -94,7 +94,7 @@ def eval_detection(est_centroid_arr, ground_truth_arr, dist_thresh):
             false_positive += 1
             false_negative += 1
     
-    return true_positive, false_positive, false_negative
+    return true_positive, false_positive, false_negative, n
 
 
 def evaluate(args):
@@ -105,6 +105,7 @@ def evaluate(args):
         true_positive_lst = []
         false_positive_lst = []
         false_negative_lst = []
+        sample_num_lst = []
         for file_num in trange(1, 85):
             centroid_arr = np.loadtxt(
                 args.pred_centroid_dirc + "{}.csv".format(file_num), delimiter=",")
@@ -113,16 +114,18 @@ def evaluate(args):
                 true_positive_lst.append(0)
                 false_positive_lst.append(0)
                 false_negative_lst.append(0)
+                sample_num_lst.append(1)
             else:
                 ground_truth_arr = get_ground_truth(
                     args.ground_truth_dirc + "{0}.csv".format(file_num), args.mask_path)
-                true_pos, false_pos, false_neg = eval_detection(
+                true_pos, false_pos, false_neg, n = eval_detection(
                     centroid_arr, ground_truth_arr, args.dist_thresh)
                 true_positive_lst.append(true_pos)
                 false_positive_lst.append(false_pos)
                 false_negative_lst.append(false_neg)
+                sample_num_lst.append(n)
 
-        pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, skip=skip)
+        pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num, skip=skip)
 
         print("DONE: evaluation (skip={})".format(skip))
 
