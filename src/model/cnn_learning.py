@@ -7,6 +7,7 @@ import sys
 import cv2
 import math
 import glob
+import argparse
 from tqdm import trange
 import numpy as np
 import pandas as pd
@@ -22,10 +23,10 @@ ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
 
 
-def load_data(input_image_dirc_path, input_dens_dirc_path, mask_path, test_size=0.2):
+def load_data(args, test_size=0.2):
     X = []
     y = []
-    file_lst = glob.glob(input_image_dirc_path + "*.png")
+    file_lst = glob.glob(args.input_image_dirc_path + "*.png")
     if len(file_lst) == 0:
         sys.stderr.write("Error: not found input image")
         sys.exit(1)
@@ -36,10 +37,10 @@ def load_data(input_image_dirc_path, input_dens_dirc_path, mask_path, test_size=
             sys.stderr.write("Error: can not read image")
             sys.exit(1)
         else:
-            X.append(get_masked_data(img, mask_path))
+            X.append(get_masked_data(img, args.mask_path))
         dens_path = path.replace(".png", ".npy").split("/")[-1]
-        dens_map = np.load(input_dens_dirc_path + dens_path)
-        y.append(get_masked_data(dens_map, mask_path))
+        dens_map = np.load(args.input_dens_dirc_path + dens_path)
+        y.append(get_masked_data(dens_map, args.mask_path))
 
     X = np.array(X)
     y = np.array(y)
@@ -84,26 +85,26 @@ def under_sampling(local_img_mat, density_arr, thresh):
     return local_img_mat[msk], density_arr[msk]
 
 
-def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, params_dict):
+def cnn_learning(X_train, X_test, y_train, y_test, args):
 
     # -------------------------- PRE PROCESSING --------------------------------
     # start session
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(
-            visible_device_list=gpu_config_dict["visible_device"],
-            per_process_gpu_memory_fraction=gpu_config_dict["memory_rate"]))
+            visible_device_list=args.visible_device,
+            per_process_gpu_memory_fraction=args.memory_rate))
     sess = tf.InteractiveSession(config=config)
     start_time = time.time()
     cnn_model = CNN_model()
 
     # mask index
     # if you analyze all areas, please set a white image
-    index_h, index_w = get_masked_index(mask_path, horizontal_flip=False)
-    flip_index_h, flip_index_w = get_masked_index(mask_path, horizontal_flip=True)
+    index_h, index_w = get_masked_index(args.mask_path, horizontal_flip=False)
+    flip_index_h, flip_index_w = get_masked_index(args.mask_path, horizontal_flip=True)
 
     # logs of tensor board directory
     date = datetime.now()
     learning_date = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
-    log_dirc = "/data/sakka/tensor_log/" + learning_date
+    log_dirc = args.root_log_dirc + learning_date
 
     # delete the specified directory if it exists, recreate it
     if tf.gfile.Exists(log_dirc):
@@ -123,21 +124,21 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     # --------------------------------------------------------------------------
 
     # -------------------------- LEARNING STEP --------------------------------
-    local_size = params_dict["local_img_size"]
-    n_epochs = params_dict["n_epochs"]
-    batch_size = params_dict["batch_size"]
+    local_size = args.local_img_size
+    n_epochs = args.n_epochs
+    batch_size = args.batch_size
     hard_negative_image_arr = np.zeros((1, local_size, local_size, 3),dtype="uint8")
     hard_negative_label_arr = np.zeros((1), dtype="float32")
     val_loss_lst = []
-    minimum_epoch = params_dict["minimum_epoch"]
+    minimum_epoch = args.minimum_epoch
     not_improved_count = 0
-    early_stopping_epoch = params_dict["early_stopping_epoch"]
+    early_stopping_epoch = args.early_stopping_epoch
     print("Original traning data size: {}".format(len(X_train)))
 
     # check if the ckpt exist
     # relearning or not
     saver = tf.train.Saver() # save weight
-    ckpt = tf.train.get_checkpoint_state(reuse_model_path) # model exist: True or False
+    ckpt = tf.train.get_checkpoint_state(args.reuse_model_path) # model exist: True or False
     if ckpt:
         last_model = ckpt.model_checkpoint_path
         print("START: Relearning")
@@ -156,7 +157,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             for train_i in trange(len(X_train), desc="training data"):
                 # load traing dataset
                 # data augmentation (horizontal flip)
-                flip_prob = params_dict["flip_prob"]
+                flip_prob = args.flip_prob
                 if np.random.rand() < flip_prob:
                     X_train_local, y_train_local = \
                             get_local_data(X_train[train_i][:,::-1,:], 
@@ -176,7 +177,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
                 X_train_local, y_train_local = \
                             under_sampling(X_train_local,
                                            y_train_local, 
-                                           thresh=params_dict["under_sampling_thresh"])
+                                           thresh=args.under_sampling_thresh)
 
                 # hard negative mining
                 if hard_negative_label_arr.shape[0] > 1:
@@ -263,7 +264,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
             print("************************************************\n")
 
 
-        saver.save(sess, out_model_dirc + learning_date + "/model.ckpt")
+        saver.save(sess, args.out_model_dirc + learning_date + "/model.ckpt")
         print("END: learning")
         # --------------------------------------------------------------------------
 
@@ -296,7 +297,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     except KeyboardInterrupt:
         print("\nPressed \"Ctrl + C\"")
         print("exit problem, save learning model")
-        saver.save(sess, out_model_dirc + learning_date + "/model.ckpt")
+        saver.save(sess, args.out_model_dirc + learning_date + "/model.ckpt")
     # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
@@ -305,23 +306,59 @@ def cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, 
     sess.close()
     # --------------------------------------------------------------------------
 
-if __name__ == "__main__":
-    input_image_dirc_path = "/data/sakka/image/original/total/"
-    input_dens_dirc_path = "/data/sakka/dens/total/"
-    mask_path = "/data/sakka/image/mask.png"
-    reuse_model_path = "/data/sakka/tensor_model/2018_4_15_15_7/"
-    out_model_dirc = "/data/sakka/tensor_model/"
-    gpu_config_dict = {"visible_device":"0,1",  # ID of using GPU: 0-max number of available GPUs
-                       "memory_rate":0.9        # useing each GPU memory rate: 0.0-1.0
-                       }
-    params_dict = {"local_img_size":72,         # square local image size: > 0
-                   "n_epochs":30,               # number of epoch: > 0
-                   "batch_size":500,            # batch size of learning: > 0
-                   "minimum_epoch":5,           # minimum learning epoch (not apply early stopping): > 0
-                   "early_stopping_epoch":2,    # over this number, learning is stop: > 0
-                   "flip_prob":0.5,             # probability of horaizontal flip. (apply only training data): 0.0-1.0
-                   "under_sampling_thresh":0.2  # over this value, positive data: 0.0-1.0 (value of density map)
-                   }
 
-    X_train, X_test, y_train, y_test = load_data(input_image_dirc_path, input_dens_dirc_path, mask_path,test_size=0.2)
-    cnn_learning(X_train, X_test, y_train, y_test, mask_path, reuse_model_path, out_model_dirc, gpu_config_dict, params_dict)
+def make_learning_parse():
+    parser = argparse.ArgumentParser(
+        prog="cnn_learning.py",
+        usage="training model",
+        description="description",
+        epilog="end",
+        add_help=True
+    )
+
+    # Data Argument
+    parser.add_argument("--input_image_dirc_path", type=str,
+                        default="/data/sakka/image/original/total/")
+    parser.add_argument("--input_dens_dirc_path", type=str,
+                        default="/data/sakka/dens/total/")
+    parser.add_argument("--mask_path", type=str,
+                        default="/data/sakka/image/mask.png")
+    parser.add_argument("--reuse_model_path", type=str,
+                        default="/data/sakka/tensor_model/2018_4_15_15_7/")
+    parser.add_argument("--root_log_dirc", type=str,
+                        default="/data/sakka/tensor_log/")
+    parser.add_argument("--out_model_dirc", type=str,
+                        default="/data/sakka/tensor_model/")
+
+    # GPU Argumant
+    parser.add_argument("--visible_device", type=str,
+                        default="0,1", help="ID of using GPU: 0-max number of available GPUs")
+    parser.add_argument("--memory_rate", type=float,
+                        default=0.9, help="useing each GPU memory rate: 0.0-1.0")
+
+    # Parameter Argument
+    parser.add_argument("--local_img_size", type=int,
+                        default=72, help="square local image size: > 0")
+    parser.add_argument("--n_epochs", type=int,
+                        default=30, help="number of epoch: > 0")
+    parser.add_argument("--batch_size", type=int,
+                        default=500, help="batch size of learning: > 0")
+    parser.add_argument("--minimum_epoch", type=int,
+                        default=5, help="minimum learning epoch (not apply early stopping): > 0")
+    parser.add_argument("--early_stopping_epoch", type=int,
+                        default=2, help="over this number, learning is stop: > 0")
+    parser.add_argument("--flip_prob", type=float,
+                        default=0.5, help="probability of horaizontal flip. (apply only training data): 0.0-1.0")
+    parser.add_argument("--under_sampling_thresh", type=float,
+                        default=0.2, help="over this value, positive data: 0.0-1.0 (value of density map)")
+
+    args = parser.parse_args()
+    
+    return args
+
+
+
+if __name__ == "__main__":
+    args = make_learning_parse()
+    X_train, X_test, y_train, y_test = load_data(args, test_size=0.2)
+    cnn_learning(X_train, X_test, y_train, y_test, args)

@@ -13,26 +13,53 @@ ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
 
 
-def display_data_info(input_img_path, output_dirc_path, params_dict, save_map):
+def display_data_info(input_img_path, output_dirc_path, skip_width, pred_batch_size, band_width, cluster_thresh, save_map):
     print("*************************************************")
     print("INPUT IMG DIRC: {}".format(input_img_path))
     print("OUTPUT DIRC: {}".format(output_dirc_path))
-    print("SKIP WIDTH: {}".format(params_dict["skip_width"]))
-    print("PRED BATCH SIZE: {}".format(params_dict["pred_batch_size"]))
-    print("BAND WIDTH: {}".format(params_dict["band_width"]))
-    print("CLUSTER THRESH: {}".format(params_dict["cluster_thresh"]))
+    print("SKIP WIDTH: {}".format(skip_width))
+    print("PRED BATCH SIZE: {}".format(pred_batch_size))
+    print("BAND WIDTH: {}".format(band_width))
+    print("CLUSTER THRESH: {}".format(cluster_thresh))
     print("SAVE DENS MAP: {}".format(save_map))
     print("*************************************************\n")
 
 
-def pretty_print(true_positive, false_positive, false_negative):
+def pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=0):
+    def eval_metrics(true_positive, false_positive, false_negative, sample_num):
+        accuracy = true_positive/sample_num
+        precision = true_positive/(true_positive+false_positive)
+        recall = true_positive/(true_positive+false_negative)
+        f_measure = (2*recall*precision)/(recall+precision)
+        return accuracy, precision, recall, f_measure
+
+    accuracy_lst = []
+    precision_lst = []
+    recall_lst = []
+    f_measure_lst = []
+    for i in range(len(true_positive_lst)):
+        accuracy, precision, recall, f_measure = \
+                eval_metrics(true_positive_lst[i], false_positive_lst[i], false_negative_lst[i], sample_num_lst[i])
+        accuracy_lst.append(accuracy)
+        precision_lst.append(precision)
+        recall_lst.append(recall)
+        f_measure_lst.append(f_measure)
+
+    print("\n**************************************************************")
+
     print("                        GROUND TRUTH          ")
     print("                    |     P   |     N    |           ")
     print("          -----------------------------------------")
-    print("                P   |     {0}   |     {1}    |           ".format(true_positive, false_positive))
+    print("                P   |     {0}   |     {1}    |           ".format(sum(true_positive_lst), sum(false_positive_lst)))
     print("PRED      -----------------------------------------")
-    print("                N   |     {0}   |     /    |           ".format(false_negative))
+    print("                N   |     {0}   |     /    |           ".format(sum(false_negative_lst)))
     print("          -----------------------------------------")
+
+    print("\nToal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
+    print("Toal Precision (data size {0}, sikp size {1}): {2}".format(len(precision_lst), skip, sum(precision_lst)/len(precision_lst)))
+    print("Toal Recall (data size {0}, sikp size {1}): {2}".format(len(recall_lst), skip, sum(recall_lst)/len(recall_lst)))
+    print("Toal F measure (data size {0}, sikp size {1}): {2}".format(len(f_measure_lst), skip, sum(f_measure_lst)/len(f_measure_lst)))
+    print("****************************************************************")
 
 
 def get_masked_data(data, mask_path=None):
@@ -125,7 +152,7 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size=72):
     return local_img_mat, density_arr
 
 
-def load_model(model_path, gpu_config_dict):
+def load_model(model_path, device_id, memory_rate):
     """
     input:
         model_path: path of learned model
@@ -138,8 +165,8 @@ def load_model(model_path, gpu_config_dict):
     """
 
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(
-        visible_device_list = gpu_config_dict["visible_device"],
-        per_process_gpu_memory_fraction=gpu_config_dict["memory_rate"]))
+        visible_device_list = device_id,
+        per_process_gpu_memory_fraction=memory_rate))
     sess = tf.InteractiveSession(config=config)
 
     model = CNN_model()
