@@ -318,9 +318,9 @@ def make_learning_parse():
 
     # Data Argument
     parser.add_argument("--input_image_dirc_path", type=str,
-                        defult="/data/sakka/image/original/total/")
+                        default="/data/sakka/image/original/total/")
     paeser.add_argument("--input_dens_dirc_path", type=str,
-                        defult="/data/sakka/dens/total/")
+                        default="/data/sakka/dens/total/")
     parser.add_argument("--mask_path", type=str,
                         default="/data/sakka/image/mask.png")
     parser.add_argument("--resue_model_path", type=str,
