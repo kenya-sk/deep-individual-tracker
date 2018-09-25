@@ -116,7 +116,7 @@ def make_pred_parse():
                         default=0.9, help="useing each GPU memory rate: 0.0-1.0")
 
     # Paraameter Argument
-    parser.add_argument("--local_img_size", tyype=int,
+    parser.add_argument("--local_img_size", type=int,
                         default=72, help="square local image size: > 0")
     parser.add_argument("--skip_width", type=int,
                         default=15, help="skip width in horizontal direction ")

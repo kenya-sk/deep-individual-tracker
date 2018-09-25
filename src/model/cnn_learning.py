@@ -337,7 +337,7 @@ def make_learning_parse():
                         default=0.9, help="useing each GPU memory rate: 0.0-1.0")
 
     # Parameter Argument
-    parser.add_argument("--local_img_size", tyype=int,
+    parser.add_argument("--local_img_size", type=int,
                         default=72, help="square local image size: > 0")
     parser.add_argument("--n_epochs", type=int,
                         default=30, help="number of epoch: > 0")
