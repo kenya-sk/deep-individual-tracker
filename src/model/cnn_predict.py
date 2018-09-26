@@ -128,7 +128,7 @@ def make_pred_parse():
     parser.add_argument("--band_width", type=int,
                         default=25, help="band width of Mean-Shift Clustering")
     parser.add_argument("--cluster_thresh", type=float,
-                        default=0.4, help="thresh to be subjected to clustering")
+                        default=0.4, help="threshold to be subjected to clustering")
 
     args = parser.parse_args()
 
