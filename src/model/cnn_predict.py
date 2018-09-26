@@ -91,6 +91,16 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
         f.write("skip: {0}, frame num: {1} total tme: {2}\n".format(args.skip_width, len(img_file_lst), time.time() - pred_start_time))
 
 
+def batch_predict(model, sess, args):
+    input_img_dirc_lst = [f for f in os.listdir(args.input_img_root_dirc) if not f.startswith(".")]
+    for dirc in input_img_dirc_lst:
+        input_img_path = args.input_img_root_dirc + dirc + "/*.png"
+        output_dirc_path = args.output_root_dirc + dirc + "/"
+        os.makedirs(output_dirc_path + "/dens", exist_ok=True)
+        os.makedirs(output_dirc_path + "/cord", exist_ok=True)
+        cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args)
+
+
 def make_pred_parse():
     parser = argparse.ArgumentParser(
         prog="cnn_predict.py",
@@ -136,12 +146,6 @@ def make_pred_parse():
 
 
 if __name__ == "__main__":
-    args = make_pred_parse()
     cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
-    input_img_dirc_lst = [f for f in os.listdir(args.input_img_root_dirc) if not f.startswith(".")]
-    for dirc in input_img_dirc_lst:
-        input_img_path = args.input_img_root_dirc + dirc + "/*.png"
-        output_dirc_path = args.output_root_dirc + dirc + "/"
-        os.makedirs(output_dirc_path + "/dens", exist_ok=True)
-        os.makedirs(output_dirc_path + "/cord", exist_ok=True)
-        cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args)
+    args = make_pred_parse()
+    batch_predict(cnn_model, sess, args)
