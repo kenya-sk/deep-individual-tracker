@@ -3,6 +3,7 @@
 
 import os.path
 import sys
+import logging
 import glob
 import numpy as np
 import cv2
@@ -13,6 +14,13 @@ import movie2training_data
 Q_KEY = 0x71
 # s key (save data and restart)
 S_KEY = 0x73
+
+
+logger = logging.getLogger(__name__)
+logs_path = "/Users/sakka/cnn_by_density_map/logs/image2training_data.log"
+logging.basicConfig(filename=logs_path,
+                    leval=loging.DEBUG,
+                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 class ImgMotion(movie2training_data.Motion):
     # constructor
@@ -51,22 +59,23 @@ class ImgMotion(movie2training_data.Motion):
         return self.input_file_path.split("/")[-1].split(".")[0]
 
 
-def batch_processing(input_dirc_path):
-    if not(os.path.isdir(input_dirc_path)):
+def batch_processing(input_img_dirc):
+    if not(os.path.isdir(input_img_dirc)):
         sys.stderr.write("Error: Do not exist directory")
         sys.exit(1)
 
-    file_lst = glob.glob(input_dirc_path+"*.png")
-    print("Number of total file: {}".format(len(file_lst)))
+    file_lst = glob.glob(input_img_dirc+"*.png")
+    logger.debug("Number of total file: {}".format(len(file_lst)))
 
     for file_num, file_name in enumerate(file_lst):
-        print("File name: {0}, Number: {1}/{2}".format(file_name, file_num+1, len(file_lst)))
+        logger.debug("File name: {0}, Number: {1}/{2}".format(file_name, file_num+1, len(file_lst)))
         stop_making = ImgMotion(file_name).run()
         if stop_making:
-            print("STOP: making datasets")
+            logger.debug("STOP: making datasets")
             break
 
 
 if __name__ == "__main__":
-    input_dirc_path = input("input image directory path: ")
-    batch_processing(input_dirc_path)
+    input_img_dirc = input("input image directory path: ")
+    logger.debug("input image directory: {}".format(input_img_dirc))
+    batch_processing(input_img_dirc)
