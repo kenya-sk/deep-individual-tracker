@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 #coding: utf-8
 
+import logging
 import numpy as np
 import pandas as pd
 import csv
@@ -9,6 +10,13 @@ from tqdm import trange
 from scipy import optimize
 
 from cnn_util import get_masked_index, pretty_print
+
+
+logger = logging.getLogger(__name__)
+logs_path = "/Users/sakka/cnn_by_density_map/logs/evaluation.log"
+logging.basicConfig(filename=logs_path,
+                    leval=loging.DEBUG,
+                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 def get_ground_truth(ground_truth_path, mask_path=None):
@@ -110,7 +118,7 @@ def evaluate(args):
             centroid_arr = np.loadtxt(
                 args.pred_centroid_dirc + "{}.csv".format(file_num), delimiter=",")
             if centroid_arr.shape[0] == 0:
-                print("Not found point of centroid\nAccuracy is 0.0")
+                logger.debug("Not found point of centroid\nAccuracy is 0.0")
                 true_positive_lst.append(0)
                 false_positive_lst.append(0)
                 false_negative_lst.append(0)
@@ -127,7 +135,7 @@ def evaluate(args):
 
         pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=skip)
 
-        print("DONE: evaluation (skip={})".format(skip))
+        logger.debug("DONE: evaluation (skip={})".format(skip))
 
 
 def make_eval_parse():
@@ -161,4 +169,5 @@ def make_eval_parse():
 
 if __name__ == "__main__":
     args = make_eval_parse()
+    logger.debug("Running with args: {}".format(args))
     evaluate(args)

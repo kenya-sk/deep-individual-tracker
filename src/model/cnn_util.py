@@ -3,26 +3,35 @@
 
 import os
 import math
+import logging
 import cv2
 import numpy as np
 import tensorflow as tf
 
 from cnn_model import CNN_model
 
+
 ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
 
 
+logger = logging.getLogger(__name__)
+logs_path = "/Users/sakka/cnn_by_density_map/logs/cnn_util.log"
+logging.basicConfig(filename=logs_path,
+                    leval=loging.DEBUG,
+                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+
+
 def display_data_info(input_img_path, output_dirc_path, skip_width, pred_batch_size, band_width, cluster_thresh, save_map):
-    print("*************************************************")
-    print("INPUT IMG DIRC: {}".format(input_img_path))
-    print("OUTPUT DIRC: {}".format(output_dirc_path))
-    print("SKIP WIDTH: {}".format(skip_width))
-    print("PRED BATCH SIZE: {}".format(pred_batch_size))
-    print("BAND WIDTH: {}".format(band_width))
-    print("CLUSTER THRESH: {}".format(cluster_thresh))
-    print("SAVE DENS MAP: {}".format(save_map))
-    print("*************************************************\n")
+    logger.debug("*************************************************")
+    logger.debug("INPUT IMG DIRC: {}".format(input_img_path))
+    logger.debug("OUTPUT DIRC: {}".format(output_dirc_path))
+    logger.debug("SKIP WIDTH: {}".format(skip_width))
+    logger.debug("PRED BATCH SIZE: {}".format(pred_batch_size))
+    logger.debug("BAND WIDTH: {}".format(band_width))
+    logger.debug("CLUSTER THRESH: {}".format(cluster_thresh))
+    logger.debug("SAVE DENS MAP: {}".format(save_map))
+    logger.debug("*************************************************\n")
 
 
 def pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=0):
@@ -45,21 +54,21 @@ def pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, samp
         recall_lst.append(recall)
         f_measure_lst.append(f_measure)
 
-    print("\n**************************************************************")
+    logger.debug("\n**************************************************************")
 
-    print("                        GROUND TRUTH          ")
-    print("                    |     P   |     N    |           ")
-    print("          -----------------------------------------")
-    print("                P   |     {0}   |     {1}    |           ".format(sum(true_positive_lst), sum(false_positive_lst)))
-    print("PRED      -----------------------------------------")
-    print("                N   |     {0}   |     /    |           ".format(sum(false_negative_lst)))
-    print("          -----------------------------------------")
+    logger.debug("                        GROUND TRUTH          ")
+    logger.debug("                    |     P   |     N    |           ")
+    logger.debug("          -----------------------------------------")
+    logger.debug("                P   |     {0}   |     {1}    |           ".format(sum(true_positive_lst), sum(false_positive_lst)))
+    logger.debug("PRED      -----------------------------------------")
+    logger.debug("                N   |     {0}   |     /    |           ".format(sum(false_negative_lst)))
+    logger.debug("          -----------------------------------------")
 
-    print("\nToal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
-    print("Toal Precision (data size {0}, sikp size {1}): {2}".format(len(precision_lst), skip, sum(precision_lst)/len(precision_lst)))
-    print("Toal Recall (data size {0}, sikp size {1}): {2}".format(len(recall_lst), skip, sum(recall_lst)/len(recall_lst)))
-    print("Toal F measure (data size {0}, sikp size {1}): {2}".format(len(f_measure_lst), skip, sum(f_measure_lst)/len(f_measure_lst)))
-    print("****************************************************************")
+    logger.debug("\nToal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
+    logger.debug("Toal Precision (data size {0}, sikp size {1}): {2}".format(len(precision_lst), skip, sum(precision_lst)/len(precision_lst)))
+    logger.debug("Toal Recall (data size {0}, sikp size {1}): {2}".format(len(recall_lst), skip, sum(recall_lst)/len(recall_lst)))
+    logger.debug("Toal F measure (data size {0}, sikp size {1}): {2}".format(len(f_measure_lst), skip, sum(f_measure_lst)/len(f_measure_lst)))
+    logger.debug("****************************************************************")
 
 
 def get_masked_data(data, mask_path=None):
@@ -174,11 +183,11 @@ def load_model(model_path, device_id, memory_rate):
     ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
         last_model = ckpt.model_checkpoint_path
-        print("LODE MODEL: {}".format(last_model))
+        logger.debug("LODE MODEL: {}".format(last_model))
         saver.restore(sess, last_model)
     else:
-        sys.stderr("Eroor: Not exist model!")
-        sys.stderr("Please check model_path")
+        logger.error("Eroor: Not exist model!")
+        logger.error("Please check model_path")
         sys.exit(1)
 
     return model, sess
