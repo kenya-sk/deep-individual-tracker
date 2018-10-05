@@ -3,6 +3,7 @@
 
 import os
 import math
+import logging
 import sys
 import cv2
 import glob
@@ -13,6 +14,13 @@ import tensorflow as tf
 
 from cnn_util import display_data_info, get_masked_data, get_masked_index, get_local_data, load_model
 from clustering import clustering
+
+
+logger = logging.getLogger(__name__)
+logs_path = "/Users/sakka/cnn_by_density_map/logs/cnn_predict.log"
+logging.basicConfig(filename=logs_path,
+                    leval=loging.DEBUG,
+                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
@@ -44,8 +52,8 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
         pred_arr = np.zeros(pred_batch_size)
         pred_dens_map = np.zeros((720,1280), dtype="float32")
 
-        print("*************************************************")
-        print("STSRT: predict density map ({}/{})".format(i+1, len(img_file_lst)))
+        logger.debug("*************************************************")
+        logger.debug("STSRT: predict density map ({}/{})".format(i+1, len(img_file_lst)))
         for batch in range(pred_n_batches):
             # array of skiped local image
             X_skip = np.zeros((pred_batch_size,72,72,3))
@@ -60,7 +68,7 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
                                         cnn_model.X: X_skip,
                                         cnn_model.y_: y_skip,
                                         cnn_model.is_training: False}).reshape(pred_batch_size)
-            print("DONE: batch {}/{}".format(batch+1, pred_n_batches))
+            logger.debug("DONE: batch {}/{}".format(batch+1, pred_n_batches))
 
             for i in range(pred_batch_size):
                 h_est = index_h[index_lst[batch*pred_batch_size+i]]
@@ -73,7 +81,7 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
 
         if args.save_map:
             np.save(output_dirc_path + "dens/" + "{}.npy".format(out_file_path), pred_dens_map)
-        print("END: predict density map\n")
+        logger.debug("END: predict density map\n")
 
         # calculate centroid by clustering 
         centroid_arr = clustering(pred_dens_map, args.band_width, args.cluster_thresh)
@@ -81,9 +89,9 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc_path, args):
 
         # calculate prediction loss
         est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
-        print("prediction loss: {}".format(est_loss))
-        print("END: predict density map")
-        print("***************************************************\n")
+        logger.debug("prediction loss: {}".format(est_loss))
+        logger.debug("END: predict density map")
+        logger.debug("***************************************************\n")
 
     #---------------------------------------------------------------------------
 
@@ -148,4 +156,5 @@ def make_pred_parse():
 if __name__ == "__main__":
     cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
     args = make_pred_parse()
+    logger.debug("Running with args: {}".format(args))
     batch_predict(cnn_model, sess, args)

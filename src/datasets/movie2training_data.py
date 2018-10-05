@@ -2,6 +2,8 @@
 # coding: utf-8
 
 import sys
+import logging
+import argparse
 import numpy as np
 import cv2
 
@@ -11,18 +13,23 @@ Q_KEY = 0x71
 P_KEY = 0x70
 # s key (save data and restart)
 S_KEY = 0x73
-# intervel of receive key
-INTERVAL = 1
+
+
+logger = logging.getLogger(__name__)
+logs_path = "/Users/sakka/cnn_by_density_map/logs/movie2training_data.log"
+logging.basicConfig(filename=logs_path,
+                    leval=loging.DEBUG,
+                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 class Motion:
     # constructor
-    def __init__(self, input_file_path):
+    def __init__(self, args):
         cv2.namedWindow("select feature points")
         cv2.setMouseCallback("select feature points", self.mouse_event)
-        self.input_file_path = input_file_path
+        self.input_file_path = args.input_file_path
+        self.interval = args.interval
         self.video = None
-        self.interval = INTERVAL
         self.frame = None
         self.width = None
         self.height = None
@@ -30,16 +37,16 @@ class Motion:
         self.status = None
         self.cordinate_matrix = None
         self.frame_num = 0
-        self.original_img_dirc = "../../image/original/"
-        self.out_truth_img_dirc = "../../image/grandTruth/20170422/"
-        self.out_truth_cord_dirc = "../../data/cord/20170422/"
-        self.out_answer_label_dirc = "../../data/dens/20170422/"
+        self.original_img_dirc = args.original_img_dirc
+        self.save_truth_img_dirc = args.save_truth_img_dirc
+        self.save_truth_cord_dirc = args.save_truth_cord_dirc
+        self.save_answer_label_dirc = args.save_answer_label_dirc
 
     # main method
     def run(self):
         self.video = cv2.VideoCapture(self.input_file_path)
         if not(self.video.isOpened()):
-            sys.stderr.write("Error: Can not read movie file")
+            logger.error("Error: Can not read movie file")
             sys.exit(1)
 
         # processing of initial frame
@@ -102,12 +109,12 @@ class Motion:
     # save cordinate and figure. there are feature point information
     def save_data(self):
         if self.features is None:
-            print("Error: Not select feature point")
+            logger.error("Error: Not select feature point")
         else:
-            cv2.imwrite(self.out_truth_img_dirc + "{}.png".format(self.frame_num), self.frame)
-            np.savetxt(self.out_truth_cord_dirc + "{}.csv".format(self.frame_num), self.features, delimiter=",", fmt="%d")
+            cv2.imwrite(self.save_truth_img_dirc + "{}.png".format(self.frame_num), self.frame)
+            np.savetxt(self.save_truth_cord_dirc + "{}.csv".format(self.frame_num), self.features, delimiter=",", fmt="%d")
             self.gauss_kernel(sigma_pow=25)
-            print("save data frame number: {}".format(self.frame_num))
+            logger.debug("save data frame number: {}".format(self.frame_num))
         return
 
     # calculate density map by gauss kernel
@@ -122,9 +129,44 @@ class Motion:
             norm = pow_matrix[:, :, 0] + pow_matrix[:, :, 1]
             kernel += np.exp(-norm/ (2 * sigma_pow))
 
-        np.save(self.out_answer_label_dirc + "{}.npy".format(self.frame_num), kernel.T)
+        np.save(self.save_answer_label_dirc + "{}.npy".format(self.frame_num), kernel.T)
+
+
+def movie2train_parse():
+    parser = argparse.ArgumentParser(
+        prog="movie2training_data.py",
+        usage="create training data at regular intarval",
+        description="description",
+        epilog="end",
+        add_help=True
+    )
+
+    # Data Argment
+    parser.add_argument("--input_file_path", type=str,
+                        default="/data/sakka/movie/201704210900.mp4")
+
+    # Parameter Argument
+    parser.add_argument("--interval", type=int,
+                        default=1, help="training data interval")
+    parser.add_argument("--original_img_dirc", type=str,
+                        default="/data/sakka/image/original/",
+                        help="directory of raw image")
+    parser.add_argument("--save_truth_img_dirc", type=str,
+                        default="/data/sakka/image/grandTruth/",
+                        help="directory of save annotation image")
+    parser.add_argument("--save_truth_cord_dirc", type=str,
+                        default="/data/sakka/data/cord/",
+                        help="directory of save ground truth cordinate")
+    parser.add_argument("--save_answer_label_dirc", type=str,
+                        default="/data/sakka/data/dens/",
+                        help="directory of save answer label (density map)")
+
+    args = parser.parse_args()
+
+    return args
 
 
 if __name__ == "__main__":
-    input_file_path = input("input movie file path: ")
-    Motion(input_file_path).run()
+    args = movie2train_parse()
+    logger.debug("Running with args: {}".format(args))
+    Motion(args).run()

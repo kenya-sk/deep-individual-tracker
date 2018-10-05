@@ -3,9 +3,17 @@
 
 import os
 import sys
+import logging
 import cv2
 import re
 import numpy as np
+
+
+logger = logging.getLogger(__name__)
+logs_path = "/Users/sakka/cnn_by_density_map/logs/cord2dens.log"
+logging.basicConfig(filename=logs_path,
+                    leval=loging.DEBUG,
+                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 def plot_densMap(file_name, cordinate_matrix, cord_arr, sigma_pow):
@@ -24,7 +32,7 @@ def plot_densMap(file_name, cordinate_matrix, cord_arr, sigma_pow):
     np.save("../data/dens/{0}/{1}".format(sigma_pow, file_name), kernel.T)
 
 
-def batch_processing(input_dirc_path, sigma_pow_lst):
+def batch_processing(input_dirc, sigma_pow_lst):
     def read_csv(file_path):
         data_lst = []
         with open(file_path, "r") as f:
@@ -35,14 +43,14 @@ def batch_processing(input_dirc_path, sigma_pow_lst):
         return np.array(data_lst).astype(np.int64)
 
 
-    if not(os.path.isdir(input_dirc_path)):
-        sys.stderr.write("Error: Do not exist directory !")
+    if not(os.path.isdir(input_dirc)):
+        logger.error("Error: Do not exist directory !")
         sys.exit(1)
 
-    file_lst = os.listdir(input_dirc_path)
+    file_lst = os.listdir(input_dirc)
     pattern = r"^(?!._).*(.csv)$"
     repattern = re.compile(pattern)
-    print("Number of total file: {}".format(len(file_lst)))
+    logger.debug("Number of total file: {}".format(len(file_lst)))
 
     width, height = 1280, 720
     cordinate_matrix = np.zeros((width, height, 2), dtype="int64")
@@ -50,19 +58,20 @@ def batch_processing(input_dirc_path, sigma_pow_lst):
         for j in range(height):
             cordinate_matrix[i][j] = [i, j]
     for sigma_pow in sigma_pow_lst:
-        print("sigma pow: {}".format(sigma_pow))
+        logger.debug("sigma pow: {}".format(sigma_pow))
         fileNum = 0
         for file_name in file_lst:
             if re.search(repattern, file_name):
-                file_path = input_dirc_path + "/" + file_name
-                print("Number: {0}, File name: {1}".format(fileNum, file_path))
+                file_path = input_dirc + file_name
+                logger.debug("Number: {0}, File name: {1}".format(fileNum, file_path))
                 cord_arr = read_csv(file_path)
                 plot_densMap(file_name, cordinate_matrix, cord_arr, sigma_pow)
                 fileNum += 1
-    print("End: batch processing")
+    logger.debug("End: batch processing")
 
 
 if __name__ == "__main__":
-    input_dirc_path = input("Input directory path: ")
+    input_dirc = input("Input directory path: ")
+    logger.debug("input directory: {}".format(input_dirc))
     sigma_pow_lst = [8, 10, 15, 20, 25]
-    batch_processing(input_dirc_path, sigma_pow_lst)
+    batch_processing(input_dirc, sigma_pow_lst)

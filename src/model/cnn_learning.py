@@ -4,6 +4,7 @@
 import os
 import time
 import sys
+import logging
 import cv2
 import math
 import glob
@@ -19,8 +20,16 @@ from sklearn.utils import shuffle
 from cnn_util import get_masked_data, get_masked_index, get_local_data
 from cnn_model import CNN_model
 
+
 ANALYSIS_HEIGHT = (0, 470)
 ANALYSIS_WIDTH = (0, 1280)
+
+
+logger = logging.getLogger(__name__)
+logs_path = "/Users/sakka/cnn_by_density_map/logs/cnn_learning.log"
+logging.basicConfig(filename=logs_path,
+                    leval=loging.DEBUG,
+                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 def load_data(args, test_size=0.2):
@@ -133,7 +142,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     minimum_epoch = args.minimum_epoch
     not_improved_count = 0
     early_stopping_epoch = args.early_stopping_epoch
-    print("Original traning data size: {}".format(len(X_train)))
+    logger.debug("Original traning data size: {}".format(len(X_train)))
 
     # check if the ckpt exist
     # relearning or not
@@ -141,18 +150,18 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     ckpt = tf.train.get_checkpoint_state(args.reuse_model_path) # model exist: True or False
     if ckpt:
         last_model = ckpt.model_checkpoint_path
-        print("START: Relearning")
-        print("LODE: {}".format(last_model))
+        logger.debug("START: Relearning")
+        logger.debug("LODE: {}".format(last_model))
         saver.restore(sess, last_model)
     else:
-        print("START: learning")
+        logger.debug("START: learning")
         # initialize all variable
         tf.global_variables_initializer().run()
 
     try:
         for epoch in range(n_epochs):
-            print("************************************************")
-            print("elapsed time: {0:.3f} [sec]".format(time.time() - start_time))
+            logger.debug("************************************************")
+            logger.debug("elapsed time: {0:.3f} [sec]".format(time.time() - start_time))
             train_loss = 0.0
             for train_i in trange(len(X_train), desc="training data"):
                 # load traing dataset
@@ -242,9 +251,9 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
 
             #record loss data
             val_writer.add_summary(val_loss_lst[-1], train_step)
-            print("epoch: {0}".format(epoch+1))
-            print("train loss: {}".format(train_loss/(len(X_train)*train_n_batches)))
-            print("validation loss: {}".format(val_loss_lst[epoch]))
+            logger.debug("epoch: {0}".format(epoch+1))
+            logger.debug("train loss: {}".format(train_loss/(len(X_train)*train_n_batches)))
+            logger.debug("validation loss: {}".format(val_loss_lst[epoch]))
         
 
             # early stopping
@@ -257,20 +266,20 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                     not_improved_count += 1
                 
             if not_improved_count >= early_stopping_epoch:
-                print("Early stopping due to no improvement after {} epochs.".format(early_stopping_epoch))
+                logger.debug("Early stopping due to no improvement after {} epochs.".format(early_stopping_epoch))
                 break
 
-            print("not improved count/early stopping epoch: {}/{}".format(not_improved_count, early_stopping_epoch))
-            print("************************************************\n")
+            logger.debug("not improved count/early stopping epoch: {}/{}".format(not_improved_count, early_stopping_epoch))
+            logger.debug("************************************************\n")
 
 
         saver.save(sess, args.out_model_dirc + learning_date + "/model.ckpt")
-        print("END: learning")
+        logger.debug("END: learning")
         # --------------------------------------------------------------------------
 
 
         # -------------------------------- TEST ------------------------------------
-        print("START: test")
+        logger.debug("START: test")
         test_loss = 0.0
         for test_i in range(len(X_test)):
             X_test_local, y_test_local = get_local_data(X_test[test_i], y_test[test_i], 
@@ -290,13 +299,13 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                 test_writer.add_summary(test_summary, test_step)
                 test_loss += tmp_test_loss
 
-        print("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
-        print("END: test")
+        logger.debug("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+        logger.debug("END: test")
 
     # capture Ctrl + C
     except KeyboardInterrupt:
-        print("\nPressed \"Ctrl + C\"")
-        print("exit problem, save learning model")
+        logger.debug("\nPressed \"Ctrl + C\"")
+        logger.debug("exit problem, save learning model")
         saver.save(sess, args.out_model_dirc + learning_date + "/model.ckpt")
     # --------------------------------------------------------------------------
 
@@ -360,5 +369,6 @@ def make_learning_parse():
 
 if __name__ == "__main__":
     args = make_learning_parse()
+    logger.debug("Running with args: {}".format(args))
     X_train, X_test, y_train, y_test = load_data(args, test_size=0.2)
     cnn_learning(X_train, X_test, y_train, y_test, args)
