@@ -18,7 +18,7 @@ ANALYSIS_WIDTH = (0, 1280)
 logger = logging.getLogger(__name__)
 logs_path = "/home/sakka/cnn_by_density_map/logs/cnn_util.log"
 logging.basicConfig(filename=logs_path,
-                    leval=logging.DEBUG,
+                    level=logging.DEBUG,
                     format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
