@@ -19,7 +19,7 @@ from clustering import clustering
 logger = logging.getLogger(__name__)
 logs_path = "/home/sakka/cnn_by_density_map/logs/cnn_predict.log"
 logging.basicConfig(filename=logs_path,
-                    level=loging.DEBUG,
+                    level=logging.DEBUG,
                     format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
