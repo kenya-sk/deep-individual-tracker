@@ -135,7 +135,7 @@ def evaluate(args):
                 
                 # calculate evaluation metrics
                 accuracy, precision, recall, f_measure = eval_metrics(true_pos, false_pos, false_neg, n)
-                logger.dubug("file_num: {}, accuracy: {}, precision: {}, recall: {}, f-measure: {}".format(file_num, accuracy, precision, recall, f_measure))
+                logger.debug("file_num: {}, accuracy: {}, precision: {}, recall: {}, f-measure: {}".format(file_num, accuracy, precision, recall, f_measure))
 
         pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=skip)
 
