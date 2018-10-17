@@ -34,14 +34,15 @@ def display_data_info(input_img_path, output_dirc_path, skip_width, pred_batch_s
     logger.debug("*************************************************\n")
 
 
-def pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=0):
-    def eval_metrics(true_positive, false_positive, false_negative, sample_num):
-        accuracy = true_positive/sample_num
-        precision = true_positive/(true_positive+false_positive)
-        recall = true_positive/(true_positive+false_negative)
-        f_measure = (2*recall*precision)/(recall+precision)
-        return accuracy, precision, recall, f_measure
+def eval_metrics(true_positive, false_positive, false_negative, sample_num):
+    accuracy = true_positive / sample_num
+    precision = true_positive / (true_positive + false_positive)
+    recall = true_positive / (true_positive + false_negative)
+    f_measure = (2 * recall * precision) / (recall + precision)
+    return accuracy, precision, recall, f_measure
 
+
+def pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=0):
     accuracy_lst = []
     precision_lst = []
     recall_lst = []
