@@ -18,7 +18,7 @@ S_KEY = 0x73
 logger = logging.getLogger(__name__)
 logs_path = "/Users/sakka/cnn_by_density_map/logs/movie2training_data.log"
 logging.basicConfig(filename=logs_path,
-                    leval=loging.DEBUG,
+                    leval=logging.DEBUG,
                     format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
