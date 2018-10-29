@@ -139,9 +139,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     hard_negative_image_arr = np.zeros((1, local_size, local_size, 3),dtype="uint8")
     hard_negative_label_arr = np.zeros((1), dtype="float32")
     val_loss_lst = []
-    minimum_epoch = args.minimum_epoch
     not_improved_count = 0
-    early_stopping_epoch = args.early_stopping_epoch
     logger.debug("Original traning data size: {}".format(len(X_train)))
 
     # check if the ckpt exist
@@ -257,19 +255,17 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
         
 
             # early stopping
-            if epoch > minimum_epoch:
-                best_epoch_loss = np.argmin(val_loss_lst[:-1])
-                if val_loss_lst[epoch] <= val_loss_lst[best_epoch_loss]:
-                    # learning is going well
-                    not_improved_count = 0
-                else:
-                    not_improved_count += 1
+            if (epoch > args.min_epoch) and (val_loss_lst[-1] > val_loss_lst[-2]):
+                not_improved_count += 1
+            else:
+                # learning is going well
+                not_improved_count += 0
                 
-            if not_improved_count >= early_stopping_epoch:
-                logger.debug("Early stopping due to no improvement after {} epochs.".format(early_stopping_epoch))
+            if not_improved_count >= args.stop_count:
+                logger.debug("Early stopping due to no improvement after {} epochs.".format(args.stop_epoch))
                 break
 
-            logger.debug("not improved count/early stopping epoch: {}/{}".format(not_improved_count, early_stopping_epoch))
+            logger.debug("not improved count/early stopping epoch: {}/{}".format(not_improved_count, args.stop_count))
             logger.debug("************************************************\n")
 
 
@@ -352,9 +348,9 @@ def make_learning_parse():
                         default=30, help="number of epoch: > 0")
     parser.add_argument("--batch_size", type=int,
                         default=500, help="batch size of learning: > 0")
-    parser.add_argument("--minimum_epoch", type=int,
+    parser.add_argument("--min_epoch", type=int,
                         default=5, help="minimum learning epoch (not apply early stopping): > 0")
-    parser.add_argument("--early_stopping_epoch", type=int,
+    parser.add_argument("--stop_count", type=int,
                         default=2, help="over this number, learning is stop: > 0")
     parser.add_argument("--flip_prob", type=float,
                         default=0.5, help="probability of horaizontal flip. (apply only training data): 0.0-1.0")
