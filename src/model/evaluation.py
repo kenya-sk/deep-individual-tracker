@@ -116,16 +116,16 @@ def evaluate(args):
         sample_num_lst = []
         for file_num in trange(1, 85):
             centroid_arr = np.loadtxt(
-                args.pred_centroid_dirc + "{}.csv".format(file_num), delimiter=",")
+                "{0}/{1}.csv".format(args.pred_centroid_dirc, file_num), delimiter=",")
             if centroid_arr.shape[0] == 0:
-                logger.debug("file num: {}, Not found point of centroid. Accuracy is 0.0".format(file_num))
+                logger.debug("file num: {0}, Not found point of centroid. Accuracy is 0.0".format(file_num))
                 true_positive_lst.append(0)
                 false_positive_lst.append(0)
                 false_negative_lst.append(0)
                 sample_num_lst.append(1)
             else:
                 ground_truth_arr = get_ground_truth(
-                    args.ground_truth_dirc + "{0}.csv".format(file_num), args.mask_path)
+                    "{0}/{1}.csv".format(args.ground_truth_dirc, file_num), args.mask_path)
                 true_pos, false_pos, false_neg, n = eval_detection(
                     centroid_arr, ground_truth_arr, args.dist_thresh)
                 true_positive_lst.append(true_pos)
@@ -135,11 +135,12 @@ def evaluate(args):
                 
                 # calculate evaluation metrics
                 accuracy, precision, recall, f_measure = eval_metrics(true_pos, false_pos, false_neg, n)
-                logger.debug("file_num: {}, accuracy: {}, precision: {}, recall: {}, f-measure: {}".format(file_num, accuracy, precision, recall, f_measure))
+                logger.debug("file_num: {0}, accuracy: {1}, precision: {2}, recall: {3}, f-measure: {4}".format(
+                    file_num, accuracy, precision, recall, f_measure))
 
         pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=skip)
 
-        logger.debug("DONE: evaluation (skip={})".format(skip))
+        logger.debug("DONE: evaluation (skip={0})".format(skip))
 
 
 def make_eval_parse():
@@ -153,9 +154,9 @@ def make_eval_parse():
 
     # Data Argment
     parser.add_argument("--pred_centroid_dirc", type=str,
-                        default="/data/sakka/estimation/model_201804151507/test/")
+                        default="/data/sakka/estimation/model_201804151507/test")
     parser.add_argument("--ground_truth_dirc", type=str,
-                        default="/data/sakka/cord/test/")
+                        default="/data/sakka/cord/test")
     parser.add_argument("--mask_path", type=str,
                         default="/data/sakka/image/mask.png")
 
@@ -173,5 +174,5 @@ def make_eval_parse():
 
 if __name__ == "__main__":
     args = make_eval_parse()
-    logger.debug("Running with args: {}".format(args))
+    logger.debug("Running with args: {0}".format(args))
     evaluate(args)

@@ -35,7 +35,7 @@ logging.basicConfig(filename=logs_path,
 def load_data(args, test_size=0.2):
     X = []
     y = []
-    file_lst = glob.glob(args.input_image_dirc_path + "*.png")
+    file_lst = glob.glob("{0}/*.png".format(args.input_image_dirc))
     if len(file_lst) == 0:
         sys.stderr.write("Error: not found input image")
         sys.exit(1)
@@ -48,7 +48,7 @@ def load_data(args, test_size=0.2):
         else:
             X.append(get_masked_data(img, args.mask_path))
         dens_path = path.replace(".png", ".npy").split("/")[-1]
-        dens_map = np.load(args.input_dens_dirc_path + dens_path)
+        dens_map = np.load("{0}/{1}".format(args.input_dens_dirc, dens_path))
         y.append(get_masked_data(dens_map, args.mask_path))
 
     X = np.array(X)
@@ -113,7 +113,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     # logs of tensor board directory
     date = datetime.now()
     learning_date = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
-    log_dirc = args.root_log_dirc + learning_date
+    log_dirc = "{0}/{1}".format(args.root_log_dirc, learning_date)
 
     # delete the specified directory if it exists, recreate it
     if tf.gfile.Exists(log_dirc):
@@ -124,9 +124,9 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     train_step = 0
     test_step = 0
     merged = tf.summary.merge_all()
-    train_writer = tf.summary.FileWriter(log_dirc + "/train", sess.graph)
-    val_writer = tf.summary.FileWriter(log_dirc + "/val")
-    test_writer = tf.summary.FileWriter(log_dirc + "/test")
+    train_writer = tf.summary.FileWriter("{0}/train".format(log_dirc), sess.graph)
+    val_writer = tf.summary.FileWriter("{0}/val".format(log_dirc))
+    test_writer = tf.summary.FileWriter("{0}/test".format(log_dirc))
 
     # split data: validation or test
     X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5)
@@ -140,7 +140,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     hard_negative_label_arr = np.zeros((1), dtype="float32")
     val_loss_lst = []
     not_improved_count = 0
-    logger.debug("Original traning data size: {}".format(len(X_train)))
+    logger.debug("Original traning data size: {0}".format(len(X_train)))
 
     # check if the ckpt exist
     # relearning or not
@@ -149,7 +149,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     if ckpt:
         last_model = ckpt.model_checkpoint_path
         logger.debug("START: Relearning")
-        logger.debug("LODE: {}".format(last_model))
+        logger.debug("LODE: {0}".format(last_model))
         saver.restore(sess, last_model)
     else:
         logger.debug("START: learning")
@@ -250,8 +250,8 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
             #record loss data
             val_writer.add_summary(val_loss_lst[-1], train_step)
             logger.debug("epoch: {0}".format(epoch+1))
-            logger.debug("train loss: {}".format(train_loss/(len(X_train)*train_n_batches)))
-            logger.debug("validation loss: {}".format(val_loss_lst[epoch]))
+            logger.debug("train loss: {0}".format(train_loss/(len(X_train)*train_n_batches)))
+            logger.debug("validation loss: {0}".format(val_loss_lst[epoch]))
         
 
             # early stopping
@@ -262,14 +262,14 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                 not_improved_count += 0
                 
             if not_improved_count >= args.stop_count:
-                logger.debug("Early stopping due to no improvement after {} epochs.".format(args.stop_epoch))
+                logger.debug("Early stopping due to no improvement after {0} epochs.".format(args.stop_epoch))
                 break
 
-            logger.debug("not improved count/early stopping epoch: {}/{}".format(not_improved_count, args.stop_count))
-            logger.debug("************************************************\n")
+            logger.debug("not improved count/early stopping epoch: {0}/{1}".format(not_improved_count, args.stop_count))
+            logger.debug("************************************************")
 
 
-        saver.save(sess, args.out_model_dirc + learning_date + "/model.ckpt")
+        saver.save(sess, "{0}/{1}/model.ckpt".format(args.out_model_dirc, learning_date))
         logger.debug("END: learning")
         # --------------------------------------------------------------------------
 
@@ -295,14 +295,14 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                 test_writer.add_summary(test_summary, test_step)
                 test_loss += tmp_test_loss
 
-        logger.debug("test loss: {}\n".format(test_loss/(len(X_test)*test_n_batches)))
+        logger.debug("test loss: {0}".format(test_loss/(len(X_test)*test_n_batches)))
         logger.debug("END: test")
 
     # capture Ctrl + C
     except KeyboardInterrupt:
         logger.debug("\nPressed \"Ctrl + C\"")
         logger.debug("exit problem, save learning model")
-        saver.save(sess, args.out_model_dirc + learning_date + "/model.ckpt")
+        saver.save(sess, "{0}/{1}/model.ckpt".format(args.out_model_dirc, learning_date))
     # --------------------------------------------------------------------------
 
     # --------------------------- END PROCESSING -------------------------------
@@ -322,18 +322,18 @@ def make_learning_parse():
     )
 
     # Data Argument
-    parser.add_argument("--input_image_dirc_path", type=str,
-                        default="/data/sakka/image/original/total/")
-    parser.add_argument("--input_dens_dirc_path", type=str,
-                        default="/data/sakka/dens/total/")
+    parser.add_argument("--input_image_dirc", type=str,
+                        default="/data/sakka/image/original/total")
+    parser.add_argument("--input_dens_dirc", type=str,
+                        default="/data/sakka/dens/total")
     parser.add_argument("--mask_path", type=str,
                         default="/data/sakka/image/mask.png")
     parser.add_argument("--reuse_model_path", type=str,
-                        default="/data/sakka/tensor_model/2018_4_15_15_7/")
+                        default="/data/sakka/tensor_model/2018_4_15_15_7")
     parser.add_argument("--root_log_dirc", type=str,
-                        default="/data/sakka/tensor_log/")
+                        default="/data/sakka/tensor_log")
     parser.add_argument("--out_model_dirc", type=str,
-                        default="/data/sakka/tensor_model/")
+                        default="/data/sakka/tensor_model")
 
     # GPU Argumant
     parser.add_argument("--visible_device", type=str,
@@ -365,6 +365,6 @@ def make_learning_parse():
 
 if __name__ == "__main__":
     args = make_learning_parse()
-    logger.debug("Running with args: {}".format(args))
+    logger.debug("Running with args: {0}".format(args))
     X_train, X_test, y_train, y_test = load_data(args, test_size=0.2)
     cnn_learning(X_train, X_test, y_train, y_test, args)

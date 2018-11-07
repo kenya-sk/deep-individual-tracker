@@ -50,7 +50,7 @@ def clustering(dens_map, band_width, thresh=0):
     centroid_arr = np.zeros((n_clusters, 2))
     for k in range(n_clusters):
         centroid_arr[k] = cluster_centers[k]
-    logger.debug("DONE: clustering\n")
+    logger.debug("DONE: clustering")
 
     return centroid_arr.astype(np.int32)
 
@@ -61,11 +61,11 @@ def batch_clustering(args):
     """
     file_lst = glob.glob(args.dens_map_path)
     for i, file_path in enumerate(file_lst):
-        logger.debug("current data: {} / {}".format(i + 1, len(file_lst)))
+        logger.debug("current data: {0} / {1}".format(i + 1, len(file_lst)))
         est_dens_map = np.load(file_path)
         centroid_arr = clustering(est_dens_map, args.band_width, args.thresh)
         file_num = file_path.split("/")[-1][:-4]
-        np.savetxt(args.out_clustering_dirc + "{}.csv".format(file_num),
+        np.savetxt("{0}/{1}.csv".format(args.out_clustering_dirc, file_num),
                    centroid_arr, fmt="%i", delimiter=",")
 
 
@@ -86,7 +86,7 @@ def plot_prediction_box(img, centroid_arr,hour, minute, out_pred_box_dirc,box_si
 
         return vertex
 
-    logger.debug("Number of cluster: {}".format(centroid_arr.shape[0]))
+    logger.debug("Number of cluster: {0}".format(centroid_arr.shape[0]))
     for i in range(centroid_arr.shape[0]):
         x = int(centroid_arr[i][0])
         y = int(centroid_arr[i][1])
@@ -94,7 +94,7 @@ def plot_prediction_box(img, centroid_arr,hour, minute, out_pred_box_dirc,box_si
         vertex = get_rect_vertex(x, y, box_size)
         img = cv2.rectangle(img, (vertex[0][0], vertex[0][1]), (vertex[1][0], vertex[1][1]), (0, 0, 255), 3)
 
-    cv2.imwrite(out_pred_box_dirc + "{0}_{1}.png".format(hour, minute), img)
+    cv2.imwrite("{0}/{1}_{2}.png".format(out_pred_box_dirc, hour, minute), img)
     logger.debug("Done({0}:{1}): plot estimation box\n".format(hour, minute))
 
 
@@ -111,9 +111,9 @@ def make_clustering_parse():
     parser.add_argument("--dens_map_path", type=str,
                         default="/data/sakka/estimation/20170421/9/dens/*.npy")
     parser.add_argument("--out_clustering_dirc", type=str,
-                        default="/data/sakka/estimation/20170421/9/cord/")
+                        default="/data/sakka/estimation/20170421/9/cord")
     parser.add_argument("--out_pred_box_dirc", type=str,
-                        default="/data/sakka/image/estBox/")
+                        default="/data/sakka/image/estBox")
 
     # Parameter Argument
     parser.add_argument("--band_width", type=int,
@@ -128,5 +128,5 @@ def make_clustering_parse():
 
 if __name__ == "__main__":
     args = make_clustering_parse()
-    logger.debug("Running with args: {}".format(args))
+    logger.debug("Running with args: {0}".format(args))
     batch_clustering(args)
