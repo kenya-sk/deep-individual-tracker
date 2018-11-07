@@ -17,10 +17,7 @@ S_KEY = 0x73
 
 
 logger = logging.getLogger(__name__)
-logs_path = "/Users/sakka/cnn_by_density_map/logs/image2training_data.log"
-logging.basicConfig(filename=logs_path,
-                    level=logging.DEBUG,
-                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+
 
 class ImgMotion(movie2training_data.Motion):
     # constructor
@@ -76,6 +73,10 @@ def batch_processing(input_img_dirc):
 
 
 if __name__ == "__main__":
+    logs_path = "/Users/sakka/cnn_by_density_map/logs/image2training_data.log"
+    logging.basicConfig(filename=logs_path,
+                        level=logging.DEBUG,
+                        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
     input_img_dirc = input("input image directory path: ")
     logger.debug("input image directory: {}".format(input_img_dirc))
     batch_processing(input_img_dirc)

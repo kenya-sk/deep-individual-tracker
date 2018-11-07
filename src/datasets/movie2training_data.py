@@ -16,10 +16,6 @@ S_KEY = 0x73
 
 
 logger = logging.getLogger(__name__)
-logs_path = "/Users/sakka/cnn_by_density_map/logs/movie2training_data.log"
-logging.basicConfig(filename=logs_path,
-                    level=logging.DEBUG,
-                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 class Motion:
@@ -167,6 +163,10 @@ def movie2train_parse():
 
 
 if __name__ == "__main__":
+    logs_path = "/Users/sakka/cnn_by_density_map/logs/movie2training_data.log"
+    logging.basicConfig(filename=logs_path,
+                        level=logging.DEBUG,
+                        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
     args = movie2train_parse()
     logger.debug("Running with args: {0}".format(args))
     Motion(args).run()
