@@ -64,8 +64,8 @@ def batch_processing(input_img_dirc):
         sys.stderr.write("Error: Do not exist directory")
         sys.exit(1)
 
-    file_lst = glob.glob(input_img_dirc+"*.png")
-    logger.debug("Number of total file: {}".format(len(file_lst)))
+    file_lst = glob.glob("{0}/*.png".format(input_img_dirc))
+    logger.debug("Number of total file: {0}".format(len(file_lst)))
 
     for file_num, file_name in enumerate(file_lst):
         logger.debug("File name: {0}, Number: {1}/{2}".format(file_name, file_num+1, len(file_lst)))

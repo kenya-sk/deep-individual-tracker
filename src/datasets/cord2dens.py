@@ -50,7 +50,7 @@ def batch_processing(input_dirc, sigma_pow_lst):
     file_lst = os.listdir(input_dirc)
     pattern = r"^(?!._).*(.csv)$"
     repattern = re.compile(pattern)
-    logger.debug("Number of total file: {}".format(len(file_lst)))
+    logger.debug("Number of total file: {0}".format(len(file_lst)))
 
     width, height = 1280, 720
     cordinate_matrix = np.zeros((width, height, 2), dtype="int64")
@@ -58,7 +58,7 @@ def batch_processing(input_dirc, sigma_pow_lst):
         for j in range(height):
             cordinate_matrix[i][j] = [i, j]
     for sigma_pow in sigma_pow_lst:
-        logger.debug("sigma pow: {}".format(sigma_pow))
+        logger.debug("sigma pow: {0}".format(sigma_pow))
         fileNum = 0
         for file_name in file_lst:
             if re.search(repattern, file_name):
@@ -72,6 +72,6 @@ def batch_processing(input_dirc, sigma_pow_lst):
 
 if __name__ == "__main__":
     input_dirc = input("Input directory path: ")
-    logger.debug("input directory: {}".format(input_dirc))
+    logger.debug("input directory: {0}".format(input_dirc))
     sigma_pow_lst = [8, 10, 15, 20, 25]
     batch_processing(input_dirc, sigma_pow_lst)

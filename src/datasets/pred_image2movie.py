@@ -18,7 +18,7 @@ logging.basicConfig(filename=logs_path,
 
 
 def pred_image2movie(args):
-    file_num = len(glob.glob(args.img_dirc + "/*.png"))
+    file_num = len(glob.glob("{0}/*.png".format(args.img_dirc)))
     fourcc = cv2.VideoWriter_fourcc("a", "v", "c", "1")
     fps = args.fps
     width = args.width
@@ -26,8 +26,8 @@ def pred_image2movie(args):
     out = cv2.VideoWriter(args.save_movie_path, int(fourcc), fps, (int(width), int(height)))
 
     for i in tqdm(range(1,file_num+1)):
-        img = cv2.imread(args.img_dirc + "/{}.png".format(i))
-        cord_arr = np.load(args.cord_dirc + "/{}.npy".format(i))
+        img = cv2.imread("{0}/{1}.png".format(args.img_dirc, i))
+        cord_arr = np.load("{0}/{1}.npy".format(args.cord_dirc, i))
 
         for cord in cord_arr:
             cv2.circle(img, (int(cord[0]), int(cord[1])), 3, (0, 0, 255), -1, cv2.LINE_AA)
@@ -48,10 +48,10 @@ def img2movie_parse():
 
     # Data Argment
     parser.add_argument("--img_dirc", type=str,
-                        default="/data/sakka/image/",
+                        default="/data/sakka/image",
                         help="input path of estimate image direcory")
     parser.add_argument("--cord_dirc", type=str,
-                        default="/data/sakka/estimation/cord/",
+                        default="/data/sakka/estimation/cord",
                         help="input path of estimate cordinate direcory")
     parser.add_argument("--save_movie_path", type=str,
                         default="/data/sakka/movie/out.mp4")
@@ -70,5 +70,5 @@ def img2movie_parse():
 
 if __name__ == "__main__":
     args = img2movie_parse()
-    logger.debug("Running with args: {}".format(args))
+    logger.debug("Running with args: {0}".format(args))
     pred_image2movie(args)
