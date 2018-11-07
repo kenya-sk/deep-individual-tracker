@@ -34,7 +34,7 @@ def pred_image2movie(args):
         out.write(img)
 
     cv2.destroyAllWindows()
-    logger.debug("SAVE: prediction movie (./{})".format(args.save_movie_path))
+    logger.debug("SAVE: prediction movie (./{0})".format(args.save_movie_path))
 
 
 def img2movie_parse():
