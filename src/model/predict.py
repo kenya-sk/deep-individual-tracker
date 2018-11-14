@@ -112,7 +112,7 @@ def movie_predict(model, sess, args):
         frame_num += 1
 
     #output_dric = args.output_root_dirc
-    output_dirc = "/data/sakka/estimation/model_201804151507/20170421/test/"
+    output_dirc = "/data/sakka/estimation/model_201804151507/20170421/test"
     cnn_predict(model, sess, prev, frame_num, output_dirc, args)
 
     while (cap.isOpened()):
