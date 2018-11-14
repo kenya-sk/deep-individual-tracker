@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-from cnn_model import CNN_model
+from model import CNN_model
 
 
 ANALYSIS_HEIGHT = (0, 470)
@@ -18,15 +18,15 @@ ANALYSIS_WIDTH = (0, 1280)
 logger = logging.getLogger(__name__)
 
 
-def display_data_info(input_img_path, output_dirc_path, skip_width, pred_batch_size, band_width, cluster_thresh, save_map):
+def display_data_info(input_path, output_dirc_path, skip_width, pred_batch_size, band_width, cluster_thresh, save_map):
     logger.debug("*************************************************")
-    logger.debug("INPUT IMG DIRC: {}".format(input_img_path))
-    logger.debug("OUTPUT DIRC: {}".format(output_dirc_path))
-    logger.debug("SKIP WIDTH: {}".format(skip_width))
-    logger.debug("PRED BATCH SIZE: {}".format(pred_batch_size))
-    logger.debug("BAND WIDTH: {}".format(band_width))
-    logger.debug("CLUSTER THRESH: {}".format(cluster_thresh))
-    logger.debug("SAVE DENS MAP: {}".format(save_map))
+    logger.debug("Input path  : {0}".format(input_path))
+    logger.debug("Output dirc     : {0}".format(output_dirc_path))
+    logger.debug("Skip width      : {0}".format(skip_width))
+    logger.debug("Pred batch size : {0}".format(pred_batch_size))
+    logger.debug("Band width      : {0}".format(band_width))
+    logger.debug("Cluster thresh  : {0}".format(cluster_thresh))
+    logger.debug("Save dens map   : {0}".format(save_map))
     logger.debug("*************************************************\n")
 
 
@@ -53,18 +53,18 @@ def pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, samp
 
     logger.debug("\n**************************************************************")
 
-    logger.debug("                        GROUND TRUTH          ")
-    logger.debug("                    |     P   |     N    |           ")
+    logger.debug("                          GROUND TRUTH          ")
+    logger.debug("                    |     P     |     N     |           ")
     logger.debug("          -----------------------------------------")
-    logger.debug("                P   |     {0}   |     {1}    |           ".format(sum(true_positive_lst), sum(false_positive_lst)))
+    logger.debug("                P   |    {0}    |     {1}     |           ".format(sum(true_positive_lst), sum(false_positive_lst)))
     logger.debug("PRED      -----------------------------------------")
-    logger.debug("                N   |     {0}   |     /    |           ".format(sum(false_negative_lst)))
+    logger.debug("                N   |    {0}    |     /     |           ".format(sum(false_negative_lst)))
     logger.debug("          -----------------------------------------")
 
-    logger.debug("\nToal Accuracy (data size {0}, sikp size {1}): {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
-    logger.debug("Toal Precision (data size {0}, sikp size {1}): {2}".format(len(precision_lst), skip, sum(precision_lst)/len(precision_lst)))
-    logger.debug("Toal Recall (data size {0}, sikp size {1}): {2}".format(len(recall_lst), skip, sum(recall_lst)/len(recall_lst)))
-    logger.debug("Toal F measure (data size {0}, sikp size {1}): {2}".format(len(f_measure_lst), skip, sum(f_measure_lst)/len(f_measure_lst)))
+    logger.debug("\nToal Accuracy (data size {0}, sikp size {1}) : {2}".format(len(accuracy_lst), skip, sum(accuracy_lst)/len(accuracy_lst)))
+    logger.debug("Toal Precision (data size {0}, sikp size {1})  : {2}".format(len(precision_lst), skip, sum(precision_lst)/len(precision_lst)))
+    logger.debug("Toal Recall (data size {0}, sikp size {1})     : {2}".format(len(recall_lst), skip, sum(recall_lst)/len(recall_lst)))
+    logger.debug("Toal F measure (data size {0}, sikp size {1})  : {2}".format(len(f_measure_lst), skip, sum(f_measure_lst)/len(f_measure_lst)))
     logger.debug("****************************************************************")
 
 
@@ -188,3 +188,25 @@ def load_model(model_path, device_id, memory_rate):
         sys.exit(1)
 
     return model, sess
+
+def set_capture(movie_path):
+    cap = cv2.VideoCapture(movie_path)
+    if cap is None:
+        logger.error("ERROR: Not exsit movie")
+        logger.error("Please check movie path: {0}".format(movie_path))
+        sys.exit(1)
+    fourcc = int(cv2.VideoWriter_fourcc(*'avc1'))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    total_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+    logger.debug("****************************************")
+    logger.debug("Movie path             : {0}".format(movie_path))
+    logger.debug("Fourcc                 : {0}".format(fourcc))
+    logger.debug("FPS                    : {0}".format(fps))
+    logger.debug("Size = (height, width) : ({0}, {1})".format(height, width))
+    logger.debug("Total frame            : {0}".format(total_frame))
+    logger.debug("****************************************")
+
+    return cap, fourcc, fps, height, width, total_frame

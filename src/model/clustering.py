@@ -15,10 +15,6 @@ from sklearn.cluster import MeanShift
 
 
 logger = logging.getLogger(__name__)
-logs_path = "/home/sakka/cnn_by_density_map/logs/clustering.log"
-logging.basicConfig(filename=logs_path,
-                    level=logging.DEBUG,
-                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 def clustering(dens_map, band_width, thresh=0):
@@ -127,6 +123,10 @@ def make_clustering_parse():
 
 
 if __name__ == "__main__":
+    logs_path = "/home/sakka/cnn_by_density_map/logs/clustering.log"
+    logging.basicConfig(filename=logs_path,
+                        level=logging.DEBUG,
+                        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
     args = make_clustering_parse()
     logger.debug("Running with args: {0}".format(args))
     batch_clustering(args)

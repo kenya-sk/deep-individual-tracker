@@ -26,10 +26,6 @@ ANALYSIS_WIDTH = (0, 1280)
 
 
 logger = logging.getLogger(__name__)
-logs_path = "/home/sakka/cnn_by_density_map/logs/cnn_learning.log"
-logging.basicConfig(filename=logs_path,
-                    level=logging.DEBUG,
-                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 def load_data(args, test_size=0.2):
@@ -364,6 +360,10 @@ def make_learning_parse():
 
 
 if __name__ == "__main__":
+    logs_path = "/home/sakka/cnn_by_density_map/logs/cnn_learning.log"
+    logging.basicConfig(filename=logs_path,
+                        level=logging.DEBUG,
+                        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
     args = make_learning_parse()
     logger.debug("Running with args: {0}".format(args))
     X_train, X_test, y_train, y_test = load_data(args, test_size=0.2)
