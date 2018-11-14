@@ -118,9 +118,9 @@ def movie_predict(model, sess, args):
     while (cap.isOpened()):
         ret, frame = cap.read()
         frame_num += 1
-        break
         if (frame_num%args.pred_interval == 0):
-            print("PREDICT")
+            cnn_predict(model, sess, prev, frame_num, output_dirc, args)
+            break
         else:
             pass
 
