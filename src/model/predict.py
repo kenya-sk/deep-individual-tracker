@@ -36,7 +36,7 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc, args):
     pred_start_time = time.time()
     for i, img_path in enumerate(img_file_lst):
         img = cv2.imread(img_path)
-        label = np.zeros((720, 1280))
+        label = np.zeros(args.original_img_size)
         masked_img = get_masked_data(img, args.mask_path)
         masked_label = get_masked_data(label, args.mask_path)
         X_local, y_local = get_local_data(masked_img, masked_label, index_h, index_w, local_img_size=args.local_img_size)
@@ -50,13 +50,13 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc, args):
         pred_batch_size = args.pred_batch_size
         pred_n_batches = int(len(index_lst)/pred_batch_size)
         pred_arr = np.zeros(pred_batch_size)
-        pred_dens_map = np.zeros((720,1280), dtype="float32")
+        pred_dens_map = np.zeros(args.original_img_size, dtype="float32")
 
         logger.debug("*************************************************")
         logger.debug("STSRT: predict density map ({0}/{1})".format(i+1, len(img_file_lst)))
         for batch in range(pred_n_batches):
             # array of skiped local image
-            X_skip = np.zeros((pred_batch_size,72,72,3))
+            X_skip = np.zeros((pred_batch_size, args.local_img_size, args.local_img_size, 3))
             y_skip = np.zeros((pred_batch_size,1))
             for index_cord,index_local in enumerate(range(pred_batch_size)):
                 current_index = index_lst[batch*pred_batch_size+index_local]
@@ -85,11 +85,11 @@ def cnn_predict(cnn_model, sess, input_img_path, output_dirc, args):
 
         # calculate centroid by clustering 
         centroid_arr = clustering(pred_dens_map, args.band_width, args.cluster_thresh)
-        np.savetxt("{}/cord/{}.csv".format(output_dirc, out_file_num),centroid_arr, fmt="%i", delimiter=",")
+        np.savetxt("{0}/cord/{1}.csv".format(output_dirc, out_file_num),centroid_arr, fmt="%i", delimiter=",")
 
         # calculate prediction loss
-        est_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
-        logger.debug("prediction loss: {}".format(est_loss))
+        pred_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
+        logger.debug("prediction loss: {0}".format(pred_loss))
         logger.debug("END: predict density map")
         logger.debug("***************************************************")
 
@@ -135,6 +135,8 @@ def make_pred_parse():
                         default=0.9, help="useing each GPU memory rate: 0.0-1.0")
 
     # Parameter Argument
+    parser.add_argument("--original_img_size", type=tuple,
+                        default=(720, 1280), help="(height, width)")
     parser.add_argument("--local_img_size", type=int,
                         default=72, help="square local image size: > 0")
     parser.add_argument("--skip_width", type=int,
@@ -156,5 +158,5 @@ def make_pred_parse():
 if __name__ == "__main__":
     cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
     args = make_pred_parse()
-    logger.debug("Running with args: {}".format(args))
+    logger.debug("Running with args: {0}".format(args))
     batch_predict(cnn_model, sess, args)
