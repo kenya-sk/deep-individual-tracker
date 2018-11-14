@@ -23,8 +23,6 @@ def cnn_predict(cnn_model, sess, img, frame_num, output_dirc, args):
     
     # ------------------------------- PRE PROCWSSING ----------------------------------
     index_h, index_w = get_masked_index(args.mask_path)
-    display_data_info(input_img_path, output_dirc, args.skip_width, 
-                        args.pred_batch_size, args.band_width, args.cluster_thresh, args.save_map)
     # --------------------------------------------------------------------------
 
     # ------------------------------- PREDICT ----------------------------------
@@ -94,6 +92,8 @@ def batch_predict(model, sess, args):
         output_dirc = "{0}/{1}".format(args.output_root_dirc, dirc)
         os.makedirs("{0}/dens".format(output_dirc), exist_ok=True)
         os.makedirs("{0}/cord".format(output_dirc), exist_ok=True)
+        display_data_info(input_img_path, output_dirc, args.skip_width,
+                            args.pred_batch_size, args.band_width, args.cluster_thresh, args.save_map)
         for path in img_path_lst:
             img = cv2.imread(path)
             frame_num = path.split("/")[-1][:-4]
@@ -103,6 +103,7 @@ def batch_predict(model, sess, args):
 def movie_predict(model, sess, args):
     cap, _, _, _, _, _ = set_capture(args.input_movie_path)
     frame_num = 0
+
 
     # initialize
     # skip first frame (company logo)
