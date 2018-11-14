@@ -107,6 +107,17 @@ def batch_predict(model, sess, args):
 
 def movie_predict(model, sess, args):
     cap, _, _, _, _, _ = set_capture(args.input_movie_path)
+    frame_num = 0
+
+    for _ in range(4*30):
+        ret, frame = cap.read()
+        frame_num += 1
+
+    while (cap.isOpened()):
+        ret, frame = cap.read()
+        print(ret)
+        print(frame_num)
+        break
 
 
 def make_pred_parse():
