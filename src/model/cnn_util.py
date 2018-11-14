@@ -191,6 +191,10 @@ def load_model(model_path, device_id, memory_rate):
 
 def set_capture(movie_path):
     cap = cv2.VideoCapture(movie_path)
+    if cap is None:
+        logger.error("ERROR: Not exsit movie")
+        logger.error("Please check movie path: {0}".format(movie_path))
+        sys.exit(1)
     fourcc = int(cv2.VideoWriter_fourcc(*'avc1'))
     fps = cap.get(cv2.CAP_PROP_FPS)
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
