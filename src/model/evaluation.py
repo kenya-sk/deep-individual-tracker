@@ -13,10 +13,6 @@ from cnn_util import eval_metrics, pretty_print, get_masked_index
 
 
 logger = logging.getLogger(__name__)
-logs_path = "/home/sakka/cnn_by_density_map/logs/evaluation.log"
-logging.basicConfig(filename=logs_path,
-                    level=logging.DEBUG,
-                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 def get_ground_truth(ground_truth_path, mask_path=None):
@@ -173,6 +169,10 @@ def make_eval_parse():
 
 
 if __name__ == "__main__":
+    logs_path = "/home/sakka/cnn_by_density_map/logs/evaluation.log"
+    logging.basicConfig(filename=logs_path,
+                        level=logging.DEBUG,
+                        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
     args = make_eval_parse()
     logger.debug("Running with args: {0}".format(args))
     evaluate(args)
