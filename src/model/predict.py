@@ -12,7 +12,7 @@ import argparse
 import numpy as np
 import tensorflow as tf
 
-from cnn_util import display_data_info, get_masked_data, get_masked_index, get_local_data, load_model
+from cnn_util import display_data_info, get_masked_data, get_masked_index, get_local_data, load_model, set_capture
 from clustering import clustering
 
 
@@ -109,6 +109,10 @@ def batch_predict(model, sess, args):
         cnn_predict(cnn_model, sess, input_img_path, output_dirc, args)
 
 
+def movie_predict(model, sess, args):
+    cap, _, _, _, _, _ = set_capture(args.input_movie_path)
+
+
 def make_pred_parse():
     parser = argparse.ArgumentParser(
         prog="cnn_predict.py",
@@ -123,6 +127,8 @@ def make_pred_parse():
                         default="/data/sakka/tensor_model/2018_4_15_15_7")
     parser.add_argument("--input_img_root_dirc", type=str,
                         default="/data/sakka/image/20170416")
+    parser.add_argument("--input_movie_path", type=str,
+                        default="/data/sakka/movie/20170416/201704160900.mp4")
     parser.add_argument("--output_root_dirc", type=str,
                         default="/data/sakka/estimation/model_201804151507/20170416")
     parser.add_argument("--mask_path", type=str,
@@ -139,6 +145,8 @@ def make_pred_parse():
                         default=(720, 1280), help="(height, width)")
     parser.add_argument("--local_img_size", type=int,
                         default=72, help="square local image size: > 0")
+    parser.add_argument("--pred_interval", type=int,
+                        default=30, help="skip interval of frame at prediction")
     parser.add_argument("--skip_width", type=int,
                         default=15, help="skip width in horizontal direction ")
     parser.add_argument("--pred_batch_size", type=int,
@@ -159,4 +167,5 @@ if __name__ == "__main__":
     cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
     args = make_pred_parse()
     logger.debug("Running with args: {0}".format(args))
-    batch_predict(cnn_model, sess, args)
+    #batch_predict(cnn_model, sess, args)
+    movie_predict(cnn_model, sess, args)
