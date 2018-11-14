@@ -98,6 +98,8 @@ def batch_predict(model, sess, args):
             img = cv2.imread(path)
             frame_num = path.split("/")[-1][:-4]
             cnn_predict(cnn_model, sess, img, frame_num, output_dirc, args)
+            break
+        break
 
 
 def movie_predict(model, sess, args):
@@ -107,15 +109,14 @@ def movie_predict(model, sess, args):
         display_data_info(movie_path, output_dirc, args.skip_width,
                             args.pred_batch_size, args.band_width, args.cluster_thresh, args.save_map)
 
+        # initialize
         cap, _, _, _, _, _ = set_capture(movie_path)
         frame_num = 0
 
-        # initialize
         # skip first frame (company logo)
         for _ in range(4*30):
             _, frame = cap.read()
             frame_num += 1
-
         cnn_predict(model, sess, frame, frame_num, output_dirc, args)
 
         # predict at regular interval (args.pred_interval)
@@ -124,10 +125,8 @@ def movie_predict(model, sess, args):
             frame_num += 1
             if (frame_num%args.pred_interval == 0):
                 cnn_predict(model, sess, frame, frame_num, output_dirc, args)
-            break
 
         logger.debug("DONE: {0}".format(movie_path))
-        break
 
 
 def make_pred_parse():
