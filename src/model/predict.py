@@ -130,7 +130,7 @@ def movie_predict(model, sess, args):
 
 def make_pred_parse():
     parser = argparse.ArgumentParser(
-        prog="cnn_predict.py",
+        prog="predict.py",
         usage="prediction by learned model",
         description="description",
         epilog="end",
@@ -179,7 +179,7 @@ def make_pred_parse():
 
 
 if __name__ == "__main__":
-    logs_path = "/home/sakka/cnn_by_density_map/logs/cnn_predict.log"
+    logs_path = "/home/sakka/cnn_by_density_map/logs/predict.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
