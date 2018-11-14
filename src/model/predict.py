@@ -85,11 +85,11 @@ def cnn_predict(cnn_model, sess, img, frame_num, output_dirc, args):
 
 
 def batch_predict(model, sess, args):
-    input_img_dirc_lst = [f for f in os.listdir(args.input_img_root_dirc) if not f.startswith(".")]
+    input_img_dirc_lst = [f for f in os.listdir("{0}/{1}".format(args.input_img_root_dirc, args.date)) if not f.startswith(".")]
     for dirc in input_img_dirc_lst:
-        input_img_path = "{0}/{1}/*.png".format(args.input_img_root_dirc, dirc)
+        input_img_path = "{0}/{1}/{2}/*.png".format(args.input_img_root_dirc, args.date, dirc)
         img_path_lst = glob.glob(input_img_path)
-        output_dirc = "{0}/{1}".format(args.output_root_dirc, dirc)
+        output_dirc = "{0}/{1}/{2}".format(args.output_root_dirc, args.date, dirc)
         os.makedirs("{0}/dens".format(output_dirc), exist_ok=True)
         os.makedirs("{0}/cord".format(output_dirc), exist_ok=True)
         display_data_info(input_img_path, output_dirc, args.skip_width,
@@ -101,31 +101,32 @@ def batch_predict(model, sess, args):
 
 
 def movie_predict(model, sess, args):
-    #output_dric = args.output_root_dirc
-    output_dirc = "/data/sakka/estimation/model_201804151507/20170421/test"
-    display_data_info(args.input_movie_path, output_dirc, args.skip_width,
-                        args.pred_batch_size, args.band_width, args.cluster_thresh, args.save_map)
+    for time_idx in range(9, 17)
+        output_dirc = "{0}/{1}/{2}".format(args.output_root_dirc, args.date, time_idx)
+        movie_path = "{0}/{1}/{2}{3}00.mp4".format(args.input_movie_dirc, args.date, args.date, time_idx.zfill(2))
+        display_data_info(movie_path, output_dirc, args.skip_width,
+                            args.pred_batch_size, args.band_width, args.cluster_thresh, args.save_map)
 
-    cap, _, _, _, _, _ = set_capture(args.input_movie_path)
-    frame_num = 0
+        cap, _, _, _, _, _ = set_capture(movie_path)
+        frame_num = 0
 
-    # initialize
-    # skip first frame (company logo)
-    for _ in range(4*30):
-        _, frame = cap.read()
-        frame_num += 1
+        # initialize
+        # skip first frame (company logo)
+        for _ in range(4*30):
+            _, frame = cap.read()
+            frame_num += 1
 
-    cnn_predict(model, sess, frame, frame_num, output_dirc, args)
+        cnn_predict(model, sess, frame, frame_num, output_dirc, args)
 
-    # predict at regular interval (args.pred_interval)
-    while (cap.isOpened()):
-        ret, frame = cap.read()
-        frame_num += 1
-        if (frame_num%args.pred_interval == 0):
-            cnn_predict(model, sess, prev, frame_num, output_dirc, args)
+        # predict at regular interval (args.pred_interval)
+        while (cap.isOpened()):
+            ret, frame = cap.read()
+            frame_num += 1
+            if (frame_num%args.pred_interval == 0):
+                cnn_predict(model, sess, frame, frame_num, output_dirc, args)
             break
-        else:
-            pass
+
+        logger.debug("DONE: {0}".format(movie_path))
 
 
 def make_pred_parse():
@@ -138,14 +139,15 @@ def make_pred_parse():
     )
 
     # Data Argument
+    parser.add_argument("--date", type=str, default="20170416")
     parser.add_argument("--model_path", type=str,
                         default="/data/sakka/tensor_model/2018_4_15_15_7")
     parser.add_argument("--input_img_root_dirc", type=str,
-                        default="/data/sakka/image/20170416")
-    parser.add_argument("--input_movie_path", type=str,
-                        default="/data/sakka/movie/20170416/201704160900.mp4")
+                        default="/data/sakka/image")
+    parser.add_argument("--input_movie_dirc", type=str,
+                        default="/data/sakka/movie")
     parser.add_argument("--output_root_dirc", type=str,
-                        default="/data/sakka/estimation/model_201804151507/20170416")
+                        default="/data/sakka/estimation/model_201804151507")
     parser.add_argument("--mask_path", type=str,
                         default="/data/sakka/image/mask.png")
 
