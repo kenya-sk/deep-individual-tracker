@@ -112,10 +112,10 @@ def movie_predict(model, sess, args):
     # initialize
     # skip first frame (company logo)
     for _ in range(4*30):
-        _, prev = cap.read()
+        _, frame = cap.read()
         frame_num += 1
 
-    cnn_predict(model, sess, prev, frame_num, output_dirc, args)
+    cnn_predict(model, sess, frame, frame_num, output_dirc, args)
 
     # predict at regular interval (args.pred_interval)
     while (cap.isOpened()):
