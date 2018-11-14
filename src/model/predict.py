@@ -164,8 +164,8 @@ def make_pred_parse():
 
 
 if __name__ == "__main__":
-    cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
     args = make_pred_parse()
     logger.debug("Running with args: {0}".format(args))
+    cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
     #batch_predict(cnn_model, sess, args)
     movie_predict(cnn_model, sess, args)
