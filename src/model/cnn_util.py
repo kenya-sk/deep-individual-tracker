@@ -18,9 +18,9 @@ ANALYSIS_WIDTH = (0, 1280)
 logger = logging.getLogger(__name__)
 
 
-def display_data_info(input_img_path, output_dirc_path, skip_width, pred_batch_size, band_width, cluster_thresh, save_map):
+def display_data_info(input_path, output_dirc_path, skip_width, pred_batch_size, band_width, cluster_thresh, save_map):
     logger.debug("*************************************************")
-    logger.debug("Input img dirc  : {0}".format(input_img_path))
+    logger.debug("Input img path  : {0}".format(input_img_path))
     logger.debug("Output dirc     : {0}".format(output_dirc_path))
     logger.debug("Skip width      : {0}".format(skip_width))
     logger.debug("Pred batch size : {0}".format(pred_batch_size))
