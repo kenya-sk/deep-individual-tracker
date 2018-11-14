@@ -101,9 +101,13 @@ def batch_predict(model, sess, args):
 
 
 def movie_predict(model, sess, args):
+    #output_dric = args.output_root_dirc
+    output_dirc = "/data/sakka/estimation/model_201804151507/20170421/test"
+    display_data_info(args.input_movie_path, output_dirc, args.skip_width,
+                        args.pred_batch_size, args.band_width, args.cluster_thresh, args.save_map)
+
     cap, _, _, _, _, _ = set_capture(args.input_movie_path)
     frame_num = 0
-
 
     # initialize
     # skip first frame (company logo)
@@ -111,10 +115,9 @@ def movie_predict(model, sess, args):
         _, prev = cap.read()
         frame_num += 1
 
-    #output_dric = args.output_root_dirc
-    output_dirc = "/data/sakka/estimation/model_201804151507/20170421/test"
     cnn_predict(model, sess, prev, frame_num, output_dirc, args)
 
+    # predict at regular interval (args.pred_interval)
     while (cap.isOpened()):
         ret, frame = cap.read()
         frame_num += 1
