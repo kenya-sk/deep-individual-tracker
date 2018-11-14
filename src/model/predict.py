@@ -101,9 +101,9 @@ def batch_predict(model, sess, args):
 
 
 def movie_predict(model, sess, args):
-    for time_idx in range(9, 17)
+    for time_idx in range(9, 17):
         output_dirc = "{0}/{1}/{2}".format(args.output_root_dirc, args.date, time_idx)
-        movie_path = "{0}/{1}/{2}{3}00.mp4".format(args.input_movie_dirc, args.date, args.date, time_idx.zfill(2))
+        movie_path = "{0}/{1}/{2}{3:0>2d}00.mp4".format(args.input_movie_dirc, args.date, args.date, time_idx)
         display_data_info(movie_path, output_dirc, args.skip_width,
                             args.pred_batch_size, args.band_width, args.cluster_thresh, args.save_map)
 
@@ -127,6 +127,7 @@ def movie_predict(model, sess, args):
             break
 
         logger.debug("DONE: {0}".format(movie_path))
+        break
 
 
 def make_pred_parse():
