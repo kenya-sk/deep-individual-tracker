@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-from cnn_model import CNN_model
+from model import CNN_model
 
 
 ANALYSIS_HEIGHT = (0, 470)
