@@ -43,7 +43,7 @@ def cnn_predict(cnn_model, sess, img, frame_num, output_dirc, args):
     pred_dens_map = np.zeros(args.original_img_size, dtype="float32")
 
     logger.debug("*************************************************")
-    logger.debug("STSRT: predict density map")
+    logger.debug("STSRT: predict density map (frame numenr= {0})".foramt(frame_num))
     for batch in range(pred_n_batches):
         # array of skiped local image
         X_skip = np.zeros((pred_batch_size, args.local_img_size, args.local_img_size, 3))
