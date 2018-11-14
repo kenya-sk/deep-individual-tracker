@@ -119,7 +119,7 @@ def movie_predict(model, sess, args):
         frame_num += 1
         break
         if (frame_num%args.pred_interval == 0):
-            ## PREDICT
+            print("PREDICT")
         else:
             pass
 
