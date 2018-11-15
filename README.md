@@ -1,7 +1,7 @@
 ## Introduction
 This repository performs individual detection in consideration of overlap by using CNN in pixel units.
 
-## Directory structure
+<!-- ## Directory structure
 root/  
 &emsp;├ data/  
 &emsp;│&emsp;&ensp;├ cord/  
@@ -25,7 +25,7 @@ root/
 &emsp;&emsp;&emsp;&emsp;&emsp;├ cnn_learning.py  
 &emsp;&emsp;&emsp;&emsp;&emsp;├ cnn_predict.py  
 &emsp;&emsp;&emsp;&emsp;&emsp;├ clustering.py  
-&emsp;&emsp;&emsp;&emsp;&emsp;└ evaluation.py
+&emsp;&emsp;&emsp;&emsp;&emsp;└ evaluation.py -->
 
 ## Requirement
 * Python3
