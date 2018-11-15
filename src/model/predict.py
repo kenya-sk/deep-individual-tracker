@@ -198,4 +198,4 @@ if __name__ == "__main__":
     cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
 
     # predict from video data
-    movie_predict(cnn_model, sess, args)
+    video_predict(cnn_model, sess, args)

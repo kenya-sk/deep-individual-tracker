@@ -73,7 +73,7 @@ if __name__ == "__main__":
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
     # set argument
-    args = img2movie_parse()
+    args = img2video_parse()
     logger.debug("Running with args: {0}".format(args))
 
     pred_image2video(args)

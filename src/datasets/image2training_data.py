@@ -8,7 +8,7 @@ import glob
 import numpy as np
 import cv2
 
-import movie2training_data
+import video2training_data
 
 # q key (end)
 Q_KEY = 0x71
@@ -19,7 +19,7 @@ S_KEY = 0x73
 logger = logging.getLogger(__name__)
 
 
-class ImgMotion(movie2training_data.Motion):
+class ImgMotion(video2training_data.Motion):
     # constructor
     def __init__(self, input_file_path):
         super().__init__(input_file_path)

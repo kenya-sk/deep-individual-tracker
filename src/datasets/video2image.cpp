@@ -10,8 +10,8 @@ using namespace std;
 void video_to_image(std::string input_file_path, std::string output_dirc_path){
     cv::VideoCapture capture(input_file_path);
     if(!capture.isOpened()){
-        cout << "Error: can not open movie file." << endl;
-        cout << "Please check input movie file path." << endl;
+        cout << "Error: can not open video file." << endl;
+        cout << "Please check input video file path." << endl;
         exit(1);
     }
     int count = (int)capture.get(CV_CAP_PROP_FRAME_COUNT);

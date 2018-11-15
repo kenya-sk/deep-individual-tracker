@@ -189,11 +189,11 @@ def load_model(model_path, device_id, memory_rate):
 
     return model, sess
 
-def set_capture(movie_path):
-    cap = cv2.VideoCapture(movie_path)
+def set_capture(video_path):
+    cap = cv2.VideoCapture(video_path)
     if cap is None:
-        logger.error("ERROR: Not exsit movie")
-        logger.error("Please check movie path: {0}".format(movie_path))
+        logger.error("ERROR: Not exsit video")
+        logger.error("Please check video path: {0}".format(video_path))
         sys.exit(1)
     fourcc = int(cv2.VideoWriter_fourcc(*'avc1'))
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -202,7 +202,7 @@ def set_capture(movie_path):
     total_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     
     logger.debug("****************************************")
-    logger.debug("Movie path             : {0}".format(movie_path))
+    logger.debug("Video path             : {0}".format(video_path))
     logger.debug("Fourcc                 : {0}".format(fourcc))
     logger.debug("FPS                    : {0}".format(fps))
     logger.debug("Size = (height, width) : ({0}, {1})".format(height, width))
