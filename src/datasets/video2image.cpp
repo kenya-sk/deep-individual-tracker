@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void movie_to_image(std::string input_file_path, std::string output_dirc_path){
+void video_to_image(std::string input_file_path, std::string output_dirc_path){
     cv::VideoCapture capture(input_file_path);
     if(!capture.isOpened()){
         cout << "Error: can not open movie file." << endl;
@@ -48,13 +48,13 @@ void movie_to_image(std::string input_file_path, std::string output_dirc_path){
 
 int main(int argc, char **argv) {
     string input_file_path, output_dirc_path;
-    cout << "Input movie file path: ";
+    cout << "Input video file path: ";
     cin >> input_file_path;
     cout << "\nOutput directory path: ";
     cin >> output_dirc_path;
     cout << endl;
 
-    movie_to_image(input_file_path, output_dirc_path);
+    video_to_image(input_file_path, output_dirc_path);
 
     return 0;
 }

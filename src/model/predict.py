@@ -103,17 +103,17 @@ def batch_predict(model, sess, args):
 
 
 
-def movie_predict(model, sess, args):
+def video_predict(model, sess, args):
     for time_idx in range(9, 17):
         output_dirc = "{0}/{1}/{2}".format(args.output_root_dirc, args.date, time_idx)
         os.makedirs("{0}/dens".format(output_dirc), exist_ok=True)
         os.makedirs("{0}/cord".format(output_dirc), exist_ok=True)
-        movie_path = "{0}/{1}/{2}{3:0>2d}00.mp4".format(args.input_movie_dirc, args.date, args.date, time_idx)
-        display_data_info(movie_path, output_dirc, args.skip_width,
+        video_path = "{0}/{1}/{2}{3:0>2d}00.mp4".format(args.input_video_dirc, args.date, args.date, time_idx)
+        display_data_info(video_path, output_dirc, args.skip_width,
                             args.pred_batch_size, args.band_width, args.cluster_thresh, args.save_map)
 
         # initialize
-        cap, _, _, _, _, _ = set_capture(movie_path)
+        cap, _, _, _, _, _ = set_capture(video_path)
         frame_num = 0
 
         # skip first frame (company logo)
@@ -129,7 +129,7 @@ def movie_predict(model, sess, args):
             if (frame_num%args.pred_interval == 0):
                 cnn_predict(model, sess, frame, frame_num, output_dirc, args)
 
-        logger.debug("DONE: {0}".format(movie_path))
+        logger.debug("DONE: {0}".format(video_path))
 
 
 def make_pred_parse():
@@ -147,8 +147,8 @@ def make_pred_parse():
                         default="/data/sakka/tensor_model/2018_4_15_15_7")
     parser.add_argument("--input_img_root_dirc", type=str,
                         default="/data/sakka/image")
-    parser.add_argument("--input_movie_dirc", type=str,
-                        default="/data/sakka/movie")
+    parser.add_argument("--input_video_dirc", type=str,
+                        default="/data/sakka/video")
     parser.add_argument("--output_root_dirc", type=str,
                         default="/data/sakka/estimation/model_201804151507")
     parser.add_argument("--mask_path", type=str,
@@ -184,12 +184,18 @@ def make_pred_parse():
 
 
 if __name__ == "__main__":
+    # set loggger
     logs_path = "/home/sakka/cnn_by_density_map/logs/predict.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+
+    # set argument
     args = make_pred_parse()
     logger.debug("Running with args: {0}".format(args))
+
+    # load prediction model
     cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
-    #batch_predict(cnn_model, sess, args)
+
+    # predict from video data
     movie_predict(cnn_model, sess, args)

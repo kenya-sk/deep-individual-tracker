@@ -10,10 +10,6 @@ import numpy as np
 
 
 logger = logging.getLogger(__name__)
-logs_path = "/Users/sakka/cnn_by_density_map/logs/cord2dens.log"
-logging.basicConfig(filename=logs_path,
-                    level=logging.DEBUG,
-                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
 def plot_densMap(file_name, cordinate_matrix, cord_arr, sigma_pow):
@@ -32,7 +28,7 @@ def plot_densMap(file_name, cordinate_matrix, cord_arr, sigma_pow):
     np.save("../data/dens/{0}/{1}".format(sigma_pow, file_name), kernel.T)
 
 
-def batch_processing(input_dirc, sigma_pow_lst):
+def batch_processing(args):
     def read_csv(file_path):
         data_lst = []
         with open(file_path, "r") as f:
@@ -43,11 +39,11 @@ def batch_processing(input_dirc, sigma_pow_lst):
         return np.array(data_lst).astype(np.int64)
 
 
-    if not(os.path.isdir(input_dirc)):
+    if not(os.path.isdir(args.cord_dirc)):
         logger.error("Error: Do not exist directory !")
         sys.exit(1)
 
-    file_lst = os.listdir(input_dirc)
+    file_lst = os.listdir(args.cord_dirc)
     pattern = r"^(?!._).*(.csv)$"
     repattern = re.compile(pattern)
     logger.debug("Number of total file: {0}".format(len(file_lst)))
@@ -57,12 +53,12 @@ def batch_processing(input_dirc, sigma_pow_lst):
     for i in range(width):
         for j in range(height):
             cordinate_matrix[i][j] = [i, j]
-    for sigma_pow in sigma_pow_lst:
+    for sigma_pow in args.sigma_pow_lst:
         logger.debug("sigma pow: {0}".format(sigma_pow))
         fileNum = 0
         for file_name in file_lst:
             if re.search(repattern, file_name):
-                file_path = input_dirc + file_name
+                file_path = args.cord_dirc + file_name
                 logger.debug("Number: {0}, File name: {1}".format(fileNum, file_path))
                 cord_arr = read_csv(file_path)
                 plot_densMap(file_name, cordinate_matrix, cord_arr, sigma_pow)
@@ -70,8 +66,35 @@ def batch_processing(input_dirc, sigma_pow_lst):
     logger.debug("End: batch processing")
 
 
+def cord2dens_parse():
+    parser = argparse.ArgumentParser(
+        prog="cord2dens.py",
+        usage="calculate density map by input coordinate and several sigma power",
+        description="description",
+        epilog="end",
+        add_help=True
+    )
+
+    # Data Argment
+    parser.add_argument("--cord_dirc", type=str,
+                        default="/data/sakka/image")
+
+    # Parameter Argument
+    parser.add_argument("--sigma_pow_lst", type=list, default=[8, 10, 15, 20, 25])
+
+    args = parser.parse_args()
+
+    return args
+
+
 if __name__ == "__main__":
-    input_dirc = input("Input directory path: ")
-    logger.debug("input directory: {0}".format(input_dirc))
-    sigma_pow_lst = [8, 10, 15, 20, 25]
-    batch_processing(input_dirc, sigma_pow_lst)
+    # set logger
+    logs_path = "/Users/sakka/cnn_by_density_map/logs/cord2dens.log"
+    logging.basicConfig(filename=logs_path,
+                        level=logging.DEBUG,
+                        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+    # set argument
+    args = cord2dens_parse()
+    logger.debug("Running with args: {0}".format(args))
+
+    batch_processing(args)

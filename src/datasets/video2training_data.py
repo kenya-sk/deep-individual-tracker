@@ -42,7 +42,7 @@ class Motion:
     def run(self):
         self.video = cv2.VideoCapture(self.input_file_path)
         if not(self.video.isOpened()):
-            logger.error("Error: Can not read movie file")
+            logger.error("Error: Can not read video file")
             sys.exit(1)
 
         # processing of initial frame
@@ -128,9 +128,9 @@ class Motion:
         np.save("{0}/{1}.npy".format(self.save_answer_label_dirc, self.frame_num), kernel.T)
 
 
-def movie2train_parse():
+def video2train_parse():
     parser = argparse.ArgumentParser(
-        prog="movie2training_data.py",
+        prog="video2training_data.py",
         usage="create training data at regular intarval",
         description="description",
         epilog="end",
@@ -139,7 +139,7 @@ def movie2train_parse():
 
     # Data Argment
     parser.add_argument("--input_file_path", type=str,
-                        default="/data/sakka/movie/201704210900.mp4")
+                        default="/data/sakka/video/201704210900.mp4")
 
     # Parameter Argument
     parser.add_argument("--interval", type=int,
@@ -163,10 +163,14 @@ def movie2train_parse():
 
 
 if __name__ == "__main__":
-    logs_path = "/Users/sakka/cnn_by_density_map/logs/movie2training_data.log"
+    # set logger
+    logs_path = "/Users/sakka/cnn_by_density_map/logs/video2training_data.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
-    args = movie2train_parse()
+
+    # set argument
+    args = video2train_parse()
     logger.debug("Running with args: {0}".format(args))
+
     Motion(args).run()

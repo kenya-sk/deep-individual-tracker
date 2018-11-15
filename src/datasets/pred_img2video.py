@@ -11,19 +11,16 @@ from tqdm import tqdm
 
 
 logger = logging.getLogger(__name__)
-logs_path = "/Users/sakka/cnn_by_density_map/logs/pred_image2movie.log"
-logging.basicConfig(filename=logs_path,
-                    level=logging.DEBUG,
-                    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
 
 
-def pred_image2movie(args):
+
+def pred_image2video(args):
     file_num = len(glob.glob("{0}/*.png".format(args.img_dirc)))
     fourcc = cv2.VideoWriter_fourcc("a", "v", "c", "1")
     fps = args.fps
     width = args.width
     height = args.height
-    out = cv2.VideoWriter(args.save_movie_path, int(fourcc), fps, (int(width), int(height)))
+    out = cv2.VideoWriter(args.save_video_path, int(fourcc), fps, (int(width), int(height)))
 
     for i in tqdm(range(1,file_num+1)):
         img = cv2.imread("{0}/{1}.png".format(args.img_dirc, i))
@@ -34,13 +31,13 @@ def pred_image2movie(args):
         out.write(img)
 
     cv2.destroyAllWindows()
-    logger.debug("SAVE: prediction movie (./{0})".format(args.save_movie_path))
+    logger.debug("SAVE: prediction video (./{0})".format(args.save_video_path))
 
 
-def img2movie_parse():
+def img2video_parse():
     parser = argparse.ArgumentParser(
-        prog="pred_image2movie.py",
-        usage="create movie to detect target object",
+        prog="pred_image2video.py",
+        usage="create video to detect target object",
         description="description",
         epilog="end",
         add_help=True
@@ -53,8 +50,8 @@ def img2movie_parse():
     parser.add_argument("--cord_dirc", type=str,
                         default="/data/sakka/estimation/cord",
                         help="input path of estimate cordinate direcory")
-    parser.add_argument("--save_movie_path", type=str,
-                        default="/data/sakka/movie/out.mp4")
+    parser.add_argument("--save_video_path", type=str,
+                        default="/data/sakka/video/out.mp4")
 
     # Parameter Argument
     parser.add_argument("--fps", type=int, default=30)
@@ -69,6 +66,14 @@ def img2movie_parse():
 
 
 if __name__ == "__main__":
+    # set logger
+    logs_path = "/Users/sakka/cnn_by_density_map/logs/pred_image2video.log"
+    logging.basicConfig(filename=logs_path,
+                        level=logging.DEBUG,
+                        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+
+    # set argument
     args = img2movie_parse()
     logger.debug("Running with args: {0}".format(args))
-    pred_image2movie(args)
+
+    pred_image2video(args)
