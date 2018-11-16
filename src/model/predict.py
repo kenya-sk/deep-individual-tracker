@@ -125,9 +125,12 @@ def video_predict(model, sess, args):
         # predict at regular interval (args.pred_interval)
         while (cap.isOpened()):
             ret, frame = cap.read()
-            frame_num += 1
-            if (frame_num%args.pred_interval == 0):
-                cnn_predict(model, sess, frame, frame_num, output_dirc, args)
+            if ret == True:
+                frame_num += 1
+                if (frame_num%args.pred_interval == 0):
+                    cnn_predict(model, sess, frame, frame_num, output_dirc, args)
+            else:
+                break
 
         logger.debug("DONE: {0}".format(video_path))
 
