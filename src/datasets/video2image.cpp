@@ -42,7 +42,6 @@ void video_to_image(string input_file_path, string output_dirc_path){
             output_file_path = output_dirc_path + std::to_string(frame_num) + ".png";
             cv::imwrite(output_file_path, frame);
             cout << "Saved image(frame number: " << frame_num << ")" << endl;
-            break;
         }
     }
 
