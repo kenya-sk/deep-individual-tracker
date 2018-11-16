@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import os
+import time
 import math
 import logging
 import sys
@@ -203,5 +204,16 @@ if __name__ == "__main__":
     # load prediction model
     cnn_model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
 
+    start = time.time()
+    # predict from image data
+    batch_predict(cnn_model, sess, args)
     # predict from video data
-    video_predict(cnn_model, sess, args)
+    #video_predict(cnn_model, sess, args)
+
+    elapsed_time = time.time() - start
+    elapsed_hour = int(elapsed_time/3600)
+    elapsed_min = int((elapsed_time - 3600*elapsed_hour)/60)
+    elapsed_sec = elapsed_time - elapsed_hour*3600 - elapsed_min*60
+
+    logger.debug("Elapsed Time: {0} [hour] {1}[min] {2}[sec]".format(
+        elapsed_hour, elapsed_min, elapsed_sec))
