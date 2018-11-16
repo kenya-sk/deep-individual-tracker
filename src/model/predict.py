@@ -18,13 +18,11 @@ from clustering import clustering
 
 logger = logging.getLogger(__name__)
 
+# ------------------------------- PRE PROCWSSING ----------------------------------
+index_h, index_w = get_masked_index("/data/sakka/image/mask.png")
+# --------------------------------------------------------------------------
 
 def cnn_predict(cnn_model, sess, img, frame_num, output_dirc, args):
-    
-    # ------------------------------- PRE PROCWSSING ----------------------------------
-    index_h, index_w = get_masked_index(args.mask_path)
-    # --------------------------------------------------------------------------
-
     # ------------------------------- PREDICT ----------------------------------
     label = np.zeros(args.original_img_size)
     masked_img = get_masked_data(img, args.mask_path)
