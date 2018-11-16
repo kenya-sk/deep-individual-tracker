@@ -133,6 +133,10 @@ def video_predict(model, sess, args):
                 break
 
         logger.debug("DONE: {0}".format(video_path))
+    
+    # finalize
+    cap.release()
+    cv2.destoryAllWindows()
 
 
 def make_pred_parse():
