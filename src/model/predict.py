@@ -106,7 +106,7 @@ def batch_predict(model, sess, args):
 def video_predict(model, sess, args):
     for time_idx in range(9, 17):
         output_dirc = "{0}/{1}/{2}".format(args.output_root_dirc, args.date, time_idx)
-        os.makedirs(output_dirc, exists_ok=True)
+        os.makedirs(output_dirc, exist_ok=True)
         os.makedirs("{0}/dens".format(output_dirc), exist_ok=True)
         os.makedirs("{0}/cord".format(output_dirc), exist_ok=True)
         video_path = "{0}/{1}/{2}{3:0>2d}00.mp4".format(args.input_video_dirc, args.date, args.date, time_idx)
