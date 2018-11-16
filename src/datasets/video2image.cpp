@@ -5,9 +5,12 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-using namespace std;
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
 
-void video_to_image(std::string input_file_path, std::string output_dirc_path){
+void video_to_image(string input_file_path, string output_dirc_path){
     cv::VideoCapture capture(input_file_path);
     if(!capture.isOpened()){
         cout << "Error: can not open video file." << endl;
@@ -36,7 +39,7 @@ void video_to_image(std::string input_file_path, std::string output_dirc_path){
         frame_num++;
 
         if(frame_num % interval == 0){
-            output_file_path = output_dirc_path + to_string(frame_num) + ".png";
+            output_file_path = output_dirc_path + std::to_string(frame_num) + ".png";
             cv::imwrite(output_file_path, frame);
             cout << "Saved image(frame number: " << frame_num << ")" << endl;
             break;
