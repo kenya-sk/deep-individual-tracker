@@ -157,7 +157,7 @@ def video2train_parse():
     parser.add_argument("--save_answer_label_dirc", type=str,
                         default="/Users/sakka/cnn_by_density_map/image/test_data/dens",
                         help="directory of save answer label (density map)")
-    parser.add_argument("--seve_data_prefix", type=str,
+    parser.add_argument("--seve_file_prefix", type=str,
                         default="201810310900",
                         help="put in front of the file name. ex) (--save_data_prefix)_1.png")
 
