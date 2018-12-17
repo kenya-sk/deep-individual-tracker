@@ -37,6 +37,7 @@ class Motion:
         self.save_truth_img_dirc = args.save_truth_img_dirc
         self.save_truth_cord_dirc = args.save_truth_cord_dirc
         self.save_answer_label_dirc = args.save_answer_label_dirc
+        self.save_file_prefix = args.save_file_prefix
 
     # main method
     def run(self):
@@ -69,7 +70,7 @@ class Motion:
             elif key == P_KEY:
                 self.interval = 0
                 # save original image
-                cv2.imwrite("{0}/{1}.png".format(self.original_img_dirc, self.frame_num), self.frame)
+                cv2.imwrite("{0}/{1}_{2}.png".format(self.original_img_dirc, self.save_file_prefix, self.frame_num), self.frame)
             elif key == S_KEY:
                 self.save_data()
                 self.interval = INTERVAL
@@ -107,8 +108,8 @@ class Motion:
         if self.features is None:
             logger.error("Error: Not select feature point")
         else:
-            cv2.imwrite("{0}/{1}.png".format(self.save_truth_img_dirc, self.frame_num), self.frame)
-            np.savetxt("{0}/{1}.csv".format(self.save_truth_cord_dirc, self.frame_num), self.features, delimiter=",", fmt="%d")
+            cv2.imwrite("{0}/{1}_{2}.png".format(self.save_truth_img_dirc, self.save_file_prefix, self.frame_num), self.frame)
+            np.savetxt("{0}/{1}_{2}.csv".format(self.save_truth_cord_dirc, self.save_file_prefix, self.frame_num), self.features, delimiter=",", fmt="%d")
             self.gauss_kernel(sigma_pow=25)
             logger.debug("save data frame number: {0}".format(self.frame_num))
         return
@@ -125,7 +126,7 @@ class Motion:
             norm = pow_matrix[:, :, 0] + pow_matrix[:, :, 1]
             kernel += np.exp(-norm/ (2 * sigma_pow))
 
-        np.save("{0}/{1}.npy".format(self.save_answer_label_dirc, self.frame_num), kernel.T)
+        np.save("{0}/{1}_{2}.npy".format(self.save_answer_label_dirc, self.save_file_prefix, self.frame_num), kernel.T)
 
 
 def video2train_parse():
@@ -139,23 +140,26 @@ def video2train_parse():
 
     # Data Argment
     parser.add_argument("--input_file_path", type=str,
-                        default="/data/sakka/video/201704210900.mp4")
+                        default="/Users/sakka/cnn_anomaly_detection/video/20181031/201810310900.mp4")
 
     # Parameter Argument
     parser.add_argument("--interval", type=int,
                         default=1, help="training data interval")
     parser.add_argument("--original_img_dirc", type=str,
-                        default="/data/sakka/image/original",
+                        default="/Users/sakka/cnn_by_density_map/image/test_data/image/original",
                         help="directory of raw image")
     parser.add_argument("--save_truth_img_dirc", type=str,
-                        default="/data/sakka/image/grandTruth",
+                        default="/Users/sakka/cnn_by_density_map/image/test_data/image/truth",
                         help="directory of save annotation image")
     parser.add_argument("--save_truth_cord_dirc", type=str,
-                        default="/data/sakka/data/cord",
+                        default="/Users/sakka/cnn_by_density_map/image/test_data/cord",
                         help="directory of save ground truth cordinate")
     parser.add_argument("--save_answer_label_dirc", type=str,
-                        default="/data/sakka/data/dens",
+                        default="/Users/sakka/cnn_by_density_map/image/test_data/dens",
                         help="directory of save answer label (density map)")
+    parser.add_argument("--seve_data_prefix", type=str,
+                        default="201810310900",
+                        help="put in front of the file name. ex) (--save_data_prefix)_1.png")
 
     args = parser.parse_args()
 
