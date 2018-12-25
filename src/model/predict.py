@@ -180,10 +180,14 @@ def make_pred_parse():
                         default=2500, help="batch size for each epoch")
     parser.add_argument("--save_map", type=bool,
                         default=False, help="save pred density map (True of False)")
+    # parser.add_argument("--band_width", type=int,
+    #                     default=25, help="band width of Mean-Shift Clustering")
+    # parser.add_argument("--cluster_thresh", type=float,
+    #                     default=0.4, help="threshold to be subjected to clustering")
     parser.add_argument("--band_width", type=int,
-                        default=25, help="band width of Mean-Shift Clustering")
+                        default=10, help="band width of Mean-Shift Clustering")
     parser.add_argument("--cluster_thresh", type=float,
-                        default=0.4, help="threshold to be subjected to clustering")
+                        default=0.5, help="threshold to be subjected to clustering")
 
     args = parser.parse_args()
 
