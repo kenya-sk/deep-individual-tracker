@@ -118,8 +118,6 @@ if __name__ == "__main__":
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
-    # input_img_dirc = input("input image directory path: ")
-    # logger.debug("input image directory: {}".format(input_img_dirc))
 
     args = image2train_parse()
     logger.debug("Running with args: {}".format(args))
