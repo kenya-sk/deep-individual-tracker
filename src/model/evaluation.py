@@ -5,8 +5,9 @@ import logging
 import numpy as np
 import pandas as pd
 import csv
+import glob
 import argparse
-from tqdm import trange
+from tqdm import tqdm
 from scipy import optimize
 
 from cnn_util import eval_metrics, pretty_print, get_masked_index
@@ -105,14 +106,16 @@ def evaluate(args):
     """
     evaluate by accuracy, precision, recall, f measure
     """
+    abs_path_lst = glob.glob("{0}/*.csv".format(args.pred_centroid_dirc))
     for skip in args.skip_width_lst:
         true_positive_lst = []
         false_positive_lst = []
         false_negative_lst = []
         sample_num_lst = []
-        for file_num in trange(1, 85):
+        for path in tqdm(abs_path_lst):
+            file_name = path.split("/")[-1]
             centroid_arr = np.loadtxt(
-                "{0}/{1}.csv".format(args.pred_centroid_dirc, file_num), delimiter=",")
+                "{0}/{1}".format(args.pred_centroid_dirc, file_name), delimiter=",")
             if centroid_arr.shape[0] == 0:
                 logger.debug("file num: {0}, Not found point of centroid. Accuracy is 0.0".format(file_num))
                 true_positive_lst.append(0)
@@ -121,7 +124,7 @@ def evaluate(args):
                 sample_num_lst.append(1)
             else:
                 ground_truth_arr = get_ground_truth(
-                    "{0}/{1}.csv".format(args.ground_truth_dirc, file_num), args.mask_path)
+                    "{0}/{1}".format(args.ground_truth_dirc, file_name), args.mask_path)
                 true_pos, false_pos, false_neg, n = eval_detection(
                     centroid_arr, ground_truth_arr, args.dist_thresh)
                 true_positive_lst.append(true_pos)
@@ -131,8 +134,8 @@ def evaluate(args):
                 
                 # calculate evaluation metrics
                 accuracy, precision, recall, f_measure = eval_metrics(true_pos, false_pos, false_neg, n)
-                logger.debug("file_num: {0}, accuracy: {1}, precision: {2}, recall: {3}, f-measure: {4}".format(
-                    file_num, accuracy, precision, recall, f_measure))
+                logger.debug("file_name: {0}, accuracy: {1}, precision: {2}, recall: {3}, f-measure: {4}".format(
+                    file_name, accuracy, precision, recall, f_measure))
 
         pretty_print(true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=skip)
 
@@ -150,11 +153,11 @@ def make_eval_parse():
 
     # Data Argment
     parser.add_argument("--pred_centroid_dirc", type=str,
-                        default="/data/sakka/estimation/model_201804151507/test")
+                        default="/Users/sakka/cnn_by_density_map/test_data/pred/cord")
     parser.add_argument("--ground_truth_dirc", type=str,
-                        default="/data/sakka/cord/test")
+                        default="/Users/sakka/cnn_by_density_map/test_data/answer/cord")
     parser.add_argument("--mask_path", type=str,
-                        default="/data/sakka/image/mask.png")
+                        default="/Users/sakka/cnn_by_density_map/image/mask.png")
 
     # Parameter Argument
     parser.add_argument("--dist_thresh", type=int,
@@ -169,7 +172,7 @@ def make_eval_parse():
 
 
 if __name__ == "__main__":
-    logs_path = "/home/sakka/cnn_by_density_map/logs/evaluation.log"
+    logs_path = "/Users/sakka/cnn_by_density_map/logs/evaluation.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
