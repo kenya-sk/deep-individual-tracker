@@ -5,6 +5,7 @@ import os.path
 import sys
 import logging
 import glob
+import argparse
 import numpy as np
 import cv2
 
@@ -21,8 +22,9 @@ logger = logging.getLogger(__name__)
 
 class ImgMotion(video2training_data.Motion):
     # constructor
-    def __init__(self, input_file_path):
-        super().__init__(input_file_path)
+    def __init__(self, args, input_file_path):
+        super().__init__(args)
+        self.input_file_path = input_file_path
 
     def run(self):
         self.frame = cv2.imread(self.input_file_path)
@@ -56,20 +58,59 @@ class ImgMotion(video2training_data.Motion):
         return self.input_file_path.split("/")[-1].split(".")[0]
 
 
-def batch_processing(input_img_dirc):
-    if not(os.path.isdir(input_img_dirc)):
+def batch_processing(args):
+    if not(os.path.isdir(args.input_img_dirc)):
         sys.stderr.write("Error: Do not exist directory")
         sys.exit(1)
 
-    file_lst = glob.glob("{0}/*.png".format(input_img_dirc))
+    file_lst = glob.glob("{0}/*.png".format(args.input_img_dirc))
     logger.debug("Number of total file: {0}".format(len(file_lst)))
 
     for file_num, file_name in enumerate(file_lst):
         logger.debug("File name: {0}, Number: {1}/{2}".format(file_name, file_num+1, len(file_lst)))
-        stop_making = ImgMotion(file_name).run()
+        stop_making = ImgMotion(args, file_name).run()
         if stop_making:
             logger.debug("STOP: making datasets")
             break
+
+
+def image2train_parse():
+    parser = argparse.ArgumentParser(
+        prog="image2training_data.py",
+        usage="create training data from image",
+        description="description",
+        epilog="end",
+        add_help=True
+    )
+
+    # Data Argment
+    parser.add_argument("--input_img_dirc", type=str,
+                        default="/Users/sakka/cnn_by_density_map/test_data/image/original")
+    parser.add_argument("--input_file_path", type=str,
+                        default="None")
+
+    # Parameter Argument
+    parser.add_argument("--interval", type=int,
+                        default=None, help="training data interval")
+    parser.add_argument("--original_img_dirc", type=str,
+                        default=None,
+                        help="directory of raw image")
+    parser.add_argument("--save_truth_img_dirc", type=str,
+                        default="/Users/sakka/cnn_by_density_map/test_data/image/truth",
+                        help="directory of save annotation image")
+    parser.add_argument("--save_truth_cord_dirc", type=str,
+                        default="/Users/sakka/cnn_by_density_map/test_data/cord",
+                        help="directory of save ground truth cordinate")
+    parser.add_argument("--save_answer_label_dirc", type=str,
+                        default="/Users/sakka/cnn_by_density_map/test_data/dens",
+                        help="directory of save answer label (density map)")
+    parser.add_argument("--save_file_prefix", type=str,
+                        default="label",
+                        help="put in front of the file name. ex) (--save_data_prefix)_1.png")
+
+    args = parser.parse_args()
+
+    return args
 
 
 if __name__ == "__main__":
@@ -77,6 +118,9 @@ if __name__ == "__main__":
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
-    input_img_dirc = input("input image directory path: ")
-    logger.debug("input image directory: {}".format(input_img_dirc))
-    batch_processing(input_img_dirc)
+    # input_img_dirc = input("input image directory path: ")
+    # logger.debug("input image directory: {}".format(input_img_dirc))
+
+    args = image2train_parse()
+    logger.debug("Running with args: {}".format(args))
+    batch_processing(args)
