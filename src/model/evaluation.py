@@ -153,15 +153,15 @@ def make_eval_parse():
 
     # Data Argment
     parser.add_argument("--pred_centroid_dirc", type=str,
-                        default="/Users/sakka/cnn_by_density_map/test_data/pred/cord")
+                        default="/Users/sakka/cnn_by_density_map/data/eval_image/pred/cord2")
     parser.add_argument("--ground_truth_dirc", type=str,
-                        default="/Users/sakka/cnn_by_density_map/test_data/answer/cord")
+                        default="/Users/sakka/cnn_by_density_map/data/eval_image/ground/")
     parser.add_argument("--mask_path", type=str,
                         default="/Users/sakka/cnn_by_density_map/image/mask.png")
 
     # Parameter Argument
     parser.add_argument("--dist_thresh", type=int,
-                        default=25, help="threshold of detect or not")
+                        default=15, help="threshold of detect or not")
     parser.add_argument("--skip_width_lst", type=list,
                         default=[15], help="test by each skip width")
 

@@ -105,17 +105,17 @@ def make_clustering_parse():
 
     # Data Argment
     parser.add_argument("--dens_map_path", type=str,
-                        default="/data/sakka/estimation/20170421/9/dens/*.npy")
+                        default="/Users/sakka/cnn_by_density_map/data/eval_image/pred/dens/*.npy")
     parser.add_argument("--out_clustering_dirc", type=str,
-                        default="/data/sakka/estimation/20170421/9/cord")
+                        default="/Users/sakka/cnn_by_density_map/data/eval_image/pred/cord2")
     parser.add_argument("--out_pred_box_dirc", type=str,
                         default="/data/sakka/image/estBox")
 
     # Parameter Argument
     parser.add_argument("--band_width", type=int,
-                        default=15, help="band width of clustering")
+                        default=10, help="band width of clustering")
     parser.add_argument("--thresh", type=float,
-                        default=0.4, help="threshold to be subjected to clustering")
+                        default=0.45, help="threshold to be subjected to clustering")
 
     args = parser.parse_args()
 
@@ -123,7 +123,7 @@ def make_clustering_parse():
 
 
 if __name__ == "__main__":
-    logs_path = "/home/sakka/cnn_by_density_map/logs/clustering.log"
+    logs_path = "/Users/sakka/cnn_by_density_map/logs/clustering.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
