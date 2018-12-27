@@ -113,7 +113,7 @@ def make_clustering_parse():
 
     # Parameter Argument
     parser.add_argument("--band_width", type=int,
-                        default=25, help="band width of clustering")
+                        default=15, help="band width of clustering")
     parser.add_argument("--thresh", type=float,
                         default=0.4, help="threshold to be subjected to clustering")
 
