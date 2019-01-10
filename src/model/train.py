@@ -200,7 +200,8 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                     train_diff = sess.run(cnn_model.diff, feed_dict={
                         cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, local_size, local_size, 3),
                         cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
-                        cnn_model.is_training: True
+                        cnn_model.is_training: True,
+                        cnn_model.keep_prob: 0.5
                         })
 
                     train_loss += np.mean(train_diff)
@@ -208,7 +209,8 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                     train_summary, _ = sess.run([merged, cnn_model.learning_step],feed_dict={
                         cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, local_size, local_size, 3),
                         cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
-                        cnn_model.is_training: True
+                        cnn_model.is_training: True,
+                        cnn_model.keep_prob: 0.5
                         })
 
                     # hard negative mining
@@ -238,7 +240,8 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                     tmp_val_loss = sess.run(cnn_model.loss, feed_dict={
                         cnn_model.X: X_val_local[val_start_index:val_end_index].reshape(-1, local_size, local_size, 3),
                         cnn_model.y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
-                        cnn_model.is_training:False
+                        cnn_model.is_training: False,
+                        cnn_model.keep_prob: 1.0
                         })
                     val_loss += tmp_val_loss
             val_loss_lst.append(val_loss/(len(X_val)*val_n_batches))
@@ -255,7 +258,10 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                 not_improved_count += 1
             else:
                 # learning is going well
-                not_improved_count += 0
+                not_improved_count = 0
+                # save best model
+                saver.save(sess, "{0}/{1}/model.ckpt".format(args.out_model_dirc, learning_date))
+
                 
             if not_improved_count >= args.stop_count:
                 logger.debug("Early stopping due to no improvement after {0} epochs.".format(args.stop_epoch))

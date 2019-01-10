@@ -19,6 +19,9 @@ class CNN_model(object):
             # status: True(lerning) or False(test)
             with tf.name_scope("is_training"):
                 self.is_training = tf.placeholder(tf.bool, name="is_training")
+            # dropout rate 
+            with tf.name_scope("keep_prob"):
+                self.keep_prob = tensorflow.placeholder(tf.float32)
 
         # first layer
         # convlution -> Leaky ReLU -> max pooling
@@ -90,6 +93,8 @@ class CNN_model(object):
             with tf.name_scope("flat4"):
                 h_fc4 = tf.nn.leaky_relu(fc4_bn)
                 self.__variable_summaries(h_fc4)
+            with tf.name_scope("drop4"):
+                h_fc4_drop = tf.nn.dropout(h_fc4, keep_prob=self.keep_prob)
 
         # fifth layer
         # fully connected layer
@@ -99,11 +104,13 @@ class CNN_model(object):
                 W_fc5 = self.__weight_variable([1000, 400])
                 self.__variable_summaries(W_fc5)
             with tf.name_scope("batchNorm5"):
-                fc5 = tf.matmul(h_fc4, W_fc5)
+                fc5 = tf.matmul(h_fc4_drop, W_fc5)
                 fc5_bn = self.__batch_norm(fc5, [0], 400, self.is_training)
             with tf.name_scope("flat5"):
                 h_fc5 = tf.nn.leaky_relu(fc5_bn)
                 self.__variable_summaries(h_fc5)
+            with tf.name_scope("drop5"):
+                h_fc5_drop = tf.nn.dropout(h_fc5, keep_prob=self.keep_prob)
 
         # sixth layer
         # fully connected layer
@@ -113,11 +120,13 @@ class CNN_model(object):
                 W_fc6 = self.__weight_variable([400, 324])
                 self.__variable_summaries(W_fc6)
             with tf.name_scope("batchNorm6"):
-                fc6 = tf.matmul(h_fc5, W_fc6)
+                fc6 = tf.matmul(h_fc5_drop, W_fc6)
                 fc6_bn = self.__batch_norm(fc6, [0], 324, self.is_training)
             with tf.name_scope("flat6"):
                 h_fc6 = tf.nn.leaky_relu(fc6_bn)
                 self.__variable_summaries(h_fc6)
+            with tf.name_scope("drop6"):
+                h_fc6_drop = tf.nn.dropout(h_fc6, keep_prob=self.keep_prob)
 
         # seven layer
         # fully connected layer
@@ -130,7 +139,7 @@ class CNN_model(object):
                 b_fc7 = self.__bias_variable([1])
                 self.__variable_summaries(b_fc7)
             with tf.name_scope("flat7"):
-                self.y = tf.nn.leaky_relu(tf.matmul(h_fc6, W_fc7) + b_fc7)
+                self.y = tf.nn.leaky_relu(tf.matmul(h_fc6_drop, W_fc7) + b_fc7)
                 self.__variable_summaries(self.y)
 
         # output
