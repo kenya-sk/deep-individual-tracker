@@ -21,7 +21,7 @@ class CNN_model(object):
                 self.is_training = tf.placeholder(tf.bool, name="is_training")
             # dropout rate 
             with tf.name_scope("keep_prob"):
-                self.keep_prob = tensorflow.placeholder(tf.float32)
+                self.keep_prob = tf.placeholder(tf.float32)
 
         # first layer
         # convlution -> Leaky ReLU -> max pooling
