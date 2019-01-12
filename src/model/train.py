@@ -232,16 +232,16 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                     val_start_index = val_batch * batch_size
                     val_end_index = val_start_index + batch_size
 
-                    tmp_val_loss = sess.run(cnn_model.loss, feed_dict={
+                    val_loss_summary, _ = sess.run([merged, cnn_model.loss], feed_dict={
                         cnn_model.X: X_val_local[val_start_index:val_end_index].reshape(-1, local_size, local_size, 3),
                         cnn_model.y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
                         cnn_model.is_training: False,
                         cnn_model.keep_prob: 1.0
                         })
-                    val_loss += tmp_val_loss
+                    val_loss += val_loss_summary.value
 
             #record loss data
-            val_writer.add_summary(tmp_val_loss, train_step)
+            val_writer.add_summary(val_loss_summary, train_step)
             val_loss_lst.append(val_loss/(len(X_val)*val_n_batches))
 
             logger.debug("epoch: {0}".format(epoch+1))
