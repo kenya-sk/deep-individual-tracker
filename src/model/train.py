@@ -152,21 +152,21 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
             logger.debug("************************************************")
             logger.debug("elapsed time: {0:.3f} [sec]".format(time.time() - start_time))
             train_loss = 0.0
-            for train_i in trange(len(X_train), desc="training data"):
+            for train_idx in trange(len(X_train), desc="training data"):
                 # load traing dataset
                 # data augmentation (horizontal flip)
                 flip_prob = args.flip_prob
                 if np.random.rand() < flip_prob:
                     X_train_local, y_train_local = \
-                            get_local_data(X_train[train_i][:,::-1,:], 
-                                           y_train[train_i][:,::-1],
+                            get_local_data(X_train[train_idx][:,::-1,:], 
+                                           y_train[train_idx][:,::-1],
                                            flip_index_h,
                                            flip_index_w, 
                                            local_img_size=local_size)
                 else:
                     X_train_local, y_train_local = \
-                            get_local_data(X_train[train_i], 
-                                           y_train[train_i], 
+                            get_local_data(X_train[train_idx], 
+                                           y_train[train_idx], 
                                            index_h, 
                                            index_w, 
                                            local_img_size=local_size)
@@ -223,8 +223,8 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
 
             # validation
             val_loss = 0.0
-            for val_i in trange(len(X_val), desc="validation data"):
-                X_val_local, y_val_local = get_local_data(X_val[val_i], y_val[val_i],
+            for val_idx in trange(len(X_val), desc="validation data"):
+                X_val_local, y_val_local = get_local_data(X_val[val_idx], y_val[val_idx],
                                                           index_h, index_w, 
                                                           local_img_size=local_size)
                 val_n_batches = int(len(X_val_local) / batch_size)
@@ -232,13 +232,13 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                     val_start_index = val_batch * batch_size
                     val_end_index = val_start_index + batch_size
 
-                    val_loss_summary, _ = sess.run([merged, cnn_model.loss], feed_dict={
+                    val_loss_summary, val_batch_loss = sess.run([merged, cnn_model.loss], feed_dict={
                         cnn_model.X: X_val_local[val_start_index:val_end_index].reshape(-1, local_size, local_size, 3),
                         cnn_model.y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
                         cnn_model.is_training: False,
                         cnn_model.keep_prob: 1.0
                         })
-                    val_loss += val_loss_summary.value
+                    val_loss += val_batch_loss
 
             #record loss data
             val_writer.add_summary(val_loss_summary, train_step)
@@ -275,8 +275,8 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
         # -------------------------------- TEST ------------------------------------
         logger.debug("START: test")
         test_loss = 0.0
-        for test_i in range(len(X_test)):
-            X_test_local, y_test_local = get_local_data(X_test[test_i], y_test[test_i], 
+        for test_idx in trange(len(X_test), desc="test data"):
+            X_test_local, y_test_local = get_local_data(X_test[test_idx], y_test[test_idx], 
                                                         index_h, index_w, 
                                                         local_img_size=local_size)
             test_n_batches = int(len(X_test_local) / batch_size)
@@ -285,16 +285,17 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                 test_start_index = test_batch * batch_size
                 test_end_index = test_start_index + batch_size
 
-                test_summary, tmp_test_loss = sess.run([merged, cnn_model.loss], feed_dict={
+                test_summary, test_batch_loss = sess.run([merged, cnn_model.loss], feed_dict={
                     cnn_model.X: X_test_local[test_start_index:test_end_index].reshape(-1, local_size, local_size, 3),
                     cnn_model.y_: y_test_local[test_start_index:test_end_index].reshape(-1, 1),
                     cnn_model.is_training:False
                     })
                 test_writer.add_summary(test_summary, test_step)
-                test_loss += tmp_test_loss
+                test_loss += test_batch_loss
 
         logger.debug("test loss: {0}".format(test_loss/(len(X_test)*test_n_batches)))
         logger.debug("END: test")
+        # --------------------------------------------------------------------------
 
     # capture Ctrl + C
     except KeyboardInterrupt:
