@@ -23,7 +23,7 @@ from model import CNN_model
 logger = logging.getLogger(__name__)
 
 
-def load_data(args, test_size=0.2):
+def load_data(args):
     X = []
     y = []
     file_lst = glob.glob("{0}/*.png".format(args.input_image_dirc))
@@ -44,12 +44,12 @@ def load_data(args, test_size=0.2):
 
     X = np.array(X)
     y = np.array(y)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=args.test_size)
     return X_train, X_test, y_train, y_test
 
 
 def hard_negative_mining(X, y, loss):
-    #get index that error is greater than the threshold
+    # get index that error is greater than the threshold
     def hard_negative_index(loss, thresh):
         index = np.where(loss > thresh)[0]
         return index
@@ -86,7 +86,6 @@ def under_sampling(local_img_mat, density_arr, thresh):
 
 
 def cnn_learning(X_train, X_test, y_train, y_test, args):
-
     # -------------------------- PRE PROCESSING --------------------------------
     # start session
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(
@@ -240,7 +239,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                         })
                     val_loss += val_batch_loss
 
-            #record loss data
+            # record loss data
             val_writer.add_summary(val_loss_summary, train_step)
             val_loss_lst.append(val_loss/(len(X_val)*val_n_batches))
 
@@ -341,6 +340,7 @@ def make_learning_parse():
                         default=0.9, help="useing each GPU memory rate: 0.0-1.0")
 
     # Parameter Argument
+    parser.add_argument("--test_size", type=float, default=0.2)
     parser.add_argument("--local_img_size", type=int,
                         default=72, help="square local image size: > 0")
     parser.add_argument("--n_epochs", type=int,
@@ -369,5 +369,5 @@ if __name__ == "__main__":
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
     args = make_learning_parse()
     logger.debug("Running with args: {0}".format(args))
-    X_train, X_test, y_train, y_test = load_data(args, test_size=0.2)
+    X_train, X_test, y_train, y_test = load_data(args)
     cnn_learning(X_train, X_test, y_train, y_test, args)
