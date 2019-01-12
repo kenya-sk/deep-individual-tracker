@@ -137,7 +137,7 @@ def get_local_data(img, dens_map, index_h, index_w, local_img_size=72):
     """
 
     assert len(img.shape) == 3
-    # trim original image
+    # triming original image
     img = img[ANALYSIS_HEIGHT[0]:ANALYSIS_HEIGHT[1], ANALYSIS_WIDTH[0]:ANALYSIS_WIDTH[1]]
     height = img.shape[0]
     width = img.shape[1]

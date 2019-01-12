@@ -20,11 +20,6 @@ from sklearn.utils import shuffle
 from cnn_util import get_masked_data, get_masked_index, get_local_data
 from model import CNN_model
 
-
-ANALYSIS_HEIGHT = (0, 470)
-ANALYSIS_WIDTH = (0, 1280)
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -244,10 +239,11 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                         cnn_model.keep_prob: 1.0
                         })
                     val_loss += tmp_val_loss
-            val_loss_lst.append(val_loss/(len(X_val)*val_n_batches))
 
             #record loss data
-            val_writer.add_summary(val_loss_lst[-1], train_step)
+            val_writer.add_summary(tmp_val_loss, train_step)
+            val_loss_lst.append(val_loss/(len(X_val)*val_n_batches))
+
             logger.debug("epoch: {0}".format(epoch+1))
             logger.debug("train loss: {0}".format(train_loss/(len(X_train)*train_n_batches)))
             logger.debug("validation loss: {0}".format(val_loss_lst[epoch]))
@@ -307,11 +303,11 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
         saver.save(sess, "{0}/{1}/model.ckpt".format(args.out_model_dirc, learning_date))
     # --------------------------------------------------------------------------
 
-    # --------------------------- END PROCESSING -------------------------------
+    # ----------------------------- TERMINATE ---------------------------------
     train_writer.close()
     test_writer.close()
     sess.close()
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
 
 def make_learning_parse():
