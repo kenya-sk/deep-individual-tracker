@@ -345,7 +345,7 @@ def make_learning_parse():
     parser.add_argument("--n_epochs", type=int,
                         default=30, help="number of epoch: > 0")
     parser.add_argument("--batch_size", type=int,
-                        default=500, help="batch size of learning: > 0")
+                        default=512, help="batch size of learning: > 0")
     parser.add_argument("--min_epoch", type=int,
                         default=5, help="minimum learning epoch (not apply early stopping): > 0")
     parser.add_argument("--stop_count", type=int,
