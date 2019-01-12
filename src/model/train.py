@@ -223,7 +223,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
 
             # validation
             val_loss = 0.0
-            for val_i in range(len(X_val)):
+            for val_i in trange(len(X_val), desc="validation data"):
                 X_val_local, y_val_local = get_local_data(X_val[val_i], y_val[val_i],
                                                           index_h, index_w, 
                                                           local_img_size=local_size)
