@@ -154,8 +154,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
             for train_idx in trange(len(X_train), desc="training data"):
                 # load traing dataset
                 # data augmentation (horizontal flip)
-                flip_prob = args.flip_prob
-                if np.random.rand() < flip_prob:
+                if np.random.rand() < args.flip_prob:
                     X_train_local, y_train_local = \
                             get_local_data(X_train[train_idx][:,::-1,:], 
                                            y_train[train_idx][:,::-1],
@@ -363,7 +362,7 @@ def make_learning_parse():
 
 
 if __name__ == "__main__":
-    logs_path = "/home/sakka/cnn_by_density_map/logs/cnn_learning.log"
+    logs_path = "/home/sakka/cnn_by_density_map/logs/train.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
