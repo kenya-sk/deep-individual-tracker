@@ -104,7 +104,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     date = datetime.now()
     learning_date = "{0}_{1}_{2}_{3}_{4}".format(date.year, date.month, date.day, date.hour, date.minute)
     log_dirc = "{0}/{1}".format(args.root_log_dirc, learning_date)
-    logeer.debug("Training date: {0}".format(learning_date))
+    logger.debug("Training date: {0}".format(learning_date))
 
     # delete the specified directory if it exists, recreate it
     if tf.gfile.Exists(log_dirc):
