@@ -4,7 +4,7 @@ This repository performs individual detection in consideration of overlap by usi
 
 ## Network
 This model consists of three convolution layers (conv1-conv3), two max-pooling layers (pool1 and pool2), and four fully connected layers (fc1-fc4). Conv1 has 7×7×3 filters, conv2 has 7×7×32 filters and conv3 has 5×5× 32 filters. Max pooling layers with 2×2 kernel size are used after conv1 and conv2. Batch normalization was applied to conv1-con3 and fc1-fc3. The activate function was applied after every convolutional layer and fully connected layer by Leaky ReLU.
-<img src="./image/demo/model.png" alt="model">
+<img src="./image/demo/model.png" alt="model" height= 400 vspace="25" hspace="70">
 
 ## Getting Started
 ### Install Required Packages
