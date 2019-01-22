@@ -5,3 +5,4 @@ tqdm==4.23.3
 numpy==1.13.3
 scipy==0.19.1
 scikit_learn==0.20.2
+opencv==3.4.2
