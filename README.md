@@ -1,5 +1,5 @@
 ## Introduction
-This repository performs individual detection in consideration of overlap by using CNN in pixel units.
+This repository performs individual detection in consideration of overlap by using CNN in each pixel.
 
 
 ## Network
