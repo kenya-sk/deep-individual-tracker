@@ -12,51 +12,55 @@ First ensure that you have installed the required packages (requirements.txt).
 
 
 ## Training
-To create learning data in the following procedure.
+To create training data in the following procedure. Each file is included in the directory (src/datasets).
 1. To get images from movie. To input the path of movie file and the path of output image file.
 ```
-make
+my_make.sh
 ```
 or
 ```
-g++ -o movie2image.cpp `pkg-config --cflags opencv` `pkg-config --libs opencv`
+g++ -o video2image video2image.cpp -std=c++11 `pkg-config --cflags opencv` `pkg-config --libs opencv`
 ```
 
-2. By clicking the image, labeling is done and learning data is created. To input the path of image file.
+2. By clicking the image, labeling is done and training data is created. To input the path of image file.
 ```
 python3 image2trainingData.py
 ```
 
-3. If you want learning data of arbitrary frames, to create it by the following procedure. To input the path of movie file. To press "P" when the desired frame appear.
+3. If you want training data of arbitrary frames, to create it by the following procedure.  
+To input the path of video file. To press "P" when the desired frame appear. To press "S" when you finish selecting feature point and want to save. To press "Q" when you want to finish creating training data.
 ```
-python3 movie2trainingData.py
+python3 video2training_data.py
 ```
+
 
 ## Training Your Own Model
-To train your own models, follow these steps.  
+To train your own models, follow these steps. Each file is included in the directory (src/model).  
+The following technique was used to train the model.
+- Down Sampling
+- Early Stopping
+- Batch Normalization
+- Data Augmentation (Horizontal flip)
+- Hard Negative Mining
 
 ### Training
-To set the path of learning image and path of answer data(density map).
+To set the path of training/validation image and path of answer data(density map).  
+Each parameter can be set with argument.
 ```
-python3 cnn_pixel.py
-```
-
-### Estimation
-To set path of learned model. And, set estimation value to True. It is argument of main function.
-```
-python3 cnn_pixel.py
+python3 train.py
 ```
 
-### Clustering
-To set path of estimation file (numpy file) and path of image.
+### Prediction
+To perform individual detection with the trained model.  
+Each parameter can be set with argument.
 ```
-python3 clustering.py
+python3 predict.py
 ```
+
 
 ### Evaluation
-To set path of estimation file and path of groundTruth file.
-```
-python3 accuracy.py
-```
+The evaluation metrics of individual detection are accuracy, recall, precision, and F-measure. The position of the individual predicted by CNN and the position of the answer label were associated by using the Hungarian algorithm. True Positive defined ad If the matching distance was less than or equal to the threshold value (default is 15).
 
-->
+```
+python3 evaluation.py
+```
