@@ -56,7 +56,8 @@ def cnn_predict(cnn_model, sess, img, frame_num, output_dirc, args):
         pred_arr = sess.run(cnn_model.y, feed_dict={
                                     cnn_model.X: X_skip,
                                     cnn_model.y_: y_skip,
-                                    cnn_model.is_training: False}).reshape(pred_batch_size)
+                                    cnn_model.is_training: False,
+                                    cnn_model.keep_prob: 1.0}).reshape(pred_batch_size)
         logger.debug("DONE: batch {0}/{1}".format(batch+1, pred_n_batches))
 
         for batch_idx in range(pred_batch_size):
