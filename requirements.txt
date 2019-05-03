@@ -1,5 +1,5 @@
 matplotlib==2.0.2
-tensorflow==1.13.1
+tensorflow==1.4.0
 pandas==0.21.1
 tqdm==4.23.3
 numpy==1.13.3
