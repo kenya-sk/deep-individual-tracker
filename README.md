@@ -14,8 +14,27 @@ First ensure that you have installed the required packages (requirements.txt).
 Files required for creating datasets are under "./src/datasets".
 
 ```
-my_make.sh
-video2
+1. my_make.sh
+    To remove the file of the previous version, 
+    and create a new file according to Makefile.
+
+2. video2img.cpp
+    Extract images from the video at a regular interval and save.
+
+3. img2train.py
+    Load the image and click on the target to make an answer label (density map).
+
+4. video2train.py
+    Load the video and click on the target to make an answer label (density map).  
+    The output results are the same, but 1-3 processing can be done directly the video.
+
+5. cord2dens.py
+    It receives coordinates and plots a density map with arbitrary kernel width.  
+    (For testing when finding an appropriate kernel width.)
+
+6. pred2video.py
+    To convert sequential images to video.
+   (For checking if individual detection is successful with the trained model.) 
 ```
 
 ## Training
