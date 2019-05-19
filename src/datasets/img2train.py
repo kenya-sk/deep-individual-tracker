@@ -9,16 +9,17 @@ import argparse
 import numpy as np
 import cv2
 
-import video2training_data
+import video2train
 
 # q key (end)
 Q_KEY = 0x71
 # s key (save data and restart)
 S_KEY = 0x73
+# d key (delete)
+D_KEY = 0x64
 
 
 logger = logging.getLogger(__name__)
-
 
 class ImgMotion(video2train.Motion):
     # constructor
@@ -48,7 +49,10 @@ class ImgMotion(video2train.Motion):
             if key == S_KEY:
                 super().save_data()
                 return False
-            elif key==Q_KEY:
+            elif key == D_KEY:
+                print("D key")
+                super().del_feature()
+            elif key == Q_KEY:
                 return True
 
         cv2.destroyAllWindows()
@@ -63,7 +67,7 @@ def batch_processing(args):
         sys.stderr.write("Error: Do not exist directory")
         sys.exit(1)
 
-    file_lst = glob.glob("{0}/*.png".format(args.input_img_dirc))
+    file_lst = glob.glob("{0}/*{1}".format(args.input_img_dirc, args.extension))
     logger.debug("Number of total file: {0}".format(len(file_lst)))
 
     for file_num, file_name in enumerate(file_lst):
@@ -85,24 +89,26 @@ def image2train_parse():
 
     # Data Argment
     parser.add_argument("--input_img_dirc", type=str,
-                        default="/Users/sakka/cnn_by_density_map/test_data/image/original")
+                        default="../../image/original")
     parser.add_argument("--input_file_path", type=str,
                         default="None")
 
     # Parameter Argument
     parser.add_argument("--interval", type=int,
                         default=None, help="training data interval")
+    parser.add_argument("--extension", type=str,
+                        default=".jpeg")
     parser.add_argument("--original_img_dirc", type=str,
                         default=None,
                         help="directory of raw image")
     parser.add_argument("--save_truth_img_dirc", type=str,
-                        default="/Users/sakka/cnn_by_density_map/test_data/image/truth",
+                        default="../../image/truth",
                         help="directory of save annotation image")
     parser.add_argument("--save_truth_cord_dirc", type=str,
-                        default="/Users/sakka/cnn_by_density_map/test_data/cord",
+                        default="../../data/cord",
                         help="directory of save ground truth cordinate")
     parser.add_argument("--save_answer_label_dirc", type=str,
-                        default="/Users/sakka/cnn_by_density_map/test_data/dens",
+                        default="../../data/dens",
                         help="directory of save answer label (density map)")
     parser.add_argument("--save_file_prefix", type=str,
                         default="label",
