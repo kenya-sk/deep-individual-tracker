@@ -33,6 +33,7 @@ class ImgMotion(video2train.Motion):
             sys.stderr.write("Error: Can not open image file")
             sys.exit(1)
 
+        self.frame_lst.append(self.frame.copy())
         self.frame_num = self.get_frame_num()
         self.width = self.frame.shape[1]
         self.height = self.frame.shape[0]
@@ -40,7 +41,6 @@ class ImgMotion(video2train.Motion):
         for i in range(self.width):
             for j in range(self.height):
                 self.cordinate_matrix[i][j] = [i, j]
-
 
         cv2.imshow("select feature points", self.frame)
         # return bool value: stop making or not
@@ -50,7 +50,6 @@ class ImgMotion(video2train.Motion):
                 super().save_data()
                 return False
             elif key == D_KEY:
-                print("D key")
                 super().del_feature()
             elif key == Q_KEY:
                 return True
@@ -97,7 +96,7 @@ def image2train_parse():
     parser.add_argument("--interval", type=int,
                         default=None, help="training data interval")
     parser.add_argument("--extension", type=str,
-                        default=".jpeg")
+                        default=".png")
     parser.add_argument("--original_img_dirc", type=str,
                         default=None,
                         help="directory of raw image")

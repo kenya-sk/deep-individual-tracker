@@ -29,6 +29,7 @@ class Motion:
         self.interval = args.interval
         self.video = None
         self.frame = None
+        self.frame_lst = []
         self.width = None
         self.height = None
         self.features = None
@@ -72,6 +73,7 @@ class Motion:
                 break
             elif key == P_KEY:
                 self.interval = 0
+                self.frame_lst.append(self.frame.copy())
                 # save original image
                 cv2.imwrite("{0}/{1}_{2}{3}".format(self.original_img_dirc, self.save_file_prefix, self.frame_num, self.extension), self.frame)
             elif key == D_KEY:
@@ -105,11 +107,15 @@ class Motion:
             self.features = np.array([[x, y]], np.uint16)
         else:
             self.features = np.append(self.features, [[x, y]], axis=0).astype(np.uint16)
+        self.frame_lst.append(self.frame.copy())
     
     # delete previous feature point
     def del_feature(self):
-        if (self.features is not None) and (self.features.shape[0] > 0):
+        if (self.features is not None) and (len(self.features) > 0):
             self.features = np.delete(self.features, -1, 0)
+            self.frame_lst.pop()
+            self.frame = self.frame_lst[-1].copy()
+            cv2.imshow("select feature points", self.frame)
 
     # save cordinate and figure. there are feature point information
     def save_data(self):
