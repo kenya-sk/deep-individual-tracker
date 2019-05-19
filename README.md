@@ -70,12 +70,23 @@ The following technique was used to train the model.
 - Hard Negative Mining
 
 ```
-model.py      : The Architecture of the model is defined.
-train.py      : Training the model.
-cnn_util.py   : The util function.
-clustering.py : To clustering the density maps.
-predict.py    : Individual detection is performed using a learned model. 
-evaluation.py : Evaluate with Accuracy, recall, Precision, and F-measure.
+model.py
+    The Architecture of the model is defined.
+
+train.py
+    Training the model.
+
+cnn_util.py
+    The util function.
+
+clustering.py
+    To clustering the density maps.
+
+predict.py
+    Individual detection is performed using a learned model. 
+    
+evaluation.py
+    Evaluate with Accuracy, recall, Precision, and F-measure.
 ```
 
 ### Training
