@@ -48,15 +48,15 @@ or
 g++ -o video2image video2image.cpp -std=c++11 `pkg-config --cflags opencv` `pkg-config --libs opencv`
 ```
 
-2. By clicking the image, labeling is done and training data is created. To input the path of image file.
+2. By clicking the image, labeling is done and training data is created. To input the path of image file. To press "D" when you mistake annotation
 ```
-python3 image2trainingData.py
+python3 img2train.py
 ```
 
 3. If you want training data of arbitrary frames, to create it by the following procedure.  
-To input the path of video file. To press "P" when the desired frame appear. To press "S" when you finish selecting feature point and want to save. To press "Q" when you want to finish creating training data.
+To input the path of video file. To press "P" when the desired frame appear. To press "D" when you mistake annotation. To press "S" when you finish selecting feature point and want to save. To press "Q" when you want to finish creating training data.
 ```
-python3 video2training_data.py
+python3 video2train.py
 ```
 
 
