@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 def load_data(args):
     X = []
     y = []
-    file_lst = glob.glob("{0}/*.png".format(args.input_image_dirc))
+    file_lst = glob.glob("{0}/*.png".format(args.root_img_dirc))
     if len(file_lst) == 0:
         sys.stderr.write("Error: not found input image")
         sys.exit(1)
@@ -39,7 +39,7 @@ def load_data(args):
         else:
             X.append(get_masked_data(img, args.mask_path))
         dens_path = path.replace(".png", ".npy").split("/")[-1]
-        dens_map = np.load("{0}/{1}".format(args.input_dens_dirc, dens_path))
+        dens_map = np.load("{0}/{1}".format(args.root_dens_dirc, dens_path))
         y.append(get_masked_data(dens_map, args.mask_path))
 
     X = np.array(X)
@@ -255,7 +255,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
                 # learning is going well
                 not_improved_count = 0
                 # save best model
-                saver.save(sess, "{0}/{1}/model.ckpt".format(args.out_model_dirc, learning_date))
+                saver.save(sess, "{0}/{1}/model.ckpt".format(args.save_model_dirc, learning_date))
 
                 
             if not_improved_count >= args.stop_count:
@@ -266,7 +266,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
             logger.debug("************************************************")
 
 
-        saver.save(sess, "{0}/{1}/model.ckpt".format(args.out_model_dirc, learning_date))
+        saver.save(sess, "{0}/{1}/model.ckpt".format(args.save_model_dirc, learning_date))
         logger.debug("END: learning")
         # --------------------------------------------------------------------------
 
@@ -300,7 +300,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
     except KeyboardInterrupt:
         logger.debug("\nPressed \"Ctrl + C\"")
         logger.debug("exit problem, save learning model")
-        saver.save(sess, "{0}/{1}/model.ckpt".format(args.out_model_dirc, learning_date))
+        saver.save(sess, "{0}/{1}/model.ckpt".format(args.save_model_dirc, learning_date))
     # --------------------------------------------------------------------------
 
     # ----------------------------- TERMINATE ---------------------------------
@@ -320,9 +320,9 @@ def make_learning_parse():
     )
 
     # Data Argument
-    parser.add_argument("--input_image_dirc", type=str,
+    parser.add_argument("--root_img_dirc", type=str,
                         default="/data/sakka/image/original/total")
-    parser.add_argument("--input_dens_dirc", type=str,
+    parser.add_argument("--root_dens_dirc", type=str,
                         default="/data/sakka/dens/total")
     parser.add_argument("--mask_path", type=str,
                         default="/data/sakka/image/mask.png")
@@ -330,7 +330,7 @@ def make_learning_parse():
                         default="/data/sakka/tensor_model/2018_4_15_15_7")
     parser.add_argument("--root_log_dirc", type=str,
                         default="/data/sakka/tensor_log")
-    parser.add_argument("--out_model_dirc", type=str,
+    parser.add_argument("--save_model_dirc", type=str,
                         default="/data/sakka/tensor_model")
 
     # GPU Argumant

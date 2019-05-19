@@ -69,11 +69,46 @@ The following technique was used to train the model.
 - Data Augmentation (Horizontal flip)
 - Hard Negative Mining
 
+```
+model.py      : The Architecture of the model is defined.
+train.py      : Training the model.
+cnn_util.py   : The util function.
+clustering.py : To clustering the density maps.
+predict.py    : Individual detection is performed using a learned model. 
+evaluation.py : Evaluate with Accuracy, recall, Precision, and F-measure.
+```
+
 ### Training
 To set the path of training/validation image and path of answer data(density map).  
 Each parameter can be set with argument.
 ```
-python3 train.py
+python3 train.py [-h]  [--root_img_dirc]  [--root_dens_dirc]  [--mask_path]
+                 [reuse_model_path]  [--root_log_dirc]  [save_model_dirc]
+                 [--visible_device]  [--memory_rate]  [--test_size]  [--local_img_size]
+                 [--n_epochs]  [--batch_size]  [--min_epoch]  [--stop_count]
+                 [flip_prob]  [--under_sampling_thresh]
+```
+
+Hyper parameters and learning conditions can be set using arguments. Details are as follows.
+
+```
+[-h]                      : help option
+[--root_img_dirc]         : The path of training dataset
+[--root_dens_dirc]        : The path of answer label (density map)
+[--mask_path]             : The path of mask image
+[reuse_model_path]        : The path of pretrained model
+[--root_log_dirc]         : The path of tensor board log
+[save_model_dirc]         : The path of save the weight of trained model
+[--visible_device]        : The ID of using GPU
+[--memory_rate]           : The ratio of using GPU memory
+[--test_size]             : The ratio of test data
+[--local_img_size]        : The size of local image (shape is square)
+[--n_epochs]              : The maximum number of epochs
+[--batch_size]            : Batch size
+[--min_epoch]             : The minimum number of epochs
+[--stop_count]            : If not_improved_count < stop_count, execute early stopping
+[--flip_prob]             : The ratio of horizontal flip flop 
+[--under_sampling_thresh] : The threshold of positive data
 ```
 
 ### Prediction
