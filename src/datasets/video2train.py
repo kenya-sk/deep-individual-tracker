@@ -131,7 +131,7 @@ class Motion:
 
 def video2train_parse():
     parser = argparse.ArgumentParser(
-        prog="video2training_data.py",
+        prog="video2train.py",
         usage="create training data at regular intarval",
         description="description",
         epilog="end",
@@ -168,7 +168,7 @@ def video2train_parse():
 
 if __name__ == "__main__":
     # set logger
-    logs_path = "/Users/sakka/cnn_by_density_map/logs/video2training_data.log"
+    logs_path = "../../logs/video2train.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")

@@ -20,7 +20,7 @@ S_KEY = 0x73
 logger = logging.getLogger(__name__)
 
 
-class ImgMotion(video2training_data.Motion):
+class ImgMotion(video2train.Motion):
     # constructor
     def __init__(self, args, input_file_path):
         super().__init__(args)
@@ -76,7 +76,7 @@ def batch_processing(args):
 
 def image2train_parse():
     parser = argparse.ArgumentParser(
-        prog="image2training_data.py",
+        prog="img2train.py",
         usage="create training data from image",
         description="description",
         epilog="end",
@@ -114,7 +114,7 @@ def image2train_parse():
 
 
 if __name__ == "__main__":
-    logs_path = "/Users/sakka/cnn_by_density_map/logs/image2training_data.log"
+    logs_path = "../../logs/img2train.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")

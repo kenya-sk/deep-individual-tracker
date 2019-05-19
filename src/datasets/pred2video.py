@@ -36,7 +36,7 @@ def pred_image2video(args):
 
 def img2video_parse():
     parser = argparse.ArgumentParser(
-        prog="pred_image2video.py",
+        prog="pred2video.py",
         usage="create video to detect target object",
         description="description",
         epilog="end",
@@ -67,7 +67,7 @@ def img2video_parse():
 
 if __name__ == "__main__":
     # set logger
-    logs_path = "/Users/sakka/cnn_by_density_map/logs/pred_image2video.log"
+    logs_path = "../../logs/pred2video.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")

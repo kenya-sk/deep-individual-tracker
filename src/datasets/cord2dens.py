@@ -89,7 +89,7 @@ def cord2dens_parse():
 
 if __name__ == "__main__":
     # set logger
-    logs_path = "/Users/sakka/cnn_by_density_map/logs/cord2dens.log"
+    logs_path = "../../logs/cord2dens.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
