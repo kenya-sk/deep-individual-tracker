@@ -10,6 +10,13 @@ This model consists of three convolution layers (conv1-conv3), two max-pooling l
 ### Install Required Packages
 First ensure that you have installed the required packages (requirements.txt).  
 
+## Create Datasets
+Files required for creating datasets are under "./src/datasets".
+
+```
+my_make.sh
+video2
+```
 
 ## Training
 To create training data in the following procedure. Each file is included in the directory (src/datasets).
