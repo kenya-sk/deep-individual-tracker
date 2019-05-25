@@ -7,8 +7,15 @@ This model consists of three convolution layers (conv1-conv3), two max-pooling l
 <img src="./image/demo/model.png" alt="model" height= 400 vspace="25" hspace="70">
 
 ## Getting Started
-### Install Required Packages
-First ensure that you have installed the required packages (requirements.txt).  
+### Environment Construction
+Build the environment using docker.
+```
+# build docker image
+$ docker build -t cnn_dens .
+
+# start the container
+$ docker run -it cnn_dens /bin/bash 
+``` 
 
 ## Create Datasets
 Files required for creating datasets are under "./src/datasets".
@@ -41,22 +48,22 @@ Files required for creating datasets are under "./src/datasets".
 To create training data in the following procedure. Each file is included in the directory (src/datasets).
 1. To get images from movie. To input the path of movie file and the path of output image file.
 ```
-my_make.sh
+$ my_make.sh
 ```
 or
 ```
-g++ -o video2image video2image.cpp -std=c++11 `pkg-config --cflags opencv` `pkg-config --libs opencv`
+$ g++ -o video2image video2image.cpp -std=c++11 `pkg-config --cflags opencv` `pkg-config --libs opencv`
 ```
 
 2. By clicking the image, labeling is done and training data is created. To input the path of image file. To press "D" when you mistake annotation
 ```
-python3 img2train.py
+$ python3 img2train.py
 ```
 
 3. If you want training data of arbitrary frames, to create it by the following procedure.  
 To input the path of video file. To press "P" when the desired frame appear. To press "D" when you mistake annotation. To press "S" when you finish selecting feature point and want to save. To press "Q" when you want to finish creating training data.
 ```
-python3 video2train.py
+$ python3 video2train.py
 ```
 
 
@@ -70,22 +77,22 @@ The following technique was used to train the model.
 - Hard Negative Mining
 
 ```
-model.py
+1. model.py
     The Architecture of the model is defined.
 
-train.py
+2. train.py
     Training the model.
 
-cnn_util.py
+3. cnn_util.py
     The util function.
 
-clustering.py
+4. clustering.py
     To clustering the density maps.
 
-predict.py
+5. predict.py
     Individual detection is performed using a learned model. 
     
-evaluation.py
+6. evaluation.py
     Evaluate with Accuracy, recall, Precision, and F-measure.
 ```
 
@@ -93,7 +100,7 @@ evaluation.py
 To set the path of training/validation image and path of answer data(density map).  
 Each parameter can be set with argument.
 ```
-python3 train.py [-h]  [--root_img_dirc]  [--root_dens_dirc]  [--mask_path]
+$ python3 train.py [-h]  [--root_img_dirc]  [--root_dens_dirc]  [--mask_path]
                  [reuse_model_path]  [--root_log_dirc]  [save_model_dirc]
                  [--visible_device]  [--memory_rate]  [--test_size]  [--local_img_size]
                  [--n_epochs]  [--batch_size]  [--min_epoch]  [--stop_count]
@@ -126,7 +133,7 @@ Hyper parameters and learning conditions can be set using arguments. Details are
 To perform individual detection with the trained model.  
 Each parameter can be set with argument.
 ```
-python3 predict.py
+$ python3 predict.py
 ```
 
 
@@ -134,5 +141,5 @@ python3 predict.py
 The evaluation metrics of individual detection are accuracy, recall, precision, and F-measure. The position of the individual predicted by CNN and the position of the answer label were associated by using the Hungarian algorithm. True Positive defined ad If the matching distance was less than or equal to the threshold value (default is 15).
 
 ```
-python3 evaluation.py
+$ python3 evaluation.py
 ```
