@@ -14,6 +14,6 @@
 !*.ipynb
 !CMakeLists.txt
 !Makefile
+!Dockerfile
 
-cnn.py
 .ipynb_checkpoints
