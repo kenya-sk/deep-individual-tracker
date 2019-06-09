@@ -12,8 +12,11 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
-def plot_densMap(file_name, cordinate_matrix, cord_arr, sigma_pow):
-    width, height = 1280, 720
+def plot_densMap(file_name, cordinate_matrix, cord_arr, sigma_pow, args):
+    """
+    """
+    width = args.width
+    height = args.height
     kernel = np.zeros((width, height))
 
     for point in cord_arr:
@@ -29,6 +32,9 @@ def plot_densMap(file_name, cordinate_matrix, cord_arr, sigma_pow):
 
 
 def batch_processing(args):
+    """
+    """
+
     def read_csv(file_path):
         data_lst = []
         with open(file_path, "r") as f:
@@ -48,7 +54,8 @@ def batch_processing(args):
     repattern = re.compile(pattern)
     logger.debug("Number of total file: {0}".format(len(file_lst)))
 
-    width, height = 1280, 720
+    width = args.width
+    height = args.height
     cordinate_matrix = np.zeros((width, height, 2), dtype="int64")
     for i in range(width):
         for j in range(height):
@@ -80,6 +87,8 @@ def cord2dens_parse():
                         default="/data/sakka/image")
 
     # Parameter Argument
+    parser.add_argument("--width", type=int, default=1280)
+    parser.add_argument("--height", type=int, default=720)
     parser.add_argument("--sigma_pow_lst", type=list, default=[8, 10, 15, 20, 25])
 
     args = parser.parse_args()
