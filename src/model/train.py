@@ -229,16 +229,17 @@ def test(sess, cnn_model, X_test, y_test, params_dict, merged, writer):
         X_test_local, y_test_local = get_local_data(X_test[test_idx], y_test[test_idx], 
                                                     params_dict["index_h"], params_dict["index_w"], 
                                                     local_img_size=params_dict["local_size"])
-        test_n_batches = int(len(X_test_local) / batch_size)
+        test_n_batches = int(len(X_test_local) / params_dict["batch_size"])
         for test_batch in range(test_n_batches):
             test_step += 1
-            test_start_index = test_batch * batch_size
-            test_end_index = test_start_index + batch_size
+            test_start_index = test_batch * params_dict["batch_size"]
+            test_end_index = test_start_index + params_dict["batch_size"]
 
             test_summary, test_batch_loss = sess.run([merged, cnn_model.loss], feed_dict={
                 cnn_model.X: X_test_local[test_start_index:test_end_index].reshape(-1, params_dict["local_size"], params_dict["local_size"], 3),
                 cnn_model.y_: y_test_local[test_start_index:test_end_index].reshape(-1, 1),
-                cnn_model.is_training:False
+                cnn_model.is_training:False,
+                cnn_model.keep_prob: 1.0
                 })
             writer.add_summary(test_summary, test_step)
             test_loss += test_batch_loss
