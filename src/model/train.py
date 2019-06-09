@@ -96,29 +96,29 @@ def under_sampling(local_img_mat, density_arr, thresh):
     return local_img_mat[msk], density_arr[msk]
 
 
-def horizontal_flip(X_train, y_train, train_idx, train_params):
+def horizontal_flip(X_train, y_train, train_idx, params_dict):
     """
     """
 
-    if np.random.rand() < train_params["flip_prob"]:
+    if np.random.rand() < params_dict["flip_prob"]:
         X_train_local, y_train_local = \
                 get_local_data(X_train[train_idx][:,::-1,:], 
                                 y_train[train_idx][:,::-1],
-                                train_params["flip_index_h"],
-                                train_params["flip_index_w"], 
-                                local_img_size=train_params["local_size"])
+                                params_dict["flip_index_h"],
+                                params_dict["flip_index_w"], 
+                                local_img_size=params_dict["local_size"])
     else:
         X_train_local, y_train_local = \
                 get_local_data(X_train[train_idx], 
                                 y_train[train_idx], 
-                                train_params["index_h"], 
-                                train_params["index_w"], 
-                                local_img_size=train_params["local_size"])
+                                params_dict["index_h"], 
+                                params_dict["index_w"], 
+                                local_img_size=params_dict["local_size"])
 
     return X_train_local, y_train_local
 
 
-def train(sess, epoch, cnn_model, X_train, y_train, train_params, merged):
+def train(sess, epoch, cnn_model, X_train, y_train, params_dict, merged):
     """
     """
 
@@ -129,13 +129,13 @@ def train(sess, epoch, cnn_model, X_train, y_train, train_params, merged):
     for train_idx in trange(len(X_train), desc="training data"):
         # load traing dataset
         # data augmentation (horizontal flip)
-        X_train_locol, y_train_local = horizontal_flip(X_train, y_train, train_idx, train_params)
+        X_train_locol, y_train_local = horizontal_flip(X_train, y_train, train_idx, params_dict)
 
         # under sampling
         X_train_local, y_train_local = \
                     under_sampling(X_train_local,
                                     y_train_local, 
-                                    thresh=train_params["under_sampling_thresh"])
+                                    thresh=params_dict["under_sampling_thresh"])
 
         # hard negative mining
         if hard_negative_label_arr.shape[0] > 1:
@@ -144,15 +144,15 @@ def train(sess, epoch, cnn_model, X_train, y_train, train_params, merged):
         X_train_local, y_train_local = shuffle(X_train_local, y_train_local)
 
         # learning by batch
-        hard_negative_image_arr = np.zeros((1, train_params["local_size"], train_params["local_size"], 3), dtype="uint8")
+        hard_negative_image_arr = np.zeros((1, params_dict["local_size"], params_dict["local_size"], 3), dtype="uint8")
         hard_negative_label_arr = np.zeros((1), dtype="float32")
-        train_n_batches = int(len(X_train_local) / train_params["batch_size"])
+        train_n_batches = int(len(X_train_local) / params_dict["batch_size"])
         for train_batch in range(train_n_batches):
-            train_start_index = train_batch * train_params["batch_size"]
-            train_end_index = train_start_index + train_params["batch_size"]
+            train_start_index = train_batch * params_dict["batch_size"]
+            train_end_index = train_start_index + params_dict["batch_size"]
 
             train_diff = sess.run(cnn_model.diff, feed_dict={
-                cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, train_params["local_size"], train_params["local_size"], 3),
+                cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, params_dict["local_size"], params_dict["local_size"], 3),
                 cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
                 cnn_model.is_training: True,
                 cnn_model.keep_prob: 0.5
@@ -161,7 +161,7 @@ def train(sess, epoch, cnn_model, X_train, y_train, train_params, merged):
             train_loss += np.mean(train_diff)
 
             train_summary, _ = sess.run([merged, cnn_model.learning_step],feed_dict={
-                cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, train_params["local_size"], train_params["local_size"], 3),
+                cnn_model.X: X_train_local[train_start_index:train_end_index].reshape(-1, params_dict["local_size"], params_dict["local_size"], 3),
                 cnn_model.y_: y_train_local[train_start_index:train_end_index].reshape(-1, 1),
                 cnn_model.is_training: True,
                 cnn_model.keep_prob: 0.5
@@ -187,22 +187,22 @@ def train(sess, epoch, cnn_model, X_train, y_train, train_params, merged):
     return mean_train_loss
 
 
-def validation(sess, epoch, cnn_model, X_val, y_val, val_params, merged):
+def validation(sess, epoch, cnn_model, X_val, y_val, params_dict, merged):
     """
     """
 
     val_loss = 0.0
     for val_idx in trange(len(X_val), desc="validation data"):
         X_val_local, y_val_local = get_local_data(X_val[val_idx], y_val[val_idx],
-                                                    val_params["index_h"], val_params["index_w"], 
-                                                    local_img_size=val_params["local_size"])
-        val_n_batches = int(len(X_val_local) / val_params["batch_size"])
+                                                    params_dict["index_h"], params_dict["index_w"], 
+                                                    local_img_size=params_dict["local_size"])
+        val_n_batches = int(len(X_val_local) / params_dict["batch_size"])
         for val_batch in range(val_n_batches):
-            val_start_index = val_batch * val_params["batch_size"]
-            val_end_index = val_start_index + val_params["batch_size"]
+            val_start_index = val_batch * params_dict["batch_size"]
+            val_end_index = val_start_index + params_dict["batch_size"]
 
             val_loss_summary, val_batch_loss = sess.run([merged, cnn_model.loss], feed_dict={
-                cnn_model.X: X_val_local[val_start_index:val_end_index].reshape(-1, val_params["local_size"], val_params["local_size"], 3),
+                cnn_model.X: X_val_local[val_start_index:val_end_index].reshape(-1, params_dict["local_size"], params_dict["local_size"], 3),
                 cnn_model.y_: y_val_local[val_start_index:val_end_index].reshape(-1, 1),
                 cnn_model.is_training: False,
                 cnn_model.keep_prob: 1.0
@@ -321,10 +321,10 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
             logger.debug("elapsed time: {0:.3f} [sec]".format(time.time() - start_time))
 
             # train CNN model for 1 epoch
-            mean_train_loss = train(sess, epoch, X_train, y_train, params_dict)
+            mean_train_loss = train(sess, epoch, cnn_model, X_train, y_train, params_dict, merged)
 
             # validation trained CNN model
-            mean_val_loss = validation(sess, epoch, X_val, y_val, params_dict)
+            mean_val_loss = validation(sess, epoch, cnn_model, X_val, y_val, params_dict, merged)
 
             # record loss data
             val_loss_lst.append(mean_val_loss)
@@ -347,7 +347,6 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
 
             logger.debug("not improved count / early stopping epoch: {0}/{1}".format(not_improved_count, args.stop_count))
             logger.debug("************************************************")
-
         # save best model
         saver.save(sess, "{0}/{1}/model.ckpt".format(args.save_model_dirc, learning_date))
         logger.debug("END: learning")
@@ -428,7 +427,7 @@ def make_learning_parse():
 
 
 if __name__ == "__main__":
-    logs_path = "/home/sakka/cnn_by_density_map/logs/train.log"
+    logs_path = "../../logs/train.log"
     logging.basicConfig(filename=logs_path,
                         level=logging.DEBUG,
                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
