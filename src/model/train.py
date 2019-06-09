@@ -118,18 +118,18 @@ def horizontal_flip(X_train, y_train, train_idx, params_dict):
     return X_train_local, y_train_local
 
 
-def train(sess, epoch, cnn_model, X_train, y_train, params_dict, merged):
+def train(sess, epoch, cnn_model, X_train, y_train, params_dict, merged, writer):
     """
     """
 
     train_loss = 0.0
-    hard_negative_image_arr = np.zeros((1, local_size, local_size, 3),dtype="uint8")
+    hard_negative_image_arr = np.zeros((1, params_dict["local_size"], params_dict["local_size"], 3),dtype="uint8")
     hard_negative_label_arr = np.zeros((1), dtype="float32")
 
     for train_idx in trange(len(X_train), desc="training data"):
         # load traing dataset
         # data augmentation (horizontal flip)
-        X_train_locol, y_train_local = horizontal_flip(X_train, y_train, train_idx, params_dict)
+        X_train_local, y_train_local = horizontal_flip(X_train, y_train, train_idx, params_dict)
 
         # under sampling
         X_train_local, y_train_local = \
@@ -179,7 +179,7 @@ def train(sess, epoch, cnn_model, X_train, y_train, params_dict, merged):
                 pass
     
     # record training summary to TensorBoard
-    train_writer.add_summary(train_summary, epoch)
+    writer.add_summary(train_summary, epoch)
 
     # mean train loss per 1 image
     mean_train_loss = train_loss/(len(X_train)*train_n_batches)
@@ -187,7 +187,7 @@ def train(sess, epoch, cnn_model, X_train, y_train, params_dict, merged):
     return mean_train_loss
 
 
-def validation(sess, epoch, cnn_model, X_val, y_val, params_dict, merged):
+def validation(sess, epoch, cnn_model, X_val, y_val, params_dict, merged, writer):
     """
     """
 
@@ -211,7 +211,7 @@ def validation(sess, epoch, cnn_model, X_val, y_val, params_dict, merged):
             val_loss += val_batch_loss
 
     # record validation summary to TensorBoard
-    val_writer.add_summary(val_loss_summary, epoch)
+    writer.add_summary(val_loss_summary, epoch)
 
     # mean validation loss per 1 epoch
     mean_val_loss = val_loss/(len(X_val)*val_n_batches)
@@ -219,7 +219,7 @@ def validation(sess, epoch, cnn_model, X_val, y_val, params_dict, merged):
     return mean_val_loss
 
 
-def test(sess, cnn_model, X_test, y_test, params_dict, merged):
+def test(sess, cnn_model, X_test, y_test, params_dict, merged, writer):
     """
     """
 
@@ -240,7 +240,7 @@ def test(sess, cnn_model, X_test, y_test, params_dict, merged):
                 cnn_model.y_: y_test_local[test_start_index:test_end_index].reshape(-1, 1),
                 cnn_model.is_training:False
                 })
-            test_writer.add_summary(test_summary, test_step)
+            writer.add_summary(test_summary, test_step)
             test_loss += test_batch_loss
 
     # mean test loss per 1 epoch
@@ -321,10 +321,10 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
             logger.debug("elapsed time: {0:.3f} [sec]".format(time.time() - start_time))
 
             # train CNN model for 1 epoch
-            mean_train_loss = train(sess, epoch, cnn_model, X_train, y_train, params_dict, merged)
+            mean_train_loss = train(sess, epoch, cnn_model, X_train, y_train, params_dict, merged, train_writer)
 
             # validation trained CNN model
-            mean_val_loss = validation(sess, epoch, cnn_model, X_val, y_val, params_dict, merged)
+            mean_val_loss = validation(sess, epoch, cnn_model, X_val, y_val, params_dict, merged, val_writer)
 
             # record loss data
             val_loss_lst.append(mean_val_loss)
@@ -355,7 +355,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
 
         # -------------------------------- TEST ------------------------------------
         logger.debug("START: test")
-        mean_test_loss = test(sess, cnn_model, X_test, y_test, params_dict, merged)
+        mean_test_loss = test(sess, cnn_model, X_test, y_test, params_dict, merged, test_writer)
 
         logger.debug("mean test loss [per image]: {0}".format(mean_test_loss))
         logger.debug("END: test")
@@ -370,6 +370,7 @@ def cnn_learning(X_train, X_test, y_train, y_test, args):
 
     # ----------------------------- TERMINATE ---------------------------------
     train_writer.close()
+    val_writer.close()
     test_writer.close()
     sess.close()
     # -------------------------------------------------------------------------
