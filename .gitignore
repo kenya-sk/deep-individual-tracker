@@ -15,5 +15,6 @@
 !CMakeLists.txt
 !Makefile
 !Dockerfile
+!stats-monitoring/data/document/monitoring_example.png
 
 .ipynb_checkpoints
