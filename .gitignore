@@ -16,6 +16,7 @@
 !Makefile
 !Dockerfile
 !LICENSE
+!pyproject.toml
 !stats-monitoring/data/document/monitoring_example.png
 !stats-monitoring/poetry.lock
 !stats-monitoring/pyproject.toml
