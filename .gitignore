@@ -17,6 +17,7 @@
 !Dockerfile
 !LICENSE
 !pyproject.toml
+!cnn-by-density-map/conf
 !stats-monitoring/data/document/monitoring_example.png
 !stats-monitoring/poetry.lock
 !stats-monitoring/pyproject.toml
