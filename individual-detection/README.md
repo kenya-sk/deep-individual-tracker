@@ -7,14 +7,14 @@ This model consists of three convolution layers (conv1-conv3), two max-pooling l
 <img src="./image/demo/model.png" alt="model" height= 400 vspace="25" hspace="70">
 
 ## Getting Started
-### Environment Construction
-Build the environment using docker.
+### Build Environment
+Build a GPU-enabled environment with Docker.
 ```
 # build docker image
-$ docker build -t cnn_dens .
+$ docker build -t individual-detection:latest .
 
 # start the container
-$ docker run -it cnn_dens /bin/bash 
+$ sudo bash run_container.sh
 ``` 
 
 ## Create Datasets
