@@ -18,7 +18,7 @@ def main() -> NoReturn:
 
 if __name__ == "__main__":
     # load parameter from hydra
-    initialize(config_path="./", job_name="stats-monitoring")
+    initialize(config_path="../conf", job_name="stats-monitoring")
     cfg = compose(config_name="config")
 
     main()

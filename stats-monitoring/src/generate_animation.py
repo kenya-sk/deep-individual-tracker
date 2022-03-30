@@ -7,8 +7,11 @@ from omegaconf import DictConfig
 from tqdm import trange
 
 from frame import load_one_hour_density, set_frame
-from position_distribution import (load_current_coordinate,
-                                   load_past_coordinate, set_histogram)
+from position_distribution import (
+    load_current_coordinate,
+    load_past_coordinate,
+    set_histogram,
+)
 from stats_metrics import load_statistics, set_stats_metrics
 
 
