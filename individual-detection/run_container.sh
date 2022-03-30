@@ -1,1 +1,1 @@
-docker run -it --runtime=nvidia individual-detenction:latest  /bin/bash
+docker run -it --runtime=nvidia individual-detection:latest  /bin/bash
