@@ -14,7 +14,7 @@ Build a GPU-enabled environment with Docker.
 $ docker build -t individual-detection:latest .
 
 # start the container
-$ sudo bash run_container.sh
+$ sudo bash scripts/run_container.sh
 ``` 
 
 The following python code can be used to check if a GPU is available.
