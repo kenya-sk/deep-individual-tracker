@@ -9,13 +9,19 @@ This model consists of three convolution layers (conv1-conv3), two max-pooling l
 ## Getting Started
 ### Build Environment
 Build a GPU-enabled environment with Docker.
-```
+``` bash
 # build docker image
 $ docker build -t individual-detection:latest .
 
 # start the container
 $ sudo bash run_container.sh
 ``` 
+
+The following python code can be used to check if a GPU is available.
+``` python
+from tensorflow.python.client import device_lib
+device_lib.list_local_devices()
+```
 
 ## Create Datasets
 Files required for creating datasets are under "./src/datasets".
