@@ -27,7 +27,7 @@ class DensityModel(object):
         with tf.name_scope("conv1"):
             # 7x7x3 filter
             with tf.name_scope("weight1"):
-                w_conv1 = self.__weight_variable([7, 7, 3, 32])
+                w_conv1 = self.__weight_variable([7, 7, 3, 32], None)
                 self.__variable_summaries(w_conv1)
                 _ = tf.summary.image(
                     "image1",
@@ -51,7 +51,7 @@ class DensityModel(object):
         with tf.name_scope("conv2"):
             # 7x7x32 filter
             with tf.name_scope("weight2"):
-                w_conv2 = self.__weight_variable([7, 7, 32, 32])
+                w_conv2 = self.__weight_variable([7, 7, 32, 32], None)
                 self.__variable_summaries(w_conv2)
                 _ = tf.summary.image(
                     "image2",
@@ -75,7 +75,7 @@ class DensityModel(object):
         with tf.name_scope("conv3"):
             # 5x5x32 filter
             with tf.name_scope("weight3"):
-                w_conv3 = self.__weight_variable([5, 5, 32, 64])
+                w_conv3 = self.__weight_variable([5, 5, 32, 64], None)
                 self.__variable_summaries(w_conv3)
                 _ = tf.summary.image(
                     "image3",
@@ -94,7 +94,7 @@ class DensityModel(object):
         # input 18x18x64 -> output 1000
         with tf.name_scope("fc4"):
             with tf.name_scope("weight4"):
-                w_fc4 = self.__weight_variable([18 * 18 * 64, 1000])
+                w_fc4 = self.__weight_variable([18 * 18 * 64, 1000], None)
                 self.__variable_summaries(w_fc4)
             with tf.name_scope("batchNorm4"):
                 h_conv3_flat = tf.reshape(h_conv3, [-1, 18 * 18 * 64])
@@ -111,7 +111,7 @@ class DensityModel(object):
         # input 1000 -> output 400
         with tf.name_scope("fc5"):
             with tf.name_scope("weight5"):
-                w_fc5 = self.__weight_variable([1000, 400])
+                w_fc5 = self.__weight_variable([1000, 400], None)
                 self.__variable_summaries(w_fc5)
             with tf.name_scope("batchNorm5"):
                 fc5 = tf.matmul(h_fc4_drop, w_fc5)
@@ -127,7 +127,7 @@ class DensityModel(object):
         # input 400 -> output 324
         with tf.name_scope("fc6"):
             with tf.name_scope("weight6"):
-                w_fc6 = self.__weight_variable([400, 324])
+                w_fc6 = self.__weight_variable([400, 324], None)
                 self.__variable_summaries(w_fc6)
             with tf.name_scope("batchNorm6"):
                 fc6 = tf.matmul(h_fc5_drop, w_fc6)
@@ -143,7 +143,7 @@ class DensityModel(object):
         # input 324 -> output 1
         with tf.name_scope("fc7"):
             with tf.name_scope("weight7"):
-                w_fc7 = self.__weight_variable([324, 1])
+                w_fc7 = self.__weight_variable([324, 1], None)
                 self.__variable_summaries(w_fc7)
             with tf.name_scope("bias7"):
                 b_fc7 = self.__bias_variable([1])
@@ -173,7 +173,7 @@ class DensityModel(object):
             ).minimize(self.loss)
 
     @staticmethod
-    def __weight_variable(self, shape, name=None):
+    def __weight_variable(shape, name=None):
         """
         initialize weight by He initialization
 
@@ -203,7 +203,7 @@ class DensityModel(object):
             return tf.Variable(initial, name=name)
 
     @staticmethod
-    def __bias_variable(self, shape, name=None):
+    def __bias_variable(shape, name=None):
         """
         initialize bias by normal distribution (standard deviation: 0.1)
 
@@ -222,7 +222,7 @@ class DensityModel(object):
             return tf.Variable(initial, name=name)
 
     @staticmethod
-    def __conv2d(self, X, W):
+    def __conv2d(X, W):
         """
         2d convolutional layer
 
@@ -237,7 +237,7 @@ class DensityModel(object):
         return tf.nn.conv2d(X, W, strides=[1, 1, 1, 1], padding="SAME")
 
     @staticmethod
-    def __max_pool_2x2(self, X):
+    def __max_pool_2x2(X):
         """
         2x2 maximum pooling layer
 
@@ -253,7 +253,7 @@ class DensityModel(object):
         )
 
     @staticmethod
-    def __batch_norm(self, X, axes, shape, is_training):
+    def __batch_norm(X, axes, shape, is_training):
         """
         batch normalization
 
@@ -276,7 +276,7 @@ class DensityModel(object):
         return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
 
     @staticmethod
-    def __variable_summaries(self, var):
+    def __variable_summaries(var):
         """
         processing variables and it output tensorboard
 

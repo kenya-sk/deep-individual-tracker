@@ -7,7 +7,7 @@ from typing import NoReturn, Tuple
 import hydra
 import numpy as np
 import tensorflow as tf
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from tqdm import trange
@@ -25,7 +25,7 @@ from utils import (
 
 # logger setting
 current_time = get_current_time_str()
-log_path = f"../logs/train_{current_time}.log"
+log_path = f"./logs/train_{current_time}.log"
 logging.basicConfig(
     filename=log_path,
     level=logging.DEBUG,
@@ -34,14 +34,19 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def load_dataset(image_directory: str, density_directory: str, mask_path: str) -> Tuple:
+def load_dataset(
+    image_directory: str,
+    density_directory: str,
+    mask_path: str,
+    input_image_shape: Tuple,
+) -> Tuple:
     """_summary_
 
     Args:
         image_directory (str): _description_
         density_directory (str): _description_
         mask_path (str): _description_
-        test_size (float): _description_
+        input_image_shape (Tuple): _description_
 
     Returns:
         Tuple: _description_
@@ -55,6 +60,9 @@ def load_dataset(image_directory: str, density_directory: str, mask_path: str) -
     logger.info("Loading Dataset...")
     for path in file_list:
         image = load_image(path)
+        assert (
+            image.shape == input_image_shape
+        ), f"Invalid image shape. Expected is {input_image_shape}"
         density_file_name = path.replace(".png", ".npy").split("/")[-1]
         density_map = np.load("{0}/{1}".format(density_directory, density_file_name))
         if mask_path is None:
@@ -191,17 +199,13 @@ def horizontal_flip(
         X_train_local, y_train_local = get_local_data(
             X_train[train_idx][:, ::-1, :],
             y_train[train_idx][:, ::-1],
-            params_dict["flip_index_h"],
-            params_dict["flip_index_w"],
-            local_img_size=params_dict["local_image_size"],
+            params_dict,
+            is_flip=False,
         )
     else:
+        # apply horizontal flip
         X_train_local, y_train_local = get_local_data(
-            X_train[train_idx],
-            y_train[train_idx],
-            params_dict["index_h"],
-            params_dict["index_w"],
-            local_img_size=params_dict["local_image_size"],
+            X_train[train_idx], y_train[train_idx], params_dict, is_flip=True
         )
 
     return X_train_local, y_train_local
@@ -447,7 +451,7 @@ def test(
 
     test_step = 0
     test_loss = 0.0
-    for test_idx in trange(len(X_test), desc=f"Test Trained Model"):
+    for test_idx in trange(len(X_test), desc="Test Trained Model"):
         X_test_local, y_test_local = get_local_data(
             X_test[test_idx],
             y_test[test_idx],
@@ -512,8 +516,8 @@ def model_training(
         NoReturn: _description_
     """
     # start TensorFlow session
-    tf_config = tf.ConfigProto(
-        gpu_options=tf.GPUOptions(
+    tf_config = tf.compat.v1.ConfigProto(
+        gpu_options=tf.compat.v1.GPUOptions(
             visible_device_list=cfg["use_gpu_device"],
             per_process_gpu_memory_fraction=cfg["use_memory_rate"],
         )
@@ -537,6 +541,7 @@ def model_training(
     cfg["flip_index_w"] = flip_index_w
 
     # initialization of model variable
+    model = DensityModel()
     saver = tf.train.Saver()  # save weight
     # if exist pretrained model, load variable
     ckpt = tf.train.get_checkpoint_state(cfg["pretrained_model_path"])
@@ -549,7 +554,6 @@ def model_training(
         tf.global_variables_initializer().run()
 
     # training model
-    model = DensityModel()
     save_model_path = f"{cfg['save_trained_model_directory']}/{current_time}/model.ckpt"
     start_time = time.time()
     valid_loss_list = []
@@ -650,13 +654,16 @@ def model_training(
 
 @hydra.main(config_path="../conf", config_name="train")
 def main(cfg: DictConfig) -> NoReturn:
+    cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
 
     # loading train, validation and test dataset
+    input_image_shape = (cfg["image_height"], cfg["image_width"], cfg["image_channel"])
     X_array, y_array = load_dataset(
         cfg["image_directory"],
         cfg["density_directory"],
         cfg["mask_path"],
+        input_image_shape,
     )
     X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
         X_array, y_array, cfg["test_size"]

@@ -9,6 +9,7 @@ RUN apt-get install -y \
     libsm6 \
     libxrender1 \
     libxext6
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 ADD . .

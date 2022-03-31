@@ -1,17 +1,24 @@
 image_directory: "/data/image/raw/all"
 density_directory: "/data/dens/all"
 mask_path: "/data/image/mask.png"
-pretrained_model_path: 
+pretrained_model_path: ""
 tensorboard_directory: "/data/tensorboard/"
 save_trained_model_directory: "/data/tensor_model/s"
 # ID of using GPU: 0-max number of available GPUs
 use_gpu_device: "0,1,2"
 # using each GPU memory rate: 0.0-1.0
 use_memory_rate: 0.9
+# raw image information
+image_height: 1080
+image_width: 1920
+image_channel: 3
+# Image analysis area
+analysis_image_height_min: 0
+analysis_image_height_max: 720
+analysis_image_width_min: 0
+analysis_image_width_max: 1920
 # test dataset size: 0.0-1.0
 test_size: 0.2
-# channel number of input image
-image_channel: 3
 # square local image size: > 0
 local_image_size: 72
 # batch size of training: > 0
