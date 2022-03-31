@@ -10,16 +10,27 @@ import tensorflow as tf
 from omegaconf import DictConfig, OmegaConf
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
-from tensorflow.compat.v1 import (ConfigProto, GPUOptions, InteractiveSession,
-                                  global_variables_initializer)
-from tensorflow.compat.v1.summary import FileWriter
+from tensorflow.compat.v1 import (
+    ConfigProto,
+    GPUOptions,
+    InteractiveSession,
+    global_variables_initializer,
+)
+from tensorflow.compat.v1.summary import FileWriter, merge_all
 from tensorflow.compat.v1.train import Saver
+from tensorflow.python.framework.ops import Tensor as OpsTensor
 from tqdm import trange
 
 from model import DensityModel
-from utils import (apply_masking_on_image, get_current_time_str,
-                   get_elapsed_time_str, get_local_data, get_masked_index,
-                   load_image, set_tensorboard)
+from utils import (
+    apply_masking_on_image,
+    get_current_time_str,
+    get_elapsed_time_str,
+    get_local_data,
+    get_masked_index,
+    load_image,
+    set_tensorboard,
+)
 
 # logger setting
 current_time = get_current_time_str()
@@ -216,7 +227,7 @@ def train(
     X_train: np.array,
     y_train: np.array,
     params_dict: dict,
-    merged,
+    summuray_merged: OpsTensor,
     writer: FileWriter,
 ) -> float:
     """_summary_
@@ -228,7 +239,7 @@ def train(
         X_train (np.array): _description_
         y_train (np.array): _description_
         params_dict (dict): _description_
-        merged (_type_): _description_
+        summuray_merged (OpsTensor): _description_
         writer (FileWriter): _description_
 
     Returns:
@@ -308,7 +319,7 @@ def train(
             train_loss += np.mean(train_diff)
 
             train_summary, _ = tf_session.run(
-                [merged, model.learning_step],
+                [summuray_merged, model.learning_step],
                 feed_dict={
                     model.X: X_train_local[train_start_index:train_end_index].reshape(
                         -1,
@@ -361,7 +372,7 @@ def validation(
     X_valid: np.array,
     y_valid: np.array,
     params_dict: dict,
-    merged,
+    summuray_merged: OpsTensor,
     writer: FileWriter,
 ) -> float:
     """_summary_
@@ -373,7 +384,7 @@ def validation(
         X_valid (np.array): _description_
         y_valid (np.array): _description_
         params_dict (dict): _description_
-        merged (_type_): _description_
+        summuray_merged (OpsTensor): _description_
         writer (FileWriter): _description_
 
     Returns:
@@ -396,7 +407,7 @@ def validation(
 
             # validate mini batch
             valid_loss_summary, valid_batch_loss = tf_session.run(
-                [merged, model.loss],
+                [summuray_merged, model.loss],
                 feed_dict={
                     model.X: X_valid_local[valid_start_index:valid_end_index].reshape(
                         -1,
@@ -429,7 +440,7 @@ def test(
     X_test: np.array,
     y_test: np.array,
     params_dict: dict,
-    merged,
+    summuray_merged: OpsTensor,
     writer: FileWriter,
 ) -> float:
     """_summary_
@@ -440,7 +451,7 @@ def test(
         X_test (np.array): _description_
         y_test (np.array): _description_
         params_dict (dict): _description_
-        merged (_type_): _description_
+        summuray_merged (OpsTensor): _description_
         writer (FileWriter): _description_
 
     Returns:
@@ -465,7 +476,7 @@ def test(
 
             # test mini batch
             test_summary, test_batch_loss = tf_session.run(
-                [merged, model.loss],
+                [summuray_merged, model.loss],
                 feed_dict={
                     model.X: X_test_local[test_start_index:test_end_index].reshape(
                         -1,
@@ -523,7 +534,7 @@ def model_training(
     tf_session = InteractiveSession(config=tf_config)
 
     # Tensor Board setting
-    summuray_merged, train_writer, valid_writer, test_writer = set_tensorboard(
+    train_writer, valid_writer, test_writer = set_tensorboard(
         cfg["tensorboard_directory"], current_time, tf_session
     )
 
@@ -538,6 +549,7 @@ def model_training(
 
     # initialization of model variable
     model = DensityModel()
+    summuray_merged = merge_all()
     saver = Saver()  # save weight
     # if exist pretrained model, load variable
     ckpt = tf.train.get_checkpoint_state(cfg["pretrained_model_path"])

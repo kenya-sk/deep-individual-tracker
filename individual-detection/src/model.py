@@ -2,6 +2,7 @@ import math
 import sys
 
 import tensorflow as tf
+from tensorflow.compat.v1 import placeholder, summary
 from tensorflow.compat.v1.summary import histogram
 from tensorflow.compat.v1.train import AdamOptimizer
 
@@ -11,17 +12,17 @@ class DensityModel(object):
         # input image
         with tf.name_scope("input"):
             with tf.name_scope("X"):
-                self.X = tf.placeholder(tf.float32, [None, 72, 72, 3], name="input")
+                self.X = placeholder(tf.float32, [None, 72, 72, 3], name="input")
                 _ = tf.summary.image("X", self.X[:, :, :, :], 5)
             # answer image
             with tf.name_scope("y_"):
-                self.y_ = tf.placeholder(tf.float32, [None, 1], name="label")
+                self.y_ = placeholder(tf.float32, [None, 1], name="label")
             # status: True(learning) or False(test)
             with tf.name_scope("is_training"):
-                self.is_training = tf.placeholder(tf.bool, name="is_training")
+                self.is_training = placeholder(tf.bool, name="is_training")
             # dropout rate
             with tf.name_scope("keep_prob"):
-                self.rate = tf.placeholder(tf.float32)
+                self.rate = placeholder(tf.float32)
 
         # first layer
         # convolution -> Leaky ReLU -> max pooling
@@ -31,7 +32,7 @@ class DensityModel(object):
             with tf.name_scope("weight1"):
                 w_conv1 = self.__weight_variable([7, 7, 3, 32], None)
                 self.__variable_summaries(w_conv1)
-                _ = tf.summary.image(
+                _ = summary.image(
                     "image1",
                     tf.transpose(w_conv1, perm=[3, 0, 1, 2])[:, :, :, 0:1],
                     max_outputs=3,
@@ -55,7 +56,7 @@ class DensityModel(object):
             with tf.name_scope("weight2"):
                 w_conv2 = self.__weight_variable([7, 7, 32, 32], None)
                 self.__variable_summaries(w_conv2)
-                _ = tf.summary.image(
+                _ = summary.image(
                     "image2",
                     tf.transpose(w_conv2, perm=[3, 0, 1, 2])[:, :, :, 0:1],
                     max_outputs=3,
@@ -79,7 +80,7 @@ class DensityModel(object):
             with tf.name_scope("weight3"):
                 w_conv3 = self.__weight_variable([5, 5, 32, 64], None)
                 self.__variable_summaries(w_conv3)
-                _ = tf.summary.image(
+                _ = summary.image(
                     "image3",
                     tf.transpose(w_conv3, perm=[3, 0, 1, 2])[:, :, :, 0:1],
                     max_outputs=3,
@@ -155,13 +156,13 @@ class DensityModel(object):
                 self.__variable_summaries(self.y)
 
         # output
-        histogram("output", self.y)
+        summary.histogram("output", self.y)
 
         # loss function
         with tf.name_scope("loss"):
             self.diff = tf.square(self.y_ - self.y)
             self.loss = tf.reduce_mean(self.diff)
-            tf.summary.scalar("loss", self.loss)
+            summary.scalar("loss", self.loss)
 
         # learning algorithm (learning rate: 0.0001)
         with tf.name_scope("train"):
@@ -198,7 +199,7 @@ class DensityModel(object):
             sys.stderr.write("Error: shape is not correct !")
             sys.exit(1)
         stddev = math.sqrt(2 / n)
-        initial = tf.random_normal(shape, stddev=stddev, dtype=tf.float32)
+        initial = tf.random.normal(shape, stddev=stddev, dtype=tf.float32)
         if name is None:
             return tf.Variable(initial)
         else:
@@ -250,7 +251,7 @@ class DensityModel(object):
             pooled value
         """
 
-        return tf.nn.max_pool(
+        return tf.nn.max_pool2d(
             X, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME"
         )
 
@@ -291,9 +292,9 @@ class DensityModel(object):
 
         with tf.name_scope("summaries"):
             mean = tf.reduce_mean(var)
-            tf.summary.scalar("mean", mean)
+            summary.scalar("mean", mean)
             with tf.name_scope("stddev"):
                 stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-            tf.summary.scalar("stddev", stddev)
-            tf.summary.scalar("max", tf.reduce_max(var))
-            tf.summary.scalar("min", tf.reduce_min(var))
+            summary.scalar("stddev", stddev)
+            summary.scalar("max", tf.reduce_max(var))
+            summary.scalar("min", tf.reduce_min(var))

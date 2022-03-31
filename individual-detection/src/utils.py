@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.compat.v1 import InteractiveSession
-from tensorflow.compat.v1.summary import FileWriter
+from tensorflow.compat.v1.summary import FileWriter, merge_all
 
 from model import DensityModel
 
@@ -334,7 +334,7 @@ def set_capture(video_path: str) -> Tuple:
 
 
 def get_current_time_str(
-    time_difference: int = 9, time_format: str = "%Y%m%d%H%M%S"
+    time_difference: int = 9, time_format: str = "%Y%m%d_%H%M%S"
 ) -> str:
     """Get the current time and convert formatted string.
 
@@ -400,7 +400,7 @@ def set_tensorboard(
         Tuple: _description_
     """
     # directory of TensorBoard
-    log_directory = "{tensorboard_directory}/{current_time_str}"
+    log_directory = f"{tensorboard_directory}/{current_time_str}"
     logger.info(f"TensorBoard Directory: {log_directory}")
 
     # if the target directory exists, delete and recreate
@@ -409,9 +409,8 @@ def set_tensorboard(
     tf.io.gfile.makedirs(log_directory)
 
     # set variable on TensorBoard
-    summuray_merged = tf.compat.v1.summary.merge_all()
     train_writer = FileWriter(f"{0}/train", tf_session.graph)
     valid_writer = FileWriter(f"{0}/validation")
     test_writer = FileWriter(f"{0}/test")
 
-    return summuray_merged, train_writer, valid_writer, test_writer
+    return train_writer, valid_writer, test_writer
