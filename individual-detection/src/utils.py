@@ -8,6 +8,8 @@ from typing import List, NoReturn, Tuple
 import cv2
 import numpy as np
 import tensorflow as tf
+from tensorflow.compat.v1 import InteractiveSession
+from tensorflow.compat.v1.summary import FileWriter
 
 from model import DensityModel
 
@@ -286,7 +288,7 @@ def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
             visible_device_list=device_id, per_process_gpu_memory_fraction=memory_rate
         )
     )
-    sess = tf.compat.v1.InteractiveSession(config=config)
+    sess = InteractiveSession(config=config)
 
     model = DensityModel()
     saver = tf.train.Saver()
@@ -389,13 +391,13 @@ def load_image(path: str) -> np.array:
 def set_tensorboard(
     tensorboard_directory: str,
     current_time_str: str,
-    tf_session: tf.compat.v1.InteractiveSession,
+    tf_session: InteractiveSession,
 ) -> Tuple:
     """_summary_
 
     Args:
         tensorboard_directory (str): _description_
-        tf_session (tf.compat.v1.InteractiveSession): _description_
+        tf_session (InteractiveSession): _description_
 
     Returns:
         Tuple: _description_
@@ -411,8 +413,8 @@ def set_tensorboard(
 
     # set variable on TensorBoard
     summuray_merged = tf.compat.v1.summary.merge_all()
-    train_writer = tf.summary.FileWriter(f"{0}/train", tf_session.graph)
-    valid_writer = tf.summary.FileWriter(f"{0}/validation")
-    test_writer = tf.summary.FileWriter(f"{0}/test")
+    train_writer = FileWriter(f"{0}/train", tf_session.graph)
+    valid_writer = FileWriter(f"{0}/validation")
+    test_writer = FileWriter(f"{0}/test")
 
     return summuray_merged, train_writer, valid_writer, test_writer
