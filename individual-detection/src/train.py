@@ -25,7 +25,7 @@ from utils import (
 
 # logger setting
 current_time = get_current_time_str()
-log_path = f"../../logs/train_{current_time}.log"
+log_path = f"../logs/train_{current_time}.log"
 logging.basicConfig(
     filename=log_path,
     level=logging.DEBUG,
