@@ -10,20 +10,16 @@ import tensorflow as tf
 from omegaconf import DictConfig, OmegaConf
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
-from tensorflow.compat.v1 import ConfigProto, GPUOptions, InteractiveSession
+from tensorflow.compat.v1 import (ConfigProto, GPUOptions, InteractiveSession,
+                                  global_variables_initializer)
 from tensorflow.compat.v1.summary import FileWriter
+from tensorflow.compat.v1.train import Saver
 from tqdm import trange
 
 from model import DensityModel
-from utils import (
-    apply_masking_on_image,
-    get_current_time_str,
-    get_elapsed_time_str,
-    get_local_data,
-    get_masked_index,
-    load_image,
-    set_tensorboard,
-)
+from utils import (apply_masking_on_image, get_current_time_str,
+                   get_elapsed_time_str, get_local_data, get_masked_index,
+                   load_image, set_tensorboard)
 
 # logger setting
 current_time = get_current_time_str()
@@ -305,7 +301,7 @@ def train(
                         -1, 1
                     ),
                     model.is_training: True,
-                    model.keep_prob: params_dict["keep_prob"],
+                    model.rate: params_dict["dropout_rate"],
                 },
             )
             # update training loss
@@ -324,7 +320,7 @@ def train(
                         -1, 1
                     ),
                     model.is_training: True,
-                    model.keep_prob: params_dict["keep_prob"],
+                    model.rate: params_dict["dropout_rate"],
                 },
             )
 
@@ -412,7 +408,7 @@ def validation(
                         -1, 1
                     ),
                     model.is_training: False,
-                    model.keep_prob: 1.0,
+                    model.rate: 1.0,
                 },
             )
             # update validation loss
@@ -481,7 +477,7 @@ def test(
                         -1, 1
                     ),
                     model.is_training: False,
-                    model.keep_prob: 1.0,
+                    model.rate: 1.0,
                 },
             )
             writer.add_summary(test_summary, test_step)
@@ -533,10 +529,8 @@ def model_training(
 
     # get mask index
     # if you analyze all areas, please set a white image
-    index_h, index_w = get_masked_index(cfg["mask_path"], horizontal_flip=False)
-    flip_index_h, flip_index_w = get_masked_index(
-        cfg["mask_path"], horizontal_flip=True
-    )
+    index_h, index_w = get_masked_index(cfg, horizontal_flip=False)
+    flip_index_h, flip_index_w = get_masked_index(cfg, horizontal_flip=True)
     cfg["index_h"] = index_h
     cfg["index_w"] = index_w
     cfg["flip_index_h"] = flip_index_h
@@ -544,7 +538,7 @@ def model_training(
 
     # initialization of model variable
     model = DensityModel()
-    saver = tf.train.Saver()  # save weight
+    saver = Saver()  # save weight
     # if exist pretrained model, load variable
     ckpt = tf.train.get_checkpoint_state(cfg["pretrained_model_path"])
     if ckpt:
@@ -553,7 +547,7 @@ def model_training(
         saver.restore(tf_session, pretrained_model)
     else:
         logger.debug("Initialize all variable")
-        tf.global_variables_initializer().run()
+        global_variables_initializer().run()
 
     # training model
     save_model_path = f"{cfg['save_trained_model_directory']}/{current_time}/model.ckpt"

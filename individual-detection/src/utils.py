@@ -163,20 +163,17 @@ def apply_masking_on_image(image: np.array, mask_path: str = None) -> np.array:
     return masked_image
 
 
-def get_masked_index(
-    params_dict: dict, mask_path: str = None, horizontal_flip: bool = False
-) -> Tuple:
+def get_masked_index(params_dict: dict, horizontal_flip: bool = False) -> Tuple:
     """Masking an image to get valid index
 
     Args:
         params_dict (dict): dictionary of parameters
-        mask_path (str, optional): binay mask path. Defaults to None.
         horizontal_flip (bool, optional): Whether to perform data augumentation. Defaults to False.
 
     Returns:
         Tuple: valid index list (heiht and width)
     """
-
+    mask_path = params_dict["mask_path"]
     if mask_path is None:
         mask = np.ones((params_dict["image_height"], params_dict["image_width"]))
     else:

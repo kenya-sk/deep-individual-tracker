@@ -2,6 +2,8 @@ import math
 import sys
 
 import tensorflow as tf
+from tensorflow.compat.v1.summary import histogram
+from tensorflow.compat.v1.train import AdamOptimizer
 
 
 class DensityModel(object):
@@ -19,7 +21,7 @@ class DensityModel(object):
                 self.is_training = tf.placeholder(tf.bool, name="is_training")
             # dropout rate
             with tf.name_scope("keep_prob"):
-                self.keep_prob = tf.placeholder(tf.float32)
+                self.rate = tf.placeholder(tf.float32)
 
         # first layer
         # convolution -> Leaky ReLU -> max pooling
@@ -104,7 +106,7 @@ class DensityModel(object):
                 h_fc4 = tf.nn.leaky_relu(fc4_bn)
                 self.__variable_summaries(h_fc4)
             with tf.name_scope("drop4"):
-                h_fc4_drop = tf.nn.dropout(h_fc4, keep_prob=self.keep_prob)
+                h_fc4_drop = tf.nn.dropout(h_fc4, rate=self.rate)
 
         # fifth layer
         # fully connected layer
@@ -120,7 +122,7 @@ class DensityModel(object):
                 h_fc5 = tf.nn.leaky_relu(fc5_bn)
                 self.__variable_summaries(h_fc5)
             with tf.name_scope("drop5"):
-                h_fc5_drop = tf.nn.dropout(h_fc5, keep_prob=self.keep_prob)
+                h_fc5_drop = tf.nn.dropout(h_fc5, rate=self.rate)
 
         # sixth layer
         # fully connected layer
@@ -136,7 +138,7 @@ class DensityModel(object):
                 h_fc6 = tf.nn.leaky_relu(fc6_bn)
                 self.__variable_summaries(h_fc6)
             with tf.name_scope("drop6"):
-                h_fc6_drop = tf.nn.dropout(h_fc6, keep_prob=self.keep_prob)
+                h_fc6_drop = tf.nn.dropout(h_fc6, rate=self.rate)
 
         # seven layer
         # fully connected layer
@@ -153,7 +155,7 @@ class DensityModel(object):
                 self.__variable_summaries(self.y)
 
         # output
-        tf.summary.histogram("output", self.y)
+        histogram("output", self.y)
 
         # loss function
         with tf.name_scope("loss"):
@@ -164,7 +166,7 @@ class DensityModel(object):
         # learning algorithm (learning rate: 0.0001)
         with tf.name_scope("train"):
             # train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
-            self.learning_step = tf.train.AdamOptimizer(
+            self.learning_step = AdamOptimizer(
                 learning_rate=0.001,
                 beta1=0.9,
                 beta2=0.999,
