@@ -196,42 +196,42 @@ def horizontal_flip(
     """
 
     if np.random.rand() < params_dict["flip_prob"]:
+        # image apply horizontal flip
         X_train_local, y_train_local = get_local_data(
             X_train[train_idx][:, ::-1, :],
             y_train[train_idx][:, ::-1],
             params_dict,
-            is_flip=False,
+            is_flip=True,
         )
     else:
-        # apply horizontal flip
         X_train_local, y_train_local = get_local_data(
-            X_train[train_idx], y_train[train_idx], params_dict, is_flip=True
+            X_train[train_idx], y_train[train_idx], params_dict, is_flip=False
         )
 
     return X_train_local, y_train_local
 
 
 def train(
-    tf_session: tf.InteractiveSession,
+    tf_session: tf.compat.v1.InteractiveSession,
     epoch: int,
     model: DensityModel,
     X_train: np.array,
     y_train: np.array,
     params_dict: dict,
     merged,
-    writer: tf.summary.FileWriter,
+    writer: tf.compat.v1.summary.FileWriter,
 ) -> float:
     """_summary_
 
     Args:
-        tf_session (tf.InteractiveSession): _description_
+        tf_session (tf.compat.v1.InteractiveSession): _description_
         epoch (int): _description_
         model (DensityModel): _description_
         X_train (np.array): _description_
         y_train (np.array): _description_
         params_dict (dict): _description_
         merged (_type_): _description_
-        writer (tf.summary.FileWriter): _description_
+        writer (tf.compat.v1.summary.FileWriter): _description_
 
     Returns:
         float: _description_
@@ -357,26 +357,26 @@ def train(
 
 
 def validation(
-    tf_session: tf.InteractiveSession,
+    tf_session: tf.compat.v1.InteractiveSession,
     epoch: int,
     model: DensityModel,
     X_valid: np.array,
     y_valid: np.array,
     params_dict: dict,
     merged,
-    writer: tf.summary.FileWriter,
+    writer: tf.compat.v1.summary.FileWriter,
 ) -> float:
     """_summary_
 
     Args:
-        tf_session (tf.InteractiveSession): _description_
+        tf_session (tf.compat.v1.InteractiveSession): _description_
         epoch (int): _description_
         model (DensityModel): _description_
         X_valid (np.array): _description_
         y_valid (np.array): _description_
         params_dict (dict): _description_
         merged (_type_): _description_
-        writer (tf.summary.FileWriter): _description_
+        writer (tf.compat.v1.summary.FileWriter): _description_
 
     Returns:
         float: _description_
@@ -426,24 +426,24 @@ def validation(
 
 
 def test(
-    tf_session: tf.InteractiveSession,
+    tf_session: tf.compat.v1.InteractiveSession,
     model: DensityModel,
     X_test: np.array,
     y_test: np.array,
     params_dict: dict,
     merged,
-    writer: tf.summary.FileWriter,
+    writer: tf.compat.v1.summary.FileWriter,
 ) -> float:
     """_summary_
 
     Args:
-        tf_session (tf.InteractiveSession): _description_
+        tf_session (tf.compat.v1.InteractiveSession): _description_
         model (DensityModel): _description_
         X_test (np.array): _description_
         y_test (np.array): _description_
         params_dict (dict): _description_
         merged (_type_): _description_
-        writer (tf.summary.FileWriter): _description_
+        writer (tf.compat.v1.summary.FileWriter): _description_
 
     Returns:
         float: _description_
@@ -522,7 +522,7 @@ def model_training(
             per_process_gpu_memory_fraction=cfg["use_memory_rate"],
         )
     )
-    tf_session = tf.InteractiveSession(config=tf_config)
+    tf_session = tf.compat.v1.InteractiveSession(config=tf_config)
 
     # Tensor Board setting
     summuray_merged, train_writer, valid_writer, test_writer = set_tensorboard(

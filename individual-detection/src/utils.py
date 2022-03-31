@@ -141,7 +141,10 @@ def apply_masking_on_image(image: np.array, mask_path: str = None) -> np.array:
     """
     height = image.shape[0]
     width = image.shape[1]
-    channel = image.shape[2]
+    if len(image.shape) == 3:
+        channel = image.shape[2]
+    else:
+        channel = 1
 
     # mask: 3channel mask image. the value is 0 or 1
     mask = cv2.imread(mask_path)
@@ -158,10 +161,13 @@ def apply_masking_on_image(image: np.array, mask_path: str = None) -> np.array:
     return masked_image
 
 
-def get_masked_index(mask_path: str = None, horizontal_flip: bool = False) -> Tuple:
+def get_masked_index(
+    params_dict: dict, mask_path: str = None, horizontal_flip: bool = False
+) -> Tuple:
     """Masking an image to get valid index
 
     Args:
+        params_dict (dict): dictionary of parameters
         mask_path (str, optional): binay mask path. Defaults to None.
         horizontal_flip (bool, optional): Whether to perform data augumentation. Defaults to False.
 
@@ -170,12 +176,23 @@ def get_masked_index(mask_path: str = None, horizontal_flip: bool = False) -> Tu
     """
 
     if mask_path is None:
-        mask = np.ones((720, 1280))
+        mask = np.ones((params_dict["image_height"], params_dict["image_width"]))
     else:
         mask = cv2.imread(mask_path)
 
+    # convert gray scale image
     if mask.shape[2] == 3:
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+    # crop the image to the analysis area
+    mask = mask[
+        params_dict["analysis_image_height_min"] : params_dict[
+            "analysis_image_height_max"
+        ],
+        params_dict["analysis_image_width_min"] : params_dict[
+            "analysis_image_width_max"
+        ],
+    ]
 
     # index of data augumentation
     if horizontal_flip:
@@ -190,13 +207,13 @@ def get_masked_index(mask_path: str = None, horizontal_flip: bool = False) -> Tu
 
 
 def get_local_data(
-    image: np.array, dens_map: np.array, params_dict: dict, is_flip: bool
+    image: np.array, density_map: np.array, params_dict: dict, is_flip: bool
 ) -> Tuple:
     """Get local image and density map from raw data
 
     Args:
         image (np.array): raw image
-        dens_map (np.array): raw density map
+        density_map (np.array): raw density map
         params_dict (dict): dictionary of parameters
         is_flip (book): whether image is flip or not
 
@@ -216,12 +233,11 @@ def get_local_data(
     ]
     height = image.shape[0]
     width = image.shape[1]
+    channel = image.shape[2]
 
     pad = math.floor(params_dict["local_image_size"] / 2)
-    pad_image = np.zeros(
-        (height + pad * 2, width + pad * 2, image.shape[2]), dtype="uint8"
-    )
-    pad_image[pad : height + pad, pad : width + pad] = image
+    pad_image = np.zeros((height + pad * 2, width + pad * 2, channel), dtype="uint8")
+    pad_image[pad : pad + height, pad : pad + width] = image
 
     # get each axis index
     if is_flip:
@@ -232,24 +248,25 @@ def get_local_data(
         index_w = params_dict["index_w"]
 
     # extract local image
-    local_img_array = np.zeros(
+    local_data_number = len(index_w)  # len(index_w) == len(index_h)
+    local_image_array = np.zeros(
         (
-            len(index_w),
+            local_data_number,
             params_dict["local_image_size"],
             params_dict["local_image_size"],
-            image.shape[2],
+            channel,
         ),
         dtype="uint8",
     )
-    density_array = np.zeros((len(index_w)), dtype="float32")
-    for idx in range(len(index_w)):
+    density_array = np.zeros((local_data_number), dtype="float32")
+    for idx in range(local_data_number):
         # fix index(pad_image)
         h = index_h[idx]
         w = index_w[idx]
-        local_img_array[idx] = pad_image[h : h + 2 * pad, w : w + 2 * pad]
-        density_array[idx] = dens_map[h, w]
+        local_image_array[idx] = pad_image[h : h + 2 * pad, w : w + 2 * pad]
+        density_array[idx] = density_map[h, w]
 
-    return local_img_array, density_array
+    return local_image_array, density_array
 
 
 def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
@@ -269,7 +286,7 @@ def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
             visible_device_list=device_id, per_process_gpu_memory_fraction=memory_rate
         )
     )
-    sess = tf.InteractiveSession(config=config)
+    sess = tf.compat.v1.InteractiveSession(config=config)
 
     model = DensityModel()
     saver = tf.train.Saver()
@@ -354,7 +371,7 @@ def get_elapsed_time_str(start_time: float) -> str:
 
 def load_image(path: str) -> np.array:
     """
-    Loads image data from the input path and returns image in numpy array format.
+    Loads image data frosm the input path and returns image in numpy array format.
     :param path: input image file path
     :return: loaded image
     """
@@ -372,13 +389,13 @@ def load_image(path: str) -> np.array:
 def set_tensorboard(
     tensorboard_directory: str,
     current_time_str: str,
-    tf_session: tf.InteractiveSession,
+    tf_session: tf.compat.v1.InteractiveSession,
 ) -> Tuple:
     """_summary_
 
     Args:
         tensorboard_directory (str): _description_
-        tf_session (tf.InteractiveSession): _description_
+        tf_session (tf.compat.v1.InteractiveSession): _description_
 
     Returns:
         Tuple: _description_
