@@ -8,8 +8,14 @@ import cv2
 import numpy as np
 
 from clustering import clustering
-from utils import (display_data_info, get_local_data, get_masked_data,
-                   get_masked_index, load_model, set_capture)
+from utils import (
+    display_data_info,
+    get_local_data,
+    apply_masking_on_image,
+    get_masked_index,
+    load_model,
+    set_capture,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +27,8 @@ index_h, index_w = get_masked_index("/data/sakka/image/mask.png")
 def cnn_predict(model, sess, img, frame_num, output_dirc, args):
     # ------------------------------- PREDICT ----------------------------------
     label = np.zeros(args.original_img_size)
-    masked_img = get_masked_data(img, args.mask_path)
-    masked_label = get_masked_data(label, args.mask_path)
+    masked_img = apply_masking_on_image(img, args.mask_path)
+    masked_label = apply_masking_on_image(label, args.mask_path)
     X_local, y_local = get_local_data(
         masked_img, masked_label, index_h, index_w, local_img_size=args.local_img_size
     )

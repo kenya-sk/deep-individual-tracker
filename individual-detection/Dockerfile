@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.13.1-gpu-py3
+FROM tensorflow/tensorflow:1.15.5-gpu-py3
 
 WORKDIR /root
 ADD requirements.txt requirements.txt
