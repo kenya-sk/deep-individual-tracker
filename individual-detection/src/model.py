@@ -3,7 +3,6 @@ import sys
 
 import tensorflow as tf
 from tensorflow.compat.v1 import placeholder, summary
-from tensorflow.compat.v1.summary import histogram
 from tensorflow.compat.v1.train import AdamOptimizer
 
 
@@ -13,7 +12,7 @@ class DensityModel(object):
         with tf.name_scope("input"):
             with tf.name_scope("X"):
                 self.X = placeholder(tf.float32, [None, 72, 72, 3], name="input")
-                _ = tf.summary.image("X", self.X[:, :, :, :], 5)
+                _ = summary.image("X", self.X[:, :, :, :], 5)
             # answer image
             with tf.name_scope("y_"):
                 self.y_ = placeholder(tf.float32, [None, 1], name="label")

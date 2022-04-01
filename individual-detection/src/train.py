@@ -260,7 +260,7 @@ def train(
     hard_negative_label_array = np.zeros((1), dtype="float32")
 
     # one epoch training
-    for train_idx in trange(len(X_train), desc=f"Model Training [epoch={epoch}]"):
+    for train_idx in trange(len(X_train), desc=f"Model Training [epoch={epoch+1}]"):
         # load training local image
         # data augmentation (horizontal flip)
         X_train_local, y_train_local = horizontal_flip(
@@ -392,13 +392,13 @@ def validation(
     """
 
     valid_loss = 0.0
-    for valid_idx in trange(len(X_valid), desc=f"Model Validation [epoch={epoch}]"):
+    for valid_idx in trange(len(X_valid), desc=f"Model Validation [epoch={epoch+1}]"):
         X_valid_local, y_valid_local = get_local_data(
             X_valid[valid_idx],
             y_valid[valid_idx],
             params_dict["index_h"],
             params_dict["index_w"],
-            local_img_size=params_dict["local_image_size"],
+            params_dict["local_image_size"],
         )
         valid_n_batches = int(len(X_valid_local) / params_dict["batch_size"])
         for valid_batch in range(valid_n_batches):
@@ -466,7 +466,7 @@ def test(
             y_test[test_idx],
             params_dict["index_h"],
             params_dict["index_w"],
-            local_img_size=params_dict["local_image_size"],
+            params_dict["local_image_size"],
         )
         test_n_batches = int(len(X_test_local) / params_dict["batch_size"])
         for test_batch in range(test_n_batches):
