@@ -525,8 +525,11 @@ def model_training(
     )
     tf_session = InteractiveSession(config=tf_config)
 
+    # define model
+    model = DensityModel()
+
     # Tensor Board setting
-    train_writer, valid_writer, test_writer = set_tensorboard(
+    summuray_merged, train_writer, valid_writer, test_writer = set_tensorboard(
         cfg["tensorboard_directory"], current_time, tf_session
     )
 
@@ -540,8 +543,6 @@ def model_training(
     cfg["flip_index_w"] = flip_index_w
 
     # initialization of model variable
-    model = DensityModel()
-    summuray_merged = merge_all()
     saver = Saver()  # save weight
     # if exist pretrained model, load variable
     ckpt = tf.train.get_checkpoint_state(cfg["pretrained_model_path"])

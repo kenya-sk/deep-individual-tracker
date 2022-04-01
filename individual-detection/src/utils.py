@@ -409,8 +409,9 @@ def set_tensorboard(
     tf.io.gfile.makedirs(log_directory)
 
     # set variable on TensorBoard
-    train_writer = FileWriter(f"{0}/train", tf_session.graph)
-    valid_writer = FileWriter(f"{0}/validation")
-    test_writer = FileWriter(f"{0}/test")
+    summuray_merged = merge_all()
+    train_writer = FileWriter(f"{log_directory}/train", tf_session.graph)
+    valid_writer = FileWriter(f"{log_directory}/validation")
+    test_writer = FileWriter(f"{log_directory}/test")
 
-    return train_writer, valid_writer, test_writer
+    return summuray_merged, train_writer, valid_writer, test_writer
