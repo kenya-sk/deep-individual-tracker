@@ -394,11 +394,7 @@ def validation(
     valid_loss = 0.0
     for valid_idx in trange(len(X_valid), desc=f"Model Validation [epoch={epoch+1}]"):
         X_valid_local, y_valid_local = get_local_data(
-            X_valid[valid_idx],
-            y_valid[valid_idx],
-            params_dict["index_h"],
-            params_dict["index_w"],
-            params_dict["local_image_size"],
+            X_valid[valid_idx], y_valid[valid_idx], params_dict, is_flip=False
         )
         valid_n_batches = int(len(X_valid_local) / params_dict["batch_size"])
         for valid_batch in range(valid_n_batches):
@@ -462,11 +458,7 @@ def test(
     test_loss = 0.0
     for test_idx in trange(len(X_test), desc="Test Trained Model"):
         X_test_local, y_test_local = get_local_data(
-            X_test[test_idx],
-            y_test[test_idx],
-            params_dict["index_h"],
-            params_dict["index_w"],
-            params_dict["local_image_size"],
+            X_test[test_idx], y_test[test_idx], params_dict, is_flip=False
         )
         test_n_batches = int(len(X_test_local) / params_dict["batch_size"])
         for test_batch in range(test_n_batches):

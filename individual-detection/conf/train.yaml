@@ -33,5 +33,5 @@ early_stopping_epochs: 2
 flip_prob: 0.5
 # data below this value is target to under-sampling
 under_sampling_thresh: 0.2
-# keep probality of dropout for each layer
-keep_prob: 0.5
+# dropout rate for each layer
+dropout_rate: 0.5
