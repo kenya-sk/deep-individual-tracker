@@ -380,14 +380,20 @@ def validation(
         X_valid_local, y_valid_local = get_local_data(
             X_valid[valid_idx], y_valid[valid_idx], params_dict, is_flip=False
         )
+
+        # under sampling
+        X_valid_local, y_valid_local = under_sampling(
+            X_valid_local, y_valid_local, thresh=params_dict["under_sampling_thresh"]
+        )
+
         valid_n_batches = int(len(X_valid_local) / params_dict["batch_size"])
         for valid_batch in range(valid_n_batches):
             valid_start_index = valid_batch * params_dict["batch_size"]
             valid_end_index = valid_start_index + params_dict["batch_size"]
 
             # validate mini batch
-            valid_loss_summary, valid_batch_loss = tf_session.run(
-                [summuray_merged, model.loss],
+            valid_loss_summary, valid_diff = tf_session.run(
+                [summuray_merged, model.diff],
                 feed_dict={
                     model.X: X_valid_local[valid_start_index:valid_end_index].reshape(
                         -1,
@@ -403,7 +409,7 @@ def validation(
                 },
             )
             # update validation loss
-            valid_loss += valid_batch_loss
+            valid_loss += np.mean(valid_diff)
 
     # record validation summary to TensorBoard
     writer.add_summary(valid_loss_summary, epoch)
@@ -438,7 +444,6 @@ def test(
         float: _description_
     """
 
-    test_step = 0
     test_loss = 0.0
     for test_idx in trange(len(X_test), desc="Test Trained Model"):
         X_test_local, y_test_local = get_local_data(
@@ -446,13 +451,12 @@ def test(
         )
         test_n_batches = int(len(X_test_local) / params_dict["batch_size"])
         for test_batch in range(test_n_batches):
-            test_step += 1
             test_start_index = test_batch * params_dict["batch_size"]
             test_end_index = test_start_index + params_dict["batch_size"]
 
             # test mini batch
-            test_summary, test_batch_loss = tf_session.run(
-                [summuray_merged, model.loss],
+            test_summary, test_diff = tf_session.run(
+                [summuray_merged, model.diff],
                 feed_dict={
                     model.X: X_test_local[test_start_index:test_end_index].reshape(
                         -1,
@@ -467,9 +471,11 @@ def test(
                     model.rate: 1.0,
                 },
             )
-            writer.add_summary(test_summary, test_step)
             # update test loss
-            test_loss += test_batch_loss
+            test_loss += np.mean(test_diff)
+
+    # record test summary to TensorBoard
+    writer.add_summary(test_summary, 0)
 
     # mean test loss per 1 epoch
     mean_test_loss = test_loss / test_n_batches
