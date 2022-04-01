@@ -260,7 +260,8 @@ def train(
     hard_negative_label_array = np.zeros((1), dtype="float32")
 
     # one epoch training
-    for train_idx in trange(len(X_train), desc=f"Model Training [epoch={epoch+1}]"):
+    sample_number = len(X_train)
+    for train_idx in trange(sample_number, desc=f"Model Training [epoch={epoch+1}]"):
         # load training local image
         # data augmentation (horizontal flip)
         X_train_local, y_train_local = horizontal_flip(
@@ -344,7 +345,7 @@ def train(
     writer.add_summary(train_summary, epoch)
 
     # mean train loss per 1 image
-    mean_train_loss = train_loss / train_n_batches
+    mean_train_loss = train_loss / (sample_number * train_n_batches)
 
     return mean_train_loss
 
@@ -376,7 +377,8 @@ def validation(
     """
 
     valid_loss = 0.0
-    for valid_idx in trange(len(X_valid), desc=f"Model Validation [epoch={epoch+1}]"):
+    sample_number = len(X_valid)
+    for valid_idx in trange(sample_number, desc=f"Model Validation [epoch={epoch+1}]"):
         X_valid_local, y_valid_local = get_local_data(
             X_valid[valid_idx], y_valid[valid_idx], params_dict, is_flip=False
         )
@@ -392,8 +394,8 @@ def validation(
             valid_end_index = valid_start_index + params_dict["batch_size"]
 
             # validate mini batch
-            valid_loss_summary, valid_diff = tf_session.run(
-                [summuray_merged, model.diff],
+            valid_loss_summary, valid_batch_loss = tf_session.run(
+                [summuray_merged, model.loss],
                 feed_dict={
                     model.X: X_valid_local[valid_start_index:valid_end_index].reshape(
                         -1,
@@ -409,13 +411,13 @@ def validation(
                 },
             )
             # update validation loss
-            valid_loss += np.mean(valid_diff)
+            valid_loss += valid_batch_loss
 
     # record validation summary to TensorBoard
     writer.add_summary(valid_loss_summary, epoch)
 
     # mean validation loss per 1 epoch
-    mean_valid_loss = valid_loss / valid_n_batches
+    mean_valid_loss = valid_loss / (sample_number * valid_n_batches)
 
     return mean_valid_loss
 
@@ -445,7 +447,8 @@ def test(
     """
 
     test_loss = 0.0
-    for test_idx in trange(len(X_test), desc="Test Trained Model"):
+    sample_number = len(X_test)
+    for test_idx in trange(sample_number, desc="Test Trained Model"):
         X_test_local, y_test_local = get_local_data(
             X_test[test_idx], y_test[test_idx], params_dict, is_flip=False
         )
@@ -455,8 +458,8 @@ def test(
             test_end_index = test_start_index + params_dict["batch_size"]
 
             # test mini batch
-            test_summary, test_diff = tf_session.run(
-                [summuray_merged, model.diff],
+            test_summary, test_batch_loss = tf_session.run(
+                [summuray_merged, model.loss],
                 feed_dict={
                     model.X: X_test_local[test_start_index:test_end_index].reshape(
                         -1,
@@ -472,13 +475,13 @@ def test(
                 },
             )
             # update test loss
-            test_loss += np.mean(test_diff)
+            test_loss += test_batch_loss
 
     # record test summary to TensorBoard
     writer.add_summary(test_summary, 0)
 
     # mean test loss per 1 epoch
-    mean_test_loss = test_loss / test_n_batches
+    mean_test_loss = test_loss / (sample_number * test_n_batches)
 
     return mean_test_loss
 
