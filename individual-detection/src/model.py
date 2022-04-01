@@ -151,7 +151,7 @@ class DensityModel(object):
                 b_fc7 = self.__bias_variable([1])
                 self.__variable_summaries(b_fc7)
             with tf.name_scope("flat7"):
-                self.y = tf.nn.leaky_relu(tf.matmul(h_fc6_drop, w_fc7) + b_fc7)
+                self.y = tf.nn.relu(tf.matmul(h_fc6_drop, w_fc7) + b_fc7)
                 self.__variable_summaries(self.y)
 
         # output

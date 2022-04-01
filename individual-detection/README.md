@@ -149,3 +149,11 @@ The evaluation metrics of individual detection are accuracy, recall, precision, 
 ```
 $ python3 evaluation.py
 ```
+
+### Monitoring by TensorBoard
+The training log is output by default so that it can be visualized in TensorBoard.
+
+``` bash
+LOG_DIRECTORY = "/data/tensorboard"
+tensorboard --logdir "${LOG_DIRECTORY}"
+```

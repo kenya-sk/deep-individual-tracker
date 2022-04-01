@@ -299,8 +299,26 @@ def train(
             train_end_index = train_start_index + params_dict["batch_size"]
 
             # training mini batch
-            train_diff = tf_session.run(
-                model.diff,
+            # train_diff = tf_session.run(
+            #     model.diff,
+            #     feed_dict={
+            #         model.X: X_train_local[train_start_index:train_end_index].reshape(
+            #             -1,
+            #             params_dict["local_image_size"],
+            #             params_dict["local_image_size"],
+            #             params_dict["image_channel"],
+            #         ),
+            #         model.y_: y_train_local[train_start_index:train_end_index].reshape(
+            #             -1, 1
+            #         ),
+            #         model.is_training: True,
+            #         model.rate: params_dict["dropout_rate"],
+            #     },
+            # )
+            # # update training loss
+            # train_loss += np.mean(train_diff)
+            train_diff, train_summary, _ = tf_session.run(
+                [model.diff, summuray_merged, model.learning_step],
                 feed_dict={
                     model.X: X_train_local[train_start_index:train_end_index].reshape(
                         -1,
@@ -315,25 +333,9 @@ def train(
                     model.rate: params_dict["dropout_rate"],
                 },
             )
+
             # update training loss
             train_loss += np.mean(train_diff)
-
-            train_summary, _ = tf_session.run(
-                [summuray_merged, model.learning_step],
-                feed_dict={
-                    model.X: X_train_local[train_start_index:train_end_index].reshape(
-                        -1,
-                        params_dict["local_image_size"],
-                        params_dict["local_image_size"],
-                        params_dict["image_channel"],
-                    ),
-                    model.y_: y_train_local[train_start_index:train_end_index].reshape(
-                        -1, 1
-                    ),
-                    model.is_training: True,
-                    model.rate: params_dict["dropout_rate"],
-                },
-            )
 
             # check hard negative sample
             (

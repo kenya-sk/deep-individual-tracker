@@ -3,7 +3,7 @@ density_directory: "/data/dens/all"
 mask_path: "/data/image/mask.png"
 pretrained_model_path: ""
 tensorboard_directory: "/data/tensorboard"
-save_trained_model_directory: "/data/tensor_model"
+save_trained_model_directory: "/data/model"
 # ID of using GPU: 0-max number of available GPUs
 use_gpu_device: "0,1,2"
 # using each GPU memory rate: 0.0-1.0
