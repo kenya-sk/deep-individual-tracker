@@ -407,7 +407,7 @@ def validation(
                         -1, 1
                     ),
                     model.is_training: False,
-                    model.rate: 1.0,
+                    model.dropout_rate: 0.0,
                 },
             )
             # update validation loss
@@ -471,7 +471,7 @@ def test(
                         -1, 1
                     ),
                     model.is_training: False,
-                    model.rate: 1.0,
+                    model.dropout_rate: 0.0,
                 },
             )
             # update test loss

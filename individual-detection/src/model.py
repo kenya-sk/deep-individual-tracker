@@ -21,7 +21,7 @@ class DensityModel(object):
                 self.is_training = placeholder(tf.bool, name="is_training")
             # dropout rate
             with tf.name_scope("keep_prob"):
-                self.rate = placeholder(tf.float32)
+                self.dropout_rate = placeholder(tf.float32)
 
         # first layer
         # convolution -> Leaky ReLU -> max pooling
@@ -106,7 +106,7 @@ class DensityModel(object):
                 h_fc4 = tf.nn.leaky_relu(fc4_bn)
                 self.__variable_summaries(h_fc4)
             with tf.name_scope("drop4"):
-                h_fc4_drop = tf.nn.dropout(h_fc4, rate=self.rate)
+                h_fc4_drop = tf.nn.dropout(h_fc4, rate=self.dropout_rate)
 
         # fifth layer
         # fully connected layer
@@ -122,7 +122,7 @@ class DensityModel(object):
                 h_fc5 = tf.nn.leaky_relu(fc5_bn)
                 self.__variable_summaries(h_fc5)
             with tf.name_scope("drop5"):
-                h_fc5_drop = tf.nn.dropout(h_fc5, rate=self.rate)
+                h_fc5_drop = tf.nn.dropout(h_fc5, rate=self.dropout_rate)
 
         # sixth layer
         # fully connected layer
@@ -138,7 +138,7 @@ class DensityModel(object):
                 h_fc6 = tf.nn.leaky_relu(fc6_bn)
                 self.__variable_summaries(h_fc6)
             with tf.name_scope("drop6"):
-                h_fc6_drop = tf.nn.dropout(h_fc6, rate=self.rate)
+                h_fc6_drop = tf.nn.dropout(h_fc6, rate=self.dropout_rate)
 
         # seven layer
         # fully connected layer
