@@ -313,7 +313,7 @@ def train(
                         -1, 1
                     ),
                     model.is_training: True,
-                    model.rate: params_dict["dropout_rate"],
+                    model.dropout_rate: params_dict["dropout_rate"],
                 },
             )
 
