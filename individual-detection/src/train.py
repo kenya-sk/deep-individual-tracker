@@ -16,7 +16,7 @@ from tensorflow.compat.v1 import (
     InteractiveSession,
     global_variables_initializer,
 )
-from tensorflow.compat.v1.summary import FileWriter, merge_all
+from tensorflow.compat.v1.summary import FileWriter
 from tensorflow.compat.v1.train import Saver
 from tensorflow.python.framework.ops import Tensor as OpsTensor
 from tqdm import trange

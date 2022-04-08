@@ -7,22 +7,25 @@ import cv2
 import hydra
 import numpy as np
 import pandas as pd
-from hydra.utils import get_original_cwd
 from omegaconf import DictConfig
 from tqdm import tqdm
 
 # logging setting
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
 def sort_by_frame_number(path_list: List) -> List:
-    """
-    Sort file path list by frame number.
+    """Sort file path list by frame number.
     Frame numbers are extracted from file name.
 
-    :param path_list: file path list before sorting
-    :return: sorted list
+    Args:
+        path_list (List): file path list before sorting
+
+    Returns:
+        List: sorted list
     """
 
     def _extract_frame_number(path: str) -> int:
@@ -52,19 +55,22 @@ def sort_by_frame_number(path_list: List) -> List:
 
 
 def create_detected_point_movie(
-    image_directory: str, point_coord_directory: str, movie_save_path: str, format_dict: dict
+    image_directory: str,
+    point_coord_directory: str,
+    movie_save_path: str,
+    format_dict: dict,
 ) -> None:
-    """
-    Image data and coordinate data of detection points are load in pairs.
+    """Image data and coordinate data of detection points are load in pairs.
     The detection points are then plotted on the image,
     and the multiple data are connected in time series order to create a video.
 
-    :param image_directory: directory that the raw image are stored
-    :param point_coord_directory: directory that the detected point coordinate are stored
-    :param movie_save_path: path to save output movie
-    :param format_dict: dictionary of output movie format
-    :return: None
+    Args:
+        image_directory (str): directory that the raw image are stored
+        point_coord_directory (str): directory that the detected point coordinate are stored
+        movie_save_path (str): path to save output movie
+        format_dict (dict): dictionary of output movie format
     """
+
     output_movie = cv2.VideoWriter(
         movie_save_path,
         cv2.VideoWriter_fourcc("m", "p", "4", "v"),
@@ -78,11 +84,15 @@ def create_detected_point_movie(
         image = cv2.imread(path)
         # The file names of the image and the coordinate data must be the same
         cood_file_name = path.split("/")[-1].replace(".png", ".csv")
-        detected_coord = np.loadtxt(f"{point_coord_directory}/{cood_file_name}", delimiter=",")
+        detected_coord = np.loadtxt(
+            f"{point_coord_directory}/{cood_file_name}", delimiter=","
+        )
 
         # plot detected point on image
         for cood in detected_coord:
-            cv2.circle(image, (int(cood[0]), int(cood[1])), 3, (0, 0, 255), -1, cv2.LINE_AA)
+            cv2.circle(
+                image, (int(cood[0]), int(cood[1])), 3, (0, 0, 255), -1, cv2.LINE_AA
+            )
 
         # writes as movie data
         output_movie.write(image)
@@ -93,15 +103,14 @@ def create_detected_point_movie(
 
 @hydra.main(config_path="../conf", config_name="detected_point_movie")
 def main(cfg: DictConfig) -> None:
-    """
-    Create movie data based on the raw image data and
+    """Create movie data based on the raw image data and
     the series of detected points data
 
-    :param cfg: config that loaded by @hydra.main()
-    :return: None
+    Args:
+        cfg (DictConfig): config that loaded by @hydra.main()
     """
+
     logger.info(f"Loaded config: {cfg}")
-    original_cwd = get_original_cwd()
 
     # get path from config file
     image_directory = cfg.path.image_directory
@@ -111,7 +120,9 @@ def main(cfg: DictConfig) -> None:
     # get movie format from config file
     format_dict = cfg.movie_format
 
-    create_detected_point_movie(image_directory, point_coord_directory, movie_save_path, format_dict)
+    create_detected_point_movie(
+        image_directory, point_coord_directory, movie_save_path, format_dict
+    )
 
 
 if __name__ == "__main__":

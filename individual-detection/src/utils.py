@@ -1,9 +1,10 @@
 import logging
 import math
+import os
 import sys
 import time
 from datetime import datetime, timedelta, timezone
-from typing import List, NoReturn, Tuple
+from typing import List, Tuple
 
 import cv2
 import numpy as np
@@ -16,37 +17,25 @@ from model import DensityModel
 logger = logging.getLogger(__name__)
 
 
-def display_data_info(
-    input_path: str,
-    output_dirctory: str,
-    skip_width: int,
-    pred_batch_size: int,
-    band_width: int,
-    cluster_thresh: float,
-    is_saved_map: bool,
-) -> NoReturn:
+def display_data_info(input_path: str, output_dirctory: str, cfg: dict) -> None:
     """Display setting information
 
     Args:
         input_path (str): input data path
         output_dirctory (str): output directory
-        skip_width (int): skip width in horizontal direction
-        pred_batch_size (int): batch size
-        band_width (int): band width of Mean-Shift Clustering
-        cluster_thresh (float): threshold to be subjected to clustering
-        is_saved_map (bool):  whether to save the density map
+        cfg: config dictionary of parameter
 
     Returns:
-        NoReturn:
+        None:
     """
     logger.info("*************************************************")
-    logger.info("Input path      : {0}".format(input_path))
-    logger.info("Output dirctory : {0}".format(output_dirctory))
-    logger.info("Skip width      : {0}".format(skip_width))
-    logger.info("Pred batch size : {0}".format(pred_batch_size))
-    logger.info("Band width      : {0}".format(band_width))
-    logger.info("Cluster thresh  : {0}".format(cluster_thresh))
-    logger.info("Save density map: {0}".format(is_saved_map))
+    logger.info(f"Input path         : {input_path}")
+    logger.info(f"Output dirctory    : {output_dirctory}")
+    logger.info(f"Skip width         : {cfg['skip_width']}")
+    logger.info(f"Pred batch size    : {cfg['predict_batch_size']}")
+    logger.info(f"Band width         : {cfg['band_width']}")
+    logger.info(f"Cluster threshold  : {cfg['cluster_thresh']}")
+    logger.info(f"Save density map   : {cfg['is_saved_map']}")
     logger.info("*************************************************\n")
 
 
@@ -247,7 +236,10 @@ def get_local_data(
         index_w = params_dict["index_w"]
 
     # extract local image
-    local_data_number = len(index_w)  # len(index_w) == len(index_h)
+    assert len(index_w) == len(
+        index_h
+    ), "The number of indexes differs for height and width. It is expected that they will be the same number."
+    local_data_number = len(index_w)
     local_image_array = np.zeros(
         (
             local_data_number,
@@ -257,13 +249,15 @@ def get_local_data(
         ),
         dtype="uint8",
     )
+
     density_array = np.zeros((local_data_number), dtype="float32")
     for idx in range(local_data_number):
-        # fix index(pad_image)
+        # raw image index convert to padding image index
         h = index_h[idx]
         w = index_w[idx]
         local_image_array[idx] = pad_image[h : h + 2 * pad, w : w + 2 * pad]
-        density_array[idx] = density_map[h, w]
+        if density_map is not None:
+            density_array[idx] = density_map[h, w]
 
     return local_image_array, density_array
 
@@ -322,12 +316,12 @@ def set_capture(video_path: str) -> Tuple:
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     total_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    logger.info("****************************************")
-    logger.info("Video path             : {0}".format(video_path))
-    logger.info("Fourcc                 : {0}".format(fourcc))
-    logger.info("FPS                    : {0}".format(fps))
-    logger.info("Size = (height, width) : ({0}, {1})".format(height, width))
-    logger.info("Total frame            : {0}".format(total_frame))
+    logger.info(f"****************************************")
+    logger.info(f"Video path             : {video_path}")
+    logger.info(f"Fourcc                 : {fourcc}")
+    logger.info(f"FPS                    : {fps}")
+    logger.info(f"Size = (height, width) : ({height}, {width})")
+    logger.info(f"Total frame            : {total_frame}")
     logger.info("****************************************")
 
     return cap, fourcc, fps, height, width, total_frame
@@ -415,3 +409,33 @@ def set_tensorboard(
     test_writer = FileWriter(f"{log_directory}/test")
 
     return summuray_merged, train_writer, valid_writer, test_writer
+
+
+def get_directory_list(root_path: str) -> List:
+    """_summary_
+
+    Args:
+        root_path (str): _description_
+
+    Returns:
+        List: _description_
+    """
+    file_list = os.listdir(root_path)
+    directory_list = [f for f in file_list if os.path.isdir(os.path.join(root_path, f))]
+
+    return directory_list
+
+
+def get_frame_number_from_path(path: str) -> int:
+    """Get frame number from file path.
+    ex) path="./tmp/20111.png" -> frame_number=20111
+
+    Args:
+        path (str): file path
+
+    Returns:
+        int: extracted frame number
+    """
+    file_name = path.split("/")[-1]
+    frame_num = int(file_name.split(".")[0])
+    return frame_num

@@ -1,288 +1,230 @@
-import argparse
-import glob
 import logging
 import os
-import time
+from glob import glob
+from typing import NoReturn
 
 import cv2
+import hydra
 import numpy as np
+from omegaconf import DictConfig, OmegaConf
+from tensorflow.compat.v1 import InteractiveSession
 
 from clustering import clustering
+from model import DensityModel
 from utils import (
-    display_data_info,
-    get_local_data,
     apply_masking_on_image,
+    display_data_info,
+    get_current_time_str,
+    get_directory_list,
+    get_frame_number_from_path,
+    get_local_data,
     get_masked_index,
     load_model,
     set_capture,
 )
 
+# logger setting
+current_time = get_current_time_str()
+log_path = f"./logs/predict_{current_time}.log"
+logging.basicConfig(
+    filename=log_path,
+    level=logging.DEBUG,
+    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+)
 logger = logging.getLogger(__name__)
 
-# ------------------------------- PRE PROCESSING ----------------------------------
-index_h, index_w = get_masked_index("/data/sakka/image/mask.png")
-# --------------------------------------------------------------------------
 
+def image_prediction(
+    model: DensityModel,
+    tf_session: InteractiveSession,
+    img: np.array,
+    frame_num: int,
+    output_directory: str,
+    cfg: dict,
+) -> None:
+    """_summary_
 
-def cnn_predict(model, sess, img, frame_num, output_dirc, args):
-    # ------------------------------- PREDICT ----------------------------------
-    label = np.zeros(args.original_img_size)
-    masked_img = apply_masking_on_image(img, args.mask_path)
-    masked_label = apply_masking_on_image(label, args.mask_path)
-    X_local, y_local = get_local_data(
-        masked_img, masked_label, index_h, index_w, local_img_size=args.local_img_size
-    )
+    Args:
+        model (DensityModel): _description_
+        tf_session (InteractiveSession): _description_
+        img (np.array): _description_
+        frame_num (int): _description_
+        output_directory (str): _description_
+        cfg (dict): _description_
+    """
+    # load local images to be predicted
+    masked_image = apply_masking_on_image(img, cfg["mask_image_path"])
+    X_local, _ = get_local_data(masked_image, None, cfg, is_flip=False)
 
-    # local image index
+    # set horizontal index
     index_lst = []
-    for step in range(len(index_h)):
-        if step % args.skip_width == 0:
+    for step in range(len(cfg["index_h"])):
+        if step % cfg["skip_width"] == 0:
             index_lst.append(step)
 
-    pred_batch_size = args.pred_batch_size
+    # set prediction parameters
+    pred_batch_size = cfg["predict_batch_size"]
     pred_n_batches = int(len(index_lst) / pred_batch_size)
-    pred_arr = np.zeros(pred_batch_size)
-    pred_dens_map = np.zeros(args.original_img_size, dtype="float32")
+    pred_dens_map = np.zeros((cfg["image_height"], cfg["image_width"]), dtype="float32")
 
-    logger.debug("*************************************************")
-    logger.debug("STSRT: predict density map (frame number= {0})".format(frame_num))
+    logger.info("STSRT: predict density map (frame number= {0})".format(frame_num))
     for batch in range(pred_n_batches):
         # array of skipped local image
         X_skip = np.zeros(
-            (pred_batch_size, args.local_img_size, args.local_img_size, 3)
+            (
+                pred_batch_size,
+                cfg["local_image_size"],
+                cfg["local_image_size"],
+                cfg["image_channel"],
+            )
         )
         y_skip = np.zeros((pred_batch_size, 1))
-        for index_cord, index_local in enumerate(range(pred_batch_size)):
+        for index_coord, index_local in enumerate(range(pred_batch_size)):
             current_index = index_lst[batch * pred_batch_size + index_local]
-            X_skip[index_cord] = X_local[current_index]
-            y_skip[index_cord] = y_local[current_index]
+            X_skip[index_coord] = X_local[current_index]
 
-        # estimate each local image
-        pred_arr = sess.run(
+        # predict each local image
+        pred_array = tf_session.run(
             model.y,
             feed_dict={
                 model.X: X_skip,
-                model.y_: y_skip,
                 model.is_training: False,
-                model.keep_prob: 1.0,
+                model.dropout_rate: 0.0,
             },
         ).reshape(pred_batch_size)
         logger.debug("DONE: batch {0}/{1}".format(batch + 1, pred_n_batches))
 
         for batch_idx in range(pred_batch_size):
-            h_est = index_h[index_lst[batch * pred_batch_size + batch_idx]]
-            w_est = index_w[index_lst[batch * pred_batch_size + batch_idx]]
-            pred_dens_map[h_est, w_est] = pred_arr[batch_idx]
+            h_pred = cfg["index_h"][index_lst[batch * pred_batch_size + batch_idx]]
+            w_pred = cfg["index_w"][index_lst[batch * pred_batch_size + batch_idx]]
+            pred_dens_map[h_pred, w_pred] = pred_array[batch_idx]
 
-    # save data
-    if args.save_map:
-        np.save("{0}/dens/{1}.npy".format(output_dirc, frame_num), pred_dens_map)
-    logger.debug("END: predict density map")
+    # save predicted data
+    if cfg["is_saved_map"]:
+        save_dens_path = f"{output_directory}/dens/{frame_num}.npy"
+        np.save(save_dens_path, pred_dens_map)
+        logger.info(f"predicted density map saved in '{save_dens_path}'.")
 
-    # calculate centroid by clustering
-    centroid_arr = clustering(pred_dens_map, args.band_width, args.cluster_thresh)
+    # calculate centroid by mean shift clustering
+    centroid_arr = clustering(pred_dens_map, cfg["band_width"], cfg["cluster_thresh"])
+    save_coord_path = f"{output_directory}/cood/{frame_num}.csv"
     np.savetxt(
-        "{0}/cord/{1}.csv".format(output_dirc, frame_num),
+        save_coord_path,
         centroid_arr,
         fmt="%i",
         delimiter=",",
     )
 
-    # calculate prediction loss
-    pred_loss = np.mean(np.square(label - pred_dens_map), dtype="float32")
-    logger.debug("prediction loss: {0}".format(pred_loss))
-    logger.debug("END: predict density map")
-    logger.debug("***************************************************")
-    # ---------------------------------------------------------------------------
 
+def batch_prediction(
+    model: DensityModel, tf_session: InteractiveSession, cfg: dict
+) -> None:
+    """_summary_
 
-def batch_predict(model, sess, args):
-    input_img_dirc_lst = [
-        f
-        for f in os.listdir("{0}/{1}".format(args.input_img_root_dirc, args.date))
-        if not f.startswith(".")
-    ]
-    for dirc in input_img_dirc_lst:
-        input_img_path = "{0}/{1}/{2}/*.png".format(
-            args.input_img_root_dirc, args.date, dirc
+    Args:
+        model (DensityModel): _description_
+        tf_session (InteractiveSession): _description_
+        cfg (dict): _description_
+    """
+    root_image_path = f"{cfg['image_directory']}/{cfg['target_date']}"
+    image_directory_list = get_directory_list(root_image_path)
+
+    for directory in image_directory_list:
+        # set path information
+        input_image_path = f"{root_image_path}/{directory}/*.png"
+        image_path_list = glob(input_image_path)
+        output_directory = f"{cfg['output_directory']}/{cfg['target_date']}"
+        os.makedirs(output_directory, exist_ok=True)
+        os.makedirs("{0}/dens".format(output_directory), exist_ok=True)
+        os.makedirs("{0}/coord".format(output_directory), exist_ok=True)
+        display_data_info(input_image_path, output_directory, cfg)
+
+        # predcit for each image
+        for path in image_path_list:
+            image = cv2.imread(path)
+            frame_num = get_frame_number_from_path(path)
+            image_prediction(model, tf_session, image, frame_num, output_directory, cfg)
+
+        logger.info(
+            f"Predicted {len(image_path_list)} images (path='{input_image_path}')"
         )
-        img_path_lst = glob.glob(input_img_path)
-        output_dirc = "{0}/{1}/{2}".format(args.output_root_dirc, args.date, dirc)
-        os.makedirs("{0}/dens".format(output_dirc), exist_ok=True)
-        os.makedirs("{0}/cord".format(output_dirc), exist_ok=True)
-        display_data_info(
-            input_img_path,
-            output_dirc,
-            args.skip_width,
-            args.pred_batch_size,
-            args.band_width,
-            args.cluster_thresh,
-            args.save_map,
-        )
-        for path in img_path_lst:
-            img = cv2.imread(path)
-            frame_num = path.split("/")[-1][:-4]
-            cnn_predict(model, sess, img, frame_num, output_dirc, args)
-
-        logger.debug("DONE: {0}".format(input_img_path))
 
 
-def video_predict(model, sess, args):
-    for time_idx in range(9, 17):
-        output_dirc = "{0}/{1}/{2}".format(args.output_root_dirc, args.date, time_idx)
-        os.makedirs(output_dirc, exist_ok=True)
-        os.makedirs("{0}/dens".format(output_dirc), exist_ok=True)
-        os.makedirs("{0}/cord".format(output_dirc), exist_ok=True)
-        video_path = "{0}/{1}/{2}{3:0>2d}00.mp4".format(
-            args.input_video_dirc, args.date, args.date, time_idx
-        )
+def video_prediction(
+    model: DensityModel, tf_session: InteractiveSession, cfg: dict
+) -> None:
+    """_summary_
+
+    Args:
+        model (DensityModel): _description_
+        tf_session (InteractiveSession): _description_
+        cfg (dict): _description_
+    """
+    for hour in range(cfg["start_hour"], cfg["end_hour"]):
+        output_directory = f"{cfg['output_directory']}/{cfg['target_date']}/{hour}"
+        os.makedirs(output_directory, exist_ok=True)
+        os.makedirs("{0}/dens".format(output_directory), exist_ok=True)
+        os.makedirs("{0}/coord".format(output_directory), exist_ok=True)
+        video_path = f"{cfg['video_directory']}/{cfg['target_date']}/{cfg['target_date']}{hour:0>2d}00.mp4"
         display_data_info(
             video_path,
-            output_dirc,
-            args.skip_width,
-            args.pred_batch_size,
-            args.band_width,
-            args.cluster_thresh,
-            args.save_map,
+            output_directory,
+            cfg["skip_width"],
+            cfg["predict_batch_size"],
+            cfg["band_width"],
+            cfg["cluster_thresh"],
+            cfg["is_saved_map"],
         )
 
-        # initialize
+        # initializetion
         cap, _, _, _, _, _ = set_capture(video_path)
         frame_num = 0
 
-        # skip first frame (company logo)
-        for _ in range(4 * 30):
-            _, frame = cap.read()
-            frame_num += 1
-        cnn_predict(model, sess, frame, frame_num, output_dirc, args)
-
-        # predict at regular interval (args.pred_interval)
+        # predict for each frame at regular interval (config value=predict_interval)
         while cap.isOpened():
             ret, frame = cap.read()
             if ret:
                 frame_num += 1
-                if frame_num % args.pred_interval == 0:
-                    cnn_predict(model, sess, frame, frame_num, output_dirc, args)
+                if frame_num % cfg["predict_interval"] == 0:
+                    image_prediction(
+                        model, tf_session, frame, frame_num, output_directory, cfg
+                    )
             else:
+                # reached the last frame of the video
                 break
 
-        logger.debug("DONE: {0}".format(video_path))
+        logger.info(f"Predicted video data (path='{video_path}')")
 
-    # finalize
+    # close all session
     cap.release()
     cv2.destoryAllWindows()
 
 
-def make_pred_parse():
-    parser = argparse.ArgumentParser(
-        prog="predict.py",
-        usage="prediction by learned model",
-        description="description",
-        epilog="end",
-        add_help=True,
+@hydra.main(config_path="../conf", config_name="predict")
+def main(cfg: DictConfig) -> NoReturn:
+    cfg = OmegaConf.to_container(cfg)
+    logger.info(f"Loaded config: {cfg}")
+
+    # set valid image index information
+    index_h, index_w = get_masked_index(cfg["mask_image_path"])
+    cfg["index_h"] = index_h
+    cfg["index_w"] = index_w
+
+    # load trained model
+    model, tf_session = load_model(
+        cfg["trained_model_directory"], cfg["use_gpu_device"], cfg["use_memory_rate"]
     )
 
-    # Data Argument
-    parser.add_argument("--date", type=str, default="20170416")
-    parser.add_argument(
-        "--model_path", type=str, default="/data/sakka/tensor_model/2018_4_15_15_7"
-    )
-    parser.add_argument("--input_img_root_dirc", type=str, default="/data/sakka/image")
-    parser.add_argument("--input_video_dirc", type=str, default="/data/sakka/video")
-    parser.add_argument(
-        "--output_root_dirc",
-        type=str,
-        default="/data/sakka/estimation/model_201804151507",
-    )
-    parser.add_argument("--mask_path", type=str, default="/data/sakka/image/mask.png")
-
-    # GPU Argument
-    parser.add_argument(
-        "--visible_device",
-        type=str,
-        default="0,1",
-        help="ID of using GPU: 0-max number of available GPUs",
-    )
-    parser.add_argument(
-        "--memory_rate",
-        type=float,
-        default=0.9,
-        help="using each GPU memory rate: 0.0-1.0",
-    )
-
-    # Parameter Argument
-    parser.add_argument(
-        "--original_img_size", type=tuple, default=(720, 1280), help="(height, width)"
-    )
-    parser.add_argument(
-        "--local_img_size", type=int, default=72, help="square local image size: > 0"
-    )
-    parser.add_argument(
-        "--pred_interval",
-        type=int,
-        default=30,
-        help="skip interval of frame at prediction",
-    )
-    parser.add_argument(
-        "--skip_width", type=int, default=15, help="skip width in horizontal direction "
-    )
-    parser.add_argument(
-        "--pred_batch_size", type=int, default=2500, help="batch size for each epoch"
-    )
-    parser.add_argument(
-        "--save_map",
-        type=bool,
-        default=False,
-        help="save pred density map (True of False)",
-    )
-    # parser.add_argument("--band_width", type=int,
-    #                     default=25, help="band width of Mean-Shift Clustering")
-    # parser.add_argument("--cluster_thresh", type=float,
-    #                     default=0.4, help="threshold to be subjected to clustering")
-    parser.add_argument(
-        "--band_width", type=int, default=10, help="band width of Mean-Shift Clustering"
-    )
-    parser.add_argument(
-        "--cluster_thresh",
-        type=float,
-        default=0.5,
-        help="threshold to be subjected to clustering",
-    )
-
-    args = parser.parse_args()
-
-    return args
+    predict_data_type = cfg["predict_data_type"]
+    if predict_data_type == "image":
+        # predict from image data
+        batch_prediction(model, tf_session, cfg)
+    elif predict_data_type == "video":
+        # predict from video data
+        video_prediction(model, tf_session, cfg)
+    else:
+        logger.error(f"Error: not supported data type (={predict_data_type})")
 
 
 if __name__ == "__main__":
-    # set logger
-    logs_path = "/home/sakka/cnn_by_density_map/logs/predict.log"
-    logging.basicConfig(
-        filename=logs_path,
-        level=logging.DEBUG,
-        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
-    )
-
-    # set argument
-    args = make_pred_parse()
-    logger.debug("Running with args: {0}".format(args))
-
-    # load prediction model
-    model, sess = load_model(args.model_path, args.visible_device, args.memory_rate)
-
-    start = time.time()
-    # predict from image data
-    batch_predict(model, sess, args)
-    # predict from video data
-    # video_predict(cnn_model, sess, args)
-
-    elapsed_time = time.time() - start
-    elapsed_hour = int(elapsed_time / 3600)
-    elapsed_min = int((elapsed_time - 3600 * elapsed_hour) / 60)
-    elapsed_sec = elapsed_time - elapsed_hour * 3600 - elapsed_min * 60
-
-    logger.debug(
-        "Elapsed Time: {0} [hour] {1}[min] {2}[sec]".format(
-            elapsed_hour, elapsed_min, elapsed_sec
-        )
-    )
+    main()

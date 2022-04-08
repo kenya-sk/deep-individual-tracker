@@ -1,0 +1,33 @@
+target_date: "20170416"
+trained_model_directory: "/data/models/density_model/"
+image_directory: "/data/image/raw/all"
+video_directory: "/data/video"
+output_directory: "/data/predicted"
+mask_image_path: "/data/image/mask.png"
+# select prediction data type (image or video)
+predict_data_type: "image"
+# Start and end time of video data (in 1-hour units)
+start_hour: 9
+end_hour: 17
+# ID of using GPU: 0-max number of available GPUs
+use_gpu_device: "0,1,2"
+# using each GPU memory rate: 0.0-1.0
+use_memory_rate: 0.9
+# raw image information
+image_height: 1080
+image_width: 1920
+image_channel: 3
+# square local image size: > 0
+local_image_size: 72
+# skip interval of frame at prediction [Need Rename]
+predict_interval: 30
+# skip width in horizontal direction [Need Rename]
+skip_width: 15
+# batch size for each epoch
+predict_batch_size: 2500
+# save predicted density map (True or False)
+is_saved_map: False
+# band width of Mean-Shift Clustering
+band_width: 10
+# threshold to be subjected to clustering
+cluster_thresh: 0.5
