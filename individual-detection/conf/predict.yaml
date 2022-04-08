@@ -3,7 +3,7 @@ trained_model_directory: "/data/models/density_model/"
 image_directory: "/data/image/raw/all"
 video_directory: "/data/video"
 output_directory: "/data/predicted"
-mask_image_path: "/data/image/mask.png"
+mask_path: "/data/image/mask.png"
 # select prediction data type (image or video)
 predict_data_type: "image"
 # Start and end time of video data (in 1-hour units)
@@ -17,6 +17,11 @@ use_memory_rate: 0.9
 image_height: 1080
 image_width: 1920
 image_channel: 3
+# Image analysis area
+analysis_image_height_min: 0
+analysis_image_height_max: 720
+analysis_image_width_min: 0
+analysis_image_width_max: 1920
 # square local image size: > 0
 local_image_size: 72
 # skip interval of frame at prediction [Need Rename]

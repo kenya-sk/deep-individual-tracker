@@ -1,7 +1,6 @@
 import logging
 import os
 from glob import glob
-from typing import NoReturn
 
 import cv2
 import hydra
@@ -53,7 +52,7 @@ def image_prediction(
         cfg (dict): _description_
     """
     # load local images to be predicted
-    masked_image = apply_masking_on_image(img, cfg["mask_image_path"])
+    masked_image = apply_masking_on_image(img, cfg["mask_path"])
     X_local, _ = get_local_data(masked_image, None, cfg, is_flip=False)
 
     # set horizontal index
@@ -92,7 +91,7 @@ def image_prediction(
                 model.dropout_rate: 0.0,
             },
         ).reshape(pred_batch_size)
-        logger.debug("DONE: batch {0}/{1}".format(batch + 1, pred_n_batches))
+        logger.debug(f"DONE: batch {batch+1}/{pred_n_batches}")
 
         for batch_idx in range(pred_batch_size):
             h_pred = cfg["index_h"][index_lst[batch * pred_batch_size + batch_idx]]
@@ -107,7 +106,7 @@ def image_prediction(
 
     # calculate centroid by mean shift clustering
     centroid_arr = clustering(pred_dens_map, cfg["band_width"], cfg["cluster_thresh"])
-    save_coord_path = f"{output_directory}/cood/{frame_num}.csv"
+    save_coord_path = f"{output_directory}/coord/{frame_num}.csv"
     np.savetxt(
         save_coord_path,
         centroid_arr,
@@ -201,12 +200,12 @@ def video_prediction(
 
 
 @hydra.main(config_path="../conf", config_name="predict")
-def main(cfg: DictConfig) -> NoReturn:
+def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
 
     # set valid image index information
-    index_h, index_w = get_masked_index(cfg["mask_image_path"])
+    index_h, index_w = get_masked_index(cfg, horizontal_flip=False)
     cfg["index_h"] = index_h
     cfg["index_w"] = index_w
 
