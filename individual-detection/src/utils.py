@@ -120,30 +120,64 @@ def pretty_print(
     logger.info("****************************************************************")
 
 
-def apply_masking_on_image(image: np.array, mask_path: str = None) -> np.array:
+def load_image(path: str, is_rgb: bool = True) -> np.array:
+    """
+    Loads image data frosm the input path and returns image in numpy array format.
+    :param path: input image file path
+    :return: loaded image
+    """
+    image = cv2.imread(path)
+    if image is None:
+        logger.error(
+            f"Error: Can not read image file. Please check input file path. {path}"
+        )
+        sys.exit(1)
+    logger.info(f"Loaded Image: {path}")
+
+    # convert image BGR to RGB
+    if is_rgb:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    return image
+
+
+def load_mask_image(mask_path: str = None, normalized: bool = True) -> np.array:
+    """Load a binary mask image and normalizes the values as necessary.
+
+    Args:
+        mask_path (str, optional): binary mask image path. Defaults to None.
+        normalized (bool, optional): whether execute normalization. Defaults to True.
+
+    Returns:
+        np.array: loaded binary masked image
+    """
+    # load binary mask image
+    mask = cv2.imread(mask_path)
+    assert (
+        1 <= len(np.unique(mask)) <= 2
+    ), f"Error: mask image is not binary. (current unique value={len(np.unique(mask))})"
+
+    # normalize mask image to (min, max)=(0, 1)
+    if normalized:
+        mask = np.array(mask / np.max(mask), dtype="uint8")
+
+    return mask
+
+
+def apply_masking_on_image(image: np.array, mask: np.array) -> np.array:
     """Apply mask processing to image data.
 
     Args:
         image (np.array): image to be applied
-        mask_path (str, optional): binay mask path. Defaults to None.
+        mask (np.array): binay mask image
 
     Returns:
         np.array: masked image
     """
-    height = image.shape[0]
-    width = image.shape[1]
-    if len(image.shape) == 3:
-        channel = image.shape[2]
-    else:
-        channel = 1
+    # get input image channel
+    channel = image.shape[2]
 
-    # mask: 3channel mask image. the value is 0 or 1
-    mask = cv2.imread(mask_path)
-    if mask is None:
-        mask = np.ones((height, width, channel))
-    else:
-        mask = cv2.imread(mask_path)
-
+    # apply mask to image
     if channel == 3:
         masked_image = image * mask
     else:
@@ -152,21 +186,21 @@ def apply_masking_on_image(image: np.array, mask_path: str = None) -> np.array:
     return masked_image
 
 
-def get_masked_index(params_dict: dict, horizontal_flip: bool = False) -> Tuple:
+def get_masked_index(
+    mask: np.array, params_dict: dict, horizontal_flip: bool = False
+) -> Tuple:
     """Masking an image to get valid index
 
     Args:
+        mask (np.array): binay mask image
         params_dict (dict): dictionary of parameters
         horizontal_flip (bool, optional): Whether to perform data augumentation. Defaults to False.
 
     Returns:
         Tuple: valid index list (heiht and width)
     """
-    mask_path = params_dict["mask_path"]
-    if mask_path is None:
+    if mask is None:
         mask = np.ones((params_dict["image_height"], params_dict["image_width"]))
-    else:
-        mask = cv2.imread(mask_path)
 
     # convert gray scale image
     if mask.shape[2] == 3:
@@ -360,23 +394,6 @@ def get_elapsed_time_str(start_time: float) -> str:
     elapsed_second = int(total_elpased_second % 60)
 
     return f"{elapsed_hour}[hour] {elapsed_minute}[min] {elapsed_second}[sec]"
-
-
-def load_image(path: str) -> np.array:
-    """
-    Loads image data frosm the input path and returns image in numpy array format.
-    :param path: input image file path
-    :return: loaded image
-    """
-    image = cv2.imread(path)
-    if image is None:
-        logger.error(
-            f"Error: Can not read image file. Please check input file path. {path}"
-        )
-        sys.exit(1)
-    logger.info(f"Loaded Image: {path}")
-
-    return image
 
 
 def set_tensorboard(

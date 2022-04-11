@@ -1,14 +1,16 @@
 import logging
 import os
+from curses import noraw
 from glob import glob
 
 import cv2
 import hydra
 import numpy as np
+from cv2 import normalize
 from omegaconf import DictConfig, OmegaConf
 from tensorflow.compat.v1 import InteractiveSession
 
-from clustering import clustering
+from clustering import apply_clustering_to_density_map
 from model import DensityModel
 from utils import (
     apply_masking_on_image,
@@ -18,6 +20,8 @@ from utils import (
     get_frame_number_from_path,
     get_local_data,
     get_masked_index,
+    load_image,
+    load_mask_image,
     load_model,
     set_capture,
 )
@@ -36,7 +40,7 @@ logger = logging.getLogger(__name__)
 def image_prediction(
     model: DensityModel,
     tf_session: InteractiveSession,
-    img: np.array,
+    image: np.array,
     frame_num: int,
     output_directory: str,
     cfg: dict,
@@ -46,14 +50,13 @@ def image_prediction(
     Args:
         model (DensityModel): _description_
         tf_session (InteractiveSession): _description_
-        img (np.array): _description_
+        image (np.array): _description_
         frame_num (int): _description_
         output_directory (str): _description_
         cfg (dict): _description_
     """
     # load local images to be predicted
-    masked_image = apply_masking_on_image(img, cfg["mask_path"])
-    X_local, _ = get_local_data(masked_image, None, cfg, is_flip=False)
+    X_local, _ = get_local_data(image, None, cfg, is_flip=False)
 
     # set horizontal index
     index_lst = []
@@ -105,7 +108,9 @@ def image_prediction(
         logger.info(f"predicted density map saved in '{save_dens_path}'.")
 
     # calculate centroid by mean shift clustering
-    centroid_arr = clustering(pred_dens_map, cfg["band_width"], cfg["cluster_thresh"])
+    centroid_arr = apply_clustering_to_density_map(
+        pred_dens_map, cfg["band_width"], cfg["cluster_thresh"]
+    )
     save_coord_path = f"{output_directory}/coord/{frame_num}.csv"
     np.savetxt(
         save_coord_path,
@@ -140,7 +145,11 @@ def batch_prediction(
 
         # predcit for each image
         for path in image_path_list:
-            image = cv2.imread(path)
+            image = load_image(path, is_rgb=True)
+            # apply mask on input image
+            if cfg["mask_path"] is not None:
+                mask_image = load_mask_image(cfg["mask_path"], normalized=True)
+                image = apply_masking_on_image(image, mask_image)
             frame_num = get_frame_number_from_path(path)
             image_prediction(model, tf_session, image, frame_num, output_directory, cfg)
 
@@ -185,6 +194,10 @@ def video_prediction(
             if ret:
                 frame_num += 1
                 if frame_num % cfg["predict_interval"] == 0:
+                    # apply mask on input image
+                    if cfg["mask_path"] is not None:
+                        mask_image = load_mask_image(cfg["mask_path"], normalized=True)
+                        frame = apply_masking_on_image(frame, mask_image)
                     image_prediction(
                         model, tf_session, frame, frame_num, output_directory, cfg
                     )
@@ -205,7 +218,8 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Loaded config: {cfg}")
 
     # set valid image index information
-    index_h, index_w = get_masked_index(cfg, horizontal_flip=False)
+    mask_image = load_mask_image(cfg["mask_path"], normalize=True)
+    index_h, index_w = get_masked_index(mask_image, cfg, horizontal_flip=False)
     cfg["index_h"] = index_h
     cfg["index_w"] = index_w
 

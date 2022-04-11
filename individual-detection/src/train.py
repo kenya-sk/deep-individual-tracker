@@ -29,6 +29,7 @@ from utils import (
     get_local_data,
     get_masked_index,
     load_image,
+    load_mask_image,
     set_tensorboard,
 )
 
@@ -46,8 +47,8 @@ logger = logging.getLogger(__name__)
 def load_dataset(
     image_directory: str,
     density_directory: str,
-    mask_path: str,
     input_image_shape: Tuple,
+    mask_path: str = None,
 ) -> Tuple:
     """_summary_
 
@@ -68,10 +69,15 @@ def load_dataset(
 
     logger.info("Loading Dataset...")
     for path in file_list:
-        image = load_image(path)
+        image = load_image(path, is_rgb=True)
         assert (
             image.shape == input_image_shape
         ), f"Invalid image shape. Expected is {input_image_shape}"
+        # apply mask on input image
+        if mask_path is not None:
+            mask_image = load_mask_image(mask_path, normalized=True)
+            image = apply_masking_on_image(image, mask_image)
+
         density_file_name = path.replace(".png", ".npy").split("/")[-1]
         density_map = np.load("{0}/{1}".format(density_directory, density_file_name))
         if mask_path is None:
@@ -656,8 +662,8 @@ def main(cfg: DictConfig) -> NoReturn:
     X_array, y_array = load_dataset(
         cfg["image_directory"],
         cfg["density_directory"],
-        cfg["mask_path"],
         input_image_shape,
+        cfg["mask_path"],
     )
     X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
         X_array, y_array, cfg["test_size"]
