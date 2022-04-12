@@ -163,9 +163,8 @@ class DensityModel(object):
             self.loss = tf.reduce_mean(self.diff)
             summary.scalar("loss", self.loss)
 
-        # learning algorithm (learning rate: 0.0001)
+        # parameter is default value of tensorflow
         with tf.name_scope("train"):
-            # train_step = tf.train.GradientDescentOptimizer(1e-4).minimize(loss)
             self.learning_step = AdamOptimizer(
                 learning_rate=0.001,
                 beta1=0.9,
