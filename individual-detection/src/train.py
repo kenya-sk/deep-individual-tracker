@@ -2,7 +2,7 @@ import glob
 import logging
 import sys
 import time
-from typing import NoReturn, Tuple
+from typing import Tuple
 
 import hydra
 import numpy as np
@@ -500,7 +500,7 @@ def model_training(
     y_valid: np.array,
     y_test: np.array,
     cfg: dict,
-) -> NoReturn:
+) -> None:
     """_summary_
 
     Args:
@@ -513,7 +513,7 @@ def model_training(
         cfg (dict): _description_
 
     Returns:
-        NoReturn: _description_
+        None: _description_
     """
     # start TensorFlow session
     tf_config = ConfigProto(
@@ -653,7 +653,7 @@ def model_training(
 
 
 @hydra.main(config_path="../conf", config_name="train")
-def main(cfg: DictConfig) -> NoReturn:
+def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
 

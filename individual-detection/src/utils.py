@@ -61,70 +61,64 @@ def eval_metrics(
 
 
 def pretty_print(
-    true_positive_lst, false_positive_lst, false_negative_lst, sample_num_lst, skip=0
-):
-    accuracy_lst = []
-    precision_lst = []
-    recall_lst = []
-    f_measure_lst = []
-    for i in range(len(true_positive_lst)):
+    true_positive_list: List,
+    false_positive_list: List,
+    false_negative_list: List,
+    sample_num_list: List,
+) -> None:
+    """Outputs a formatted summary of evaluation results to the log.
+
+    Args:
+        true_positive_list (List): list containing the number of true-positive in each frame
+        false_positive_list (List): list containing the number of false-positive in each frame
+        false_negative_list (List): list containing the number of false-negative in each frame
+        sample_num_list (List): list containing the number of sample in each frame
+    """
+    accuracy_list = []
+    precision_list = []
+    recall_list = []
+    f_measure_list = []
+    assert (
+        len(true_positive_list)
+        == len(false_positive_list)
+        == len(false_negative_list)
+        == len(sample_num_list)
+    ), "List of each evaluation result are not same length."
+    data_size = len(true_positive_list)
+    for i in range(data_size):
         accuracy, precision, recall, f_measure = eval_metrics(
-            true_positive_lst[i],
-            false_positive_lst[i],
-            false_negative_lst[i],
-            sample_num_lst[i],
+            true_positive_list[i],
+            false_positive_list[i],
+            false_negative_list[i],
+            sample_num_list[i],
         )
-        accuracy_lst.append(accuracy)
-        precision_lst.append(precision)
-        recall_lst.append(recall)
-        f_measure_lst.append(f_measure)
+        accuracy_list.append(accuracy)
+        precision_list.append(precision)
+        recall_list.append(recall)
+        f_measure_list.append(f_measure)
 
     logger.info("\n**************************************************************")
-
-    logger.info("                          GROUND TRUTH          ")
-    logger.info("                    |     P     |     N     |           ")
-    logger.info("          -----------------------------------------")
-    logger.info(
-        "                P   |    {0}    |     {1}     |           ".format(
-            sum(true_positive_lst), sum(false_positive_lst)
-        )
-    )
-    logger.info("PRED      -----------------------------------------")
-    logger.info(
-        "                N   |    {0}    |     /     |           ".format(
-            sum(false_negative_lst)
-        )
-    )
-    logger.info("          -----------------------------------------")
-
-    logger.info(
-        "\nToal Accuracy (data size {0}, sikp size {1}) : {2}".format(
-            len(accuracy_lst), skip, sum(accuracy_lst) / len(accuracy_lst)
-        )
-    )
-    logger.info(
-        "Toal Precision (data size {0}, sikp size {1})  : {2}".format(
-            len(precision_lst), skip, sum(precision_lst) / len(precision_lst)
-        )
-    )
-    logger.info(
-        "Toal Recall (data size {0}, sikp size {1})     : {2}".format(
-            len(recall_lst), skip, sum(recall_lst) / len(recall_lst)
-        )
-    )
-    logger.info(
-        "Toal F measure (data size {0}, sikp size {1})  : {2}".format(
-            len(f_measure_lst), skip, sum(f_measure_lst) / len(f_measure_lst)
-        )
-    )
+    logger.info(f"Total data size: {data_size}")
+    logger.info(f"Total true-positive number: {sum(true_positive_list)}")
+    logger.info(f"Total false-positive number: {sum(false_positive_list)}")
+    logger.info(f"Total false-negative number: {sum(false_negative_list)}")
+    logger.info("Total false-positive number: /")
+    logger.info(f"Total Accuracy: {np.mean(accuracy_list):.2f}")
+    logger.info(f"Total Precision: {np.mean(precision_list):.2f}")
+    logger.info(f"Total Recall: {np.mean(recall_list):.2f}")
+    logger.info(f"Total F-measure: {np.mean(f_measure_list):.2f}")
     logger.info("****************************************************************")
 
 
 def load_image(path: str, is_rgb: bool = True) -> np.array:
-    """
-    Loads image data frosm the input path and returns image in numpy array format.
-    :param path: input image file path
-    :return: loaded image
+    """Loads image data frosm the input path and returns image in numpy array format.
+
+    Args:
+        path (str): input image file path
+        is_rgb (bool, optional): whether convert RGB format. Defaults to True.
+
+    Returns:
+        np.array: loaded image
     """
     image = cv2.imread(path)
     if image is None:
@@ -380,13 +374,13 @@ def get_current_time_str(
 
 
 def get_elapsed_time_str(start_time: float) -> str:
-    """_summary_
+    """Format to display elapsed time from a specific time
 
     Args:
-        start_time (float): _description_
+        start_time (float): elapsed time from unix epoch (get time.time())
 
     Returns:
-        str: _description_
+        str: string representing elapsed time
     """
     total_elpased_second = time.time() - start_time
     elapsed_hour = int(total_elpased_second / 3600)
@@ -401,14 +395,14 @@ def set_tensorboard(
     current_time_str: str,
     tf_session: InteractiveSession,
 ) -> Tuple:
-    """_summary_
+    """Set tensorboard directory and writer
 
     Args:
-        tensorboard_directory (str): _description_
-        tf_session (InteractiveSession): _description_
+        tensorboard_directory (str): directory that save tensorflow log
+        tf_session (InteractiveSession): tensorflow session
 
     Returns:
-        Tuple: _description_
+        Tuple: tensorboard writers
     """
     # directory of TensorBoard
     log_directory = f"{tensorboard_directory}/{current_time_str}"
@@ -429,13 +423,13 @@ def set_tensorboard(
 
 
 def get_directory_list(root_path: str) -> List:
-    """_summary_
+    """Get a list of directories under the root path
 
     Args:
-        root_path (str): _description_
+        root_path (str): target root path
 
     Returns:
-        List: _description_
+        List: list of directory
     """
     file_list = os.listdir(root_path)
     directory_list = [f for f in file_list if os.path.isdir(os.path.join(root_path, f))]
