@@ -9,7 +9,7 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import tensorflow as tf
-from tensorflow.compat.v1 import InteractiveSession
+from tensorflow.compat.v1 import InteractiveSession, Saver
 from tensorflow.compat.v1.summary import FileWriter, merge_all
 
 from model import DensityModel
@@ -158,19 +158,19 @@ def load_mask_image(mask_path: str = None, normalized: bool = True) -> np.array:
     return mask
 
 
-def apply_masking_on_image(image: np.array, mask: np.array) -> np.array:
+def apply_masking_on_image(
+    image: np.array, mask: np.array, channel: int = 3
+) -> np.array:
     """Apply mask processing to image data.
 
     Args:
         image (np.array): image to be applied
-        mask (np.array): binay mask image
+        mask (np.array): mask image
+        channel (int, optional): channel number of applied image. Defaults to 3.
 
     Returns:
         np.array: masked image
     """
-    # get input image channel
-    channel = image.shape[2]
-
     # apply mask to image
     if channel == 3:
         masked_image = image * mask
@@ -310,7 +310,7 @@ def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
     sess = InteractiveSession(config=config)
 
     model = DensityModel()
-    saver = tf.train.Saver()
+    saver = Saver()
     ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
         last_model = ckpt.model_checkpoint_path

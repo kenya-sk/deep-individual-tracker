@@ -1,5 +1,5 @@
 ## Introduction
-This repository performs individual detection in consideration of overlap by using CNN in each pixel.
+This repository performs individual detection in consideration of overlap by using CNN (Convolutional Neural Network) in each pixel.
 
 
 ## Network
@@ -13,7 +13,8 @@ Build a GPU-enabled environment with Docker.
 # build docker image
 $ docker build -t individual-detection:latest .
 
-# start the container
+# launch containers in a GPU environment
+# If you need to mount a directory, add it to the command as appropriate.
 $ sudo bash scripts/run_container.sh
 ``` 
 
@@ -24,57 +25,13 @@ device_lib.list_local_devices()
 ```
 
 ## Create Datasets
-Files required for creating datasets are under "./src/datasets".
+An annotation tool (**DensityAnnotator**) is provided to create datasets consisting of pairs of images and density maps. For details on how to use this tool, please refer to the following page.
 
-```
-1. my_make.sh
-    To remove the file of the previous version, 
-    and create a new file according to Makefile.
-
-2. video2img.cpp
-    Extract images from the video at a regular interval and save.
-
-3. img2train.py
-    Load the image and click on the target to make an answer label (density map).
-
-4. video2train.py
-    Load the video and click on the target to make an answer label (density map).  
-    The output results are the same, but 1-3 processing can be done directly the video.
-
-5. cord2dens.py
-    It receives coordinates and plots a density map with arbitrary kernel width.  
-    (For testing when finding an appropriate kernel width.)
-
-6. pred2video.py
-    To convert sequential images to video.
-   (For checking if individual detection is successful with the trained model.) 
-```
-
-## Training
-To create training data in the following procedure. Each file is included in the directory (src/datasets).
-1. To get images from movie. To input the path of movie file and the path of output image file.
-```
-$ my_make.sh
-```
-or
-```
-$ g++ -o video2image video2image.cpp -std=c++11 `pkg-config --cflags opencv` `pkg-config --libs opencv`
-```
-
-2. By clicking the image, labeling is done and training data is created. To input the path of image file. To press "D" when you mistake annotation
-```
-$ python3 img2train.py
-```
-
-3. If you want training data of arbitrary frames, to create it by the following procedure.  
-To input the path of video file. To press "P" when the desired frame appear. To press "D" when you mistake annotation. To press "S" when you finish selecting feature point and want to save. To press "Q" when you want to finish creating training data.
-```
-$ python3 video2train.py
-```
-
+**Documentation of DensityAnnotator**: https://github.com/kenya-sk/density-annotator
 
 ## Training Your Own Model
-To train your own models, follow these steps. Each file is included in the directory (src/model).  
+The created dataset is used to build a machine learning model. The architecture of the model is defined in `src/model.py`.
+
 The following technique was used to train the model.
 - Down Sampling
 - Early Stopping
@@ -82,72 +39,29 @@ The following technique was used to train the model.
 - Data Augmentation (Horizontal flip)
 - Hard Negative Mining
 
-```
-1. model.py
-    The Architecture of the model is defined.
-
-2. train.py
-    Training the model.
-
-3. cnn_util.py
-    The util function.
-
-4. clustering.py
-    To clustering the density maps.
-
-5. predict.py
-    Individual detection is performed using a learned model. 
-    
-6. evaluation.py
-    Evaluate with Accuracy, recall, Precision, and F-measure.
-```
-
 ### Training
-To set the path of training/validation image and path of answer data(density map).  
-Each parameter can be set with argument.
-```
-$ python3 train.py [-h]  [--root_img_dirc]  [--root_dens_dirc]  [--mask_path]
-                 [reuse_model_path]  [--root_log_dirc]  [save_model_dirc]
-                 [--visible_device]  [--memory_rate]  [--test_size]  [--local_img_size]
-                 [--n_epochs]  [--batch_size]  [--min_epoch]  [--stop_count]
-                 [flip_prob]  [--under_sampling_thresh]
-```
+Parameters must be preconfigured in config to train the model. The config file for training is defined in `conf/train.yaml`. The details of the parameters are supplemented with comments in the file.
 
-Hyper parameters and learning conditions can be set using arguments. Details are as follows.
+Once the config settings are complete, you can run the model training with the following command. In the script, `src/train.py` is executed.
 
-```
-[-h]                      : help option
-[--root_img_dirc]         : The path of training dataset
-[--root_dens_dirc]        : The path of answer label (density map)
-[--mask_path]             : The path of mask image
-[reuse_model_path]        : The path of pretrained model
-[--root_log_dirc]         : The path of tensor board log
-[save_model_dirc]         : The path of save the weight of trained model
-[--visible_device]        : The ID of using GPU
-[--memory_rate]           : The ratio of using GPU memory
-[--test_size]             : The ratio of test data
-[--local_img_size]        : The size of local image (shape is square)
-[--n_epochs]              : The maximum number of epochs
-[--batch_size]            : Batch size
-[--min_epoch]             : The minimum number of epochs
-[--stop_count]            : If not_improved_count < stop_count, execute early stopping
-[--flip_prob]             : The ratio of horizontal flip flop 
-[--under_sampling_thresh] : The threshold of positive data
+``` bash
+bash scripts/train.sh
 ```
 
 ### Prediction
-To perform individual detection with the trained model.  
-Each parameter can be set with argument.
-```
-$ python3 predict.py
-```
+Using the trained model, prediction can be run on new data with the following commands. In the script, `src/predict.py` is executed.
+Each parameter can be defined in `conf/predict.yaml`.
 
+```bash
+bash scripts/predict.sh
+```
 
 ### Evaluation
 The evaluation metrics of individual detection are accuracy, recall, precision, and F-measure. The position of the individual predicted by CNN and the position of the answer label were associated by using the Hungarian algorithm. True Positive defined ad If the matching distance was less than or equal to the threshold value (default is 15).
+Each parameter can be defined in `conf/evaluate.yaml`.
 
-```
-$ python3 evaluation.py
+```bash
+bash scripts/evaluate.sh
 ```
 
 ### Monitoring by TensorBoard

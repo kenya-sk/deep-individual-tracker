@@ -67,16 +67,16 @@ def load_dataset(
         sys.stderr.write("Error: Not found input image file")
         sys.exit(1)
 
+    # load mask image for apply input and label image
+    if mask_path is not None:
+        mask_image = load_mask_image(mask_path, normalized=True)
+
     logger.info("Loading Dataset...")
     for path in file_list:
         image = load_image(path, is_rgb=True)
         assert (
             image.shape == input_image_shape
         ), f"Invalid image shape. Expected is {input_image_shape}"
-        # apply mask on input image
-        if mask_path is not None:
-            mask_image = load_mask_image(mask_path, normalized=True)
-            image = apply_masking_on_image(image, mask_image)
 
         density_file_name = path.replace(".png", ".npy").split("/")[-1]
         density_map = np.load("{0}/{1}".format(density_directory, density_file_name))
@@ -84,8 +84,8 @@ def load_dataset(
             X_list.append(image)
             y_list.append(density_map)
         else:
-            X_list.append(apply_masking_on_image(image, mask_path))
-            y_list.append(apply_masking_on_image(density_map, mask_path))
+            X_list.append(apply_masking_on_image(image, mask_image, channel=3))
+            y_list.append(apply_masking_on_image(density_map, mask_image, channel=1))
 
     return np.array(X_list), np.array(y_list)
 
@@ -534,8 +534,9 @@ def model_training(
 
     # get mask index
     # if you analyze all areas, please set a white image
-    index_h, index_w = get_masked_index(cfg, horizontal_flip=False)
-    flip_index_h, flip_index_w = get_masked_index(cfg, horizontal_flip=True)
+    mask_image = load_mask_image(cfg["mask_path"])
+    index_h, index_w = get_masked_index(mask_image, cfg, horizontal_flip=False)
+    flip_index_h, flip_index_w = get_masked_index(mask_image, cfg, horizontal_flip=True)
     cfg["index_h"] = index_h
     cfg["index_w"] = index_w
     cfg["flip_index_h"] = flip_index_h

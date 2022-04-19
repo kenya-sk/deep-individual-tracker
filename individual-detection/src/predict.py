@@ -61,7 +61,7 @@ def image_prediction(
     # set horizontal index
     index_lst = []
     for step in range(len(cfg["index_h"])):
-        if step % cfg["skip_width"] == 0:
+        if (cfg["skip_width"] == 0) or (step % cfg["skip_width"] == 0):
             index_lst.append(step)
 
     # set prediction parameters
@@ -80,7 +80,6 @@ def image_prediction(
                 cfg["image_channel"],
             )
         )
-        y_skip = np.zeros((pred_batch_size, 1))
         for index_coord, index_local in enumerate(range(pred_batch_size)):
             current_index = index_lst[batch * pred_batch_size + index_local]
             X_skip[index_coord] = X_local[current_index]
@@ -218,7 +217,7 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Loaded config: {cfg}")
 
     # set valid image index information
-    mask_image = load_mask_image(cfg["mask_path"], normalize=True)
+    mask_image = load_mask_image(cfg["mask_path"], normalized=True)
     index_h, index_w = get_masked_index(mask_image, cfg, horizontal_flip=False)
     cfg["index_h"] = index_h
     cfg["index_w"] = index_w

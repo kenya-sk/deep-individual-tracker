@@ -29,7 +29,7 @@ predict_interval: 30
 # skip width in horizontal direction [Need Rename]
 skip_width: 15
 # batch size for each epoch
-predict_batch_size: 2500
+predict_batch_size: 2048
 # save predicted density map (True or False)
 is_saved_map: False
 # band width of Mean-Shift Clustering
