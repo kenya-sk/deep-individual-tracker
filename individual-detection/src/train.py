@@ -67,10 +67,6 @@ def load_dataset(
         sys.stderr.write("Error: Not found input image file")
         sys.exit(1)
 
-    # load mask image for apply input and label image
-    if mask_path is not None:
-        mask_image = load_mask_image(mask_path, normalized=True)
-
     logger.info("Loading Dataset...")
     for path in file_list:
         image = load_image(path, is_rgb=True)
@@ -84,6 +80,8 @@ def load_dataset(
             X_list.append(image)
             y_list.append(density_map)
         else:
+            # load mask image for apply input and label image
+            mask_image = load_mask_image(mask_path, normalized=True)
             X_list.append(apply_masking_on_image(image, mask_image, channel=3))
             y_list.append(apply_masking_on_image(density_map, mask_image, channel=1))
 
