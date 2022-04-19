@@ -1,0 +1,4 @@
+predict_dirctory: ""
+groud_truth_directory: ""
+mask_image_path: ""
+detection_threshold: 15

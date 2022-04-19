@@ -145,15 +145,18 @@ def load_mask_image(mask_path: str = None, normalized: bool = True) -> np.array:
     Returns:
         np.array: loaded binary masked image
     """
-    # load binary mask image
-    mask = cv2.imread(mask_path)
-    assert (
-        1 <= len(np.unique(mask)) <= 2
-    ), f"Error: mask image is not binary. (current unique value={len(np.unique(mask))})"
+    if mask_path is not None:
+        # load binary mask image
+        mask = cv2.imread(mask_path)
+        assert (
+            1 <= len(np.unique(mask)) <= 2
+        ), f"Error: mask image is not binary. (current unique value={len(np.unique(mask))})"
 
-    # normalize mask image to (min, max)=(0, 1)
-    if normalized:
-        mask = np.array(mask / np.max(mask), dtype="uint8")
+        # normalize mask image to (min, max)=(0, 1)
+        if normalized:
+            mask = np.array(mask / np.max(mask), dtype="uint8")
+    else:
+        mask = None
 
     return mask
 
@@ -197,7 +200,7 @@ def get_masked_index(
         mask = np.ones((params_dict["image_height"], params_dict["image_width"]))
 
     # convert gray scale image
-    if mask.shape[2] == 3:
+    if (len(mask.shape) == 3) and (mask.shape[2] == 3):
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
     # crop the image to the analysis area
