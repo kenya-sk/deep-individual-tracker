@@ -1,4 +1,4 @@
-# Deep Individual Tracker/Indeividual Detection
+# Deep Individual Tracker / Indeividual Detection
 ## Introduction
 This repository performs individual detection in consideration of overlap by using CNN (Convolutional Neural Network) in each pixel.
 
