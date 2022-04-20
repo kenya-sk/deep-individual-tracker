@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tensorflow.compat.v1 import InteractiveSession, Saver
+from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.compat.v1.summary import FileWriter, merge_all
 
 from model import DensityModel
@@ -351,7 +351,7 @@ def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
     sess = InteractiveSession(config=config)
 
     model = DensityModel()
-    saver = Saver()
+    saver = tf.train.Saver()
     ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
         last_model = ckpt.model_checkpoint_path
