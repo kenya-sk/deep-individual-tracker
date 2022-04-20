@@ -2,6 +2,7 @@ image_directory: "/data/image/raw/all"
 density_directory: "/data/dens/all"
 mask_path: "/data/image/mask.png"
 pretrained_model_path: ""
+save_dataset_path_directory: "/data/datasets"
 tensorboard_directory: "/data/tensorboard"
 save_trained_model_directory: "/data/model"
 # ID of using GPU: 0-max number of available GPUs

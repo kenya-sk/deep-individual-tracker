@@ -8,6 +8,7 @@ from typing import List, Tuple
 
 import cv2
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from tensorflow.compat.v1 import InteractiveSession, Saver
 from tensorflow.compat.v1.summary import FileWriter, merge_all
@@ -133,6 +134,43 @@ def load_image(path: str, is_rgb: bool = True) -> np.array:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     return image
+
+
+def load_sample(
+    X_path: str,
+    y_path: str,
+    input_image_shape: Tuple,
+    mask_image: np.array,
+    is_rgb: bool = True,
+) -> Tuple:
+    """_summary_
+
+    Args:
+        X_path (str): _description_
+        y_path (str): _description_
+        input_image_shape (Tuple): _description_
+        mask_image (np.array): _description_
+        is_rgb (bool, optional): _description_. Defaults to True.
+
+    Returns:
+        Tuple: _description_
+    """
+    X_image = load_image(X_path, is_rgb=is_rgb)
+    assert (
+        X_image.shape == input_image_shape
+    ), f"Invalid image shape. Expected is {input_image_shape} but {X_image}"
+
+    y_dens = np.load(y_path)
+    assert (
+        X_image.shape == y_dens.shape
+    ), f"The input image and the density map must have the same shape.\
+    image={X_image.shape}, density map={y_dens.shape}"
+
+    if mask_image is not None:
+        X_image = apply_masking_on_image(X_image, mask_image, channel=3)
+        y_dens = apply_masking_on_image(y_dens, mask_image, channel=1)
+
+    return X_image, y_dens
 
 
 def load_mask_image(mask_path: str = None, normalized: bool = True) -> np.array:
@@ -453,3 +491,16 @@ def get_frame_number_from_path(path: str) -> int:
     file_name = path.split("/")[-1]
     frame_num = int(file_name.split(".")[0])
     return frame_num
+
+
+def save_dataset_path(X_path_list: List, y_path_list: List, save_path: str) -> None:
+    """_summary_
+
+    Args:
+        X_path_list (List): _description_
+        y_path_list (List): _description_
+        save_path (str): _description_
+    """
+    pd.DataFrame({"X_path": X_path_list, "y_path": y_path_list}).to_csv(
+        save_path, index=False
+    )

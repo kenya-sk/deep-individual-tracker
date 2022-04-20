@@ -1,8 +1,9 @@
-import glob
+import gc
 import logging
 import sys
 import time
-from typing import Tuple
+from glob import glob
+from typing import List, Tuple
 
 import hydra
 import numpy as np
@@ -23,13 +24,13 @@ from tqdm import trange
 
 from model import DensityModel
 from utils import (
-    apply_masking_on_image,
     get_current_time_str,
     get_elapsed_time_str,
     get_local_data,
     get_masked_index,
-    load_image,
     load_mask_image,
+    load_sample,
+    save_dataset_path,
     set_tensorboard,
 )
 
@@ -47,66 +48,73 @@ logger = logging.getLogger(__name__)
 def load_dataset(
     image_directory: str,
     density_directory: str,
-    input_image_shape: Tuple,
-    mask_path: str = None,
 ) -> Tuple:
     """_summary_
 
     Args:
         image_directory (str): _description_
         density_directory (str): _description_
-        mask_path (str): _description_
-        input_image_shape (Tuple): _description_
 
     Returns:
         Tuple: _description_
     """
     X_list, y_list = [], []
-    file_list = glob.glob("{0}/*.png".format(image_directory))
+    file_list = glob(f"{image_directory}/*.png")
     if len(file_list) == 0:
         sys.stderr.write("Error: Not found input image file")
         sys.exit(1)
 
     logger.info("Loading Dataset...")
     for path in file_list:
-        image = load_image(path, is_rgb=True)
-        assert (
-            image.shape == input_image_shape
-        ), f"Invalid image shape. Expected is {input_image_shape}"
-
+        # get label path from input image path
         density_file_name = path.replace(".png", ".npy").split("/")[-1]
-        density_map = np.load("{0}/{1}".format(density_directory, density_file_name))
-        if mask_path is None:
-            X_list.append(image)
-            y_list.append(density_map)
-        else:
-            # load mask image for apply input and label image
-            mask_image = load_mask_image(mask_path, normalized=True)
-            X_list.append(apply_masking_on_image(image, mask_image, channel=3))
-            y_list.append(apply_masking_on_image(density_map, mask_image, channel=1))
+        density_path = f"{density_directory}/{density_file_name}"
 
-    return np.array(X_list), np.array(y_list)
+        # store input and label path
+        X_list.append(path)
+        y_list.append(density_path)
+
+    return X_list, y_list
 
 
-def split_dataset(X_array: np.array, y_array: np.array, test_size: float) -> Tuple:
+def split_dataset(
+    X_list: List,
+    y_list: List,
+    test_size: float,
+    ranodm_state: int = 42,
+    save_path_directory: str = None,
+) -> Tuple:
     """_summary_
 
     Args:
-        X_array (np.array): _description_
-        y_array (np.array): _description_
+        X_list (List): _description_
+        y_list (List): _description_
         test_size (float): _description_
+        ranodm_state (int, optional): _description_. Defaults to 42.
+        save_path_directory (str, optional): _description_. Defaults to None.
 
     Returns:
         Tuple: _description_
     """
     # splite dataset into train and test
     X_train, X_test, y_train, y_test = train_test_split(
-        X_array, y_array, test_size=test_size, random_state=42
+        X_list, y_list, test_size=test_size, random_state=ranodm_state
     )
     # split dataset into validation and test
     X_valid, X_test, y_valid, y_test = train_test_split(
-        X_test, y_test, test_size=0.5, random_state=42
+        X_test, y_test, test_size=0.5, random_state=ranodm_state
     )
+
+    if save_path_directory is not None:
+        save_dataset_path(
+            X_train, y_train, f"{save_path_directory}/train_dataset_{current_time}.csv"
+        )
+        save_dataset_path(
+            X_valid, y_valid, f"{save_path_directory}/valid_dataset_{current_time}.csv"
+        )
+        save_dataset_path(
+            X_test, y_test, f"{save_path_directory}/test_dataset_{current_time}.csv"
+        )
 
     return X_train, X_valid, X_test, y_train, y_valid, y_test
 
@@ -193,43 +201,44 @@ def under_sampling(
     return local_iamge_array[msk], density_array[msk]
 
 
-def horizontal_flip(
-    X_train: np.array, y_train: np.array, train_idx: int, params_dict: dict
+def get_local_samples(
+    X_image: np.array, y_dens: np.array, is_flip: bool, params_dict: dict
 ) -> Tuple:
     """_summary_
 
     Args:
-        X_train (np.array): _description_
-        y_train (np.array): _description_
-        train_idx (int): _description_
+        X_image (np.array): _description_
+        y_dens (np.array): _description_
+        is_flip (bool): _description_
         params_dict (dict): _description_
 
     Returns:
         Tuple: _description_
     """
 
-    if np.random.rand() < params_dict["flip_prob"]:
+    if (is_flip) and (np.random.rand() < params_dict["flip_prob"]):
         # image apply horizontal flip
-        X_train_local, y_train_local = get_local_data(
-            X_train[train_idx][:, ::-1, :],
-            y_train[train_idx][:, ::-1],
+        X_train_local_array, y_train_local_array = get_local_data(
+            X_image[:, ::-1, :],
+            y_dens[:, ::-1],
             params_dict,
             is_flip=True,
         )
     else:
-        X_train_local, y_train_local = get_local_data(
-            X_train[train_idx], y_train[train_idx], params_dict, is_flip=False
+        X_train_local_array, y_train_local_array = get_local_data(
+            X_image, y_dens, params_dict, is_flip=False
         )
 
-    return X_train_local, y_train_local
+    return X_train_local_array, y_train_local_array
 
 
 def train(
     tf_session: InteractiveSession,
     epoch: int,
     model: DensityModel,
-    X_train: np.array,
-    y_train: np.array,
+    X_train: List,
+    y_train: List,
+    mask_image: np.array,
     params_dict: dict,
     summuray_merged: OpsTensor,
     writer: FileWriter,
@@ -240,8 +249,9 @@ def train(
         tf_session (InteractiveSession): _description_
         epoch (int): _description_
         model (DensityModel): _description_
-        X_train (np.array): _description_
-        y_train (np.array): _description_
+        X_train (List): _description_
+        y_train (List): _description_
+        mask_image (np.array): _description_
         params_dict (dict): _description_
         summuray_merged (OpsTensor): _description_
         writer (FileWriter): _description_
@@ -252,6 +262,11 @@ def train(
 
     # initialization of training
     train_loss = 0.0
+    input_image_shape = (
+        params_dict["image_height"],
+        params_dict["image_width"],
+        params_dict["image_channel"],
+    )
     hard_negative_image_array = np.zeros(
         (
             1,
@@ -266,10 +281,19 @@ def train(
     # one epoch training
     sample_number = len(X_train)
     for train_idx in trange(sample_number, desc=f"Model Training [epoch={epoch+1}]"):
+        # load current index image and label
+        X_image, y_dens = load_sample(
+            X_train[train_idx],
+            y_train[train_idx],
+            input_image_shape,
+            mask_image,
+            is_rgb=True,
+        )
+
         # load training local image
         # data augmentation (horizontal flip)
-        X_train_local, y_train_local = horizontal_flip(
-            X_train, y_train, train_idx, params_dict
+        X_train_local, y_train_local = get_local_samples(
+            X_image, y_dens, True, params_dict
         )
 
         # under sampling
@@ -345,6 +369,10 @@ def train(
                     hard_negative_label_array, batch_hard_negative_label_array, axis=0
                 )
 
+        # release memory
+        del X_image, y_dens, X_train_local, y_train_local
+        gc.collect()
+
     # record training summary to TensorBoard
     writer.add_summary(train_summary, epoch)
 
@@ -358,8 +386,9 @@ def validation(
     tf_session: InteractiveSession,
     epoch: int,
     model: DensityModel,
-    X_valid: np.array,
-    y_valid: np.array,
+    X_valid: List,
+    y_valid: List,
+    mask_image: np.array,
     params_dict: dict,
     summuray_merged: OpsTensor,
     writer: FileWriter,
@@ -370,8 +399,9 @@ def validation(
         tf_session (InteractiveSession): _description_
         epoch (int): _description_
         model (DensityModel): _description_
-        X_valid (np.array): _description_
-        y_valid (np.array): _description_
+        X_valid (List): _description_
+        y_valid (List): _description_
+        mask_image (np.array): _description_
         params_dict (dict): _description_
         summuray_merged (OpsTensor): _description_
         writer (FileWriter): _description_
@@ -381,10 +411,26 @@ def validation(
     """
 
     valid_loss = 0.0
+    input_image_shape = (
+        params_dict["image_height"],
+        params_dict["image_width"],
+        params_dict["image_channel"],
+    )
     sample_number = len(X_valid)
     for valid_idx in trange(sample_number, desc=f"Model Validation [epoch={epoch+1}]"):
-        X_valid_local, y_valid_local = get_local_data(
-            X_valid[valid_idx], y_valid[valid_idx], params_dict, is_flip=False
+        # load current index image and label
+        X_image, y_dens = load_sample(
+            X_valid[valid_idx],
+            y_valid[valid_idx],
+            input_image_shape,
+            mask_image,
+            is_rgb=True,
+        )
+
+        # load validation local image
+        # *Not* apply data augmentation (horizontal flip)
+        X_valid_local, y_valid_local = get_local_samples(
+            X_image, y_dens, False, params_dict
         )
 
         # under sampling
@@ -417,6 +463,10 @@ def validation(
             # update validation loss
             valid_loss += valid_batch_loss
 
+        # release memory
+        del X_image, y_dens, X_valid_local, y_valid_local
+        gc.collect()
+
     # record validation summary to TensorBoard
     writer.add_summary(valid_loss_summary, epoch)
 
@@ -429,8 +479,9 @@ def validation(
 def test(
     tf_session: InteractiveSession,
     model: DensityModel,
-    X_test: np.array,
-    y_test: np.array,
+    X_test: List,
+    y_test: List,
+    mask_image: np.array,
     params_dict: dict,
     summuray_merged: OpsTensor,
     writer: FileWriter,
@@ -440,8 +491,9 @@ def test(
     Args:
         tf_session (InteractiveSession): _description_
         model (DensityModel): _description_
-        X_test (np.array): _description_
-        y_test (np.array): _description_
+        X_test (List): _description_
+        y_test (List): _description_
+        mask_image (np.array): _description_
         params_dict (dict): _description_
         summuray_merged (OpsTensor): _description_
         writer (FileWriter): _description_
@@ -451,11 +503,28 @@ def test(
     """
 
     test_loss = 0.0
+    input_image_shape = (
+        params_dict["image_height"],
+        params_dict["image_width"],
+        params_dict["image_channel"],
+    )
     sample_number = len(X_test)
     for test_idx in trange(sample_number, desc="Test Trained Model"):
-        X_test_local, y_test_local = get_local_data(
-            X_test[test_idx], y_test[test_idx], params_dict, is_flip=False
+        # load current index image and label
+        X_image, y_dens = load_sample(
+            X_test[test_idx],
+            y_test[test_idx],
+            input_image_shape,
+            mask_image,
+            is_rgb=True,
         )
+
+        # load test local image
+        # *Not* apply data augmentation (horizontal flip)
+        X_test_local, y_test_local = get_local_samples(
+            X_image, y_dens, False, params_dict
+        )
+
         test_n_batches = int(len(X_test_local) / params_dict["batch_size"])
         for test_batch in range(test_n_batches):
             test_start_index = test_batch * params_dict["batch_size"]
@@ -481,6 +550,10 @@ def test(
             # update test loss
             test_loss += test_batch_loss
 
+        # release memory
+        del X_image, y_dens, X_test_local, y_test_local
+        gc.collect()
+
     # record test summary to TensorBoard
     writer.add_summary(test_summary, 0)
 
@@ -491,23 +564,23 @@ def test(
 
 
 def model_training(
-    X_train: np.array,
-    X_valid: np.array,
-    X_test: np.array,
-    y_train: np.array,
-    y_valid: np.array,
-    y_test: np.array,
+    X_train: List,
+    X_valid: List,
+    X_test: List,
+    y_train: List,
+    y_valid: List,
+    y_test: List,
     cfg: dict,
 ) -> None:
     """_summary_
 
     Args:
-        X_train (np.array): _description_
-        X_valid (np.array): _description_
-        X_test (np.array): _description_
-        y_train (np.array): _description_
-        y_valid (np.array): _description_
-        y_test (np.array): _description_
+        X_train (List): _description_
+        X_valid (List): _description_
+        X_test (List): _description_
+        y_train (List): _description_
+        y_valid (List): _description_
+        y_test (List): _description_
         cfg (dict): _description_
 
     Returns:
@@ -570,6 +643,7 @@ def model_training(
                 model,
                 X_train,
                 y_train,
+                mask_image,
                 cfg,
                 summuray_merged,
                 train_writer,
@@ -582,6 +656,7 @@ def model_training(
                 model,
                 X_valid,
                 y_valid,
+                mask_image,
                 cfg,
                 summuray_merged,
                 valid_writer,
@@ -627,7 +702,14 @@ def model_training(
             "************************** Test trained model *************************"
         )
         mean_test_loss = test(
-            tf_session, model, X_test, y_test, cfg, summuray_merged, test_writer
+            tf_session,
+            model,
+            X_test,
+            y_test,
+            mask_image,
+            cfg,
+            summuray_merged,
+            test_writer,
         )
 
         logger.info(f"Mean Test Data Loss [per image]: {mean_test_loss}")
@@ -657,15 +739,13 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Loaded config: {cfg}")
 
     # loading train, validation and test dataset
-    input_image_shape = (cfg["image_height"], cfg["image_width"], cfg["image_channel"])
-    X_array, y_array = load_dataset(
-        cfg["image_directory"],
-        cfg["density_directory"],
-        input_image_shape,
-        cfg["mask_path"],
-    )
+    X_list, y_list = load_dataset(cfg["image_directory"], cfg["density_directory"])
     X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
-        X_array, y_array, cfg["test_size"]
+        X_list,
+        y_list,
+        cfg["test_size"],
+        ranodm_state=42,
+        save_path_directory=cfg["save_dataset_path_directory"],
     )
     logger.info(f"Training Dataset Size: {len(X_train)}")
     logger.info(f"Validation Dataset Size: {len(X_valid)}")
