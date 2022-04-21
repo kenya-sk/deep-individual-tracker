@@ -1,15 +1,18 @@
-from typing import Tuple
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 from omegaconf import DictConfig, open_dict
 
 
-def get_init_figure(cfg: DictConfig) -> Tuple[plt.figure, list]:
-    """get the figure and the position of each graph
+def get_init_figure(cfg: DictConfig) -> Tuple[plt.figure, List]:
+    """Get the figure and the position of each graph
     used in the monitoring environment based on the config.
 
-    :param cfg: hydra config for monitoring environment
-    :return: matplotlib figure, list of each graph axis
+    Args:
+        cfg (DictConfig): hydra config for monitoring environment
+
+    Returns:
+        Tuple[plt.figure, List]: matplotlib figure, list of each graph axis
     """
     # load config
     frame_width = cfg["frame"]["width"]

@@ -1,4 +1,5 @@
-from typing import NoReturn
+import logging
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -14,22 +15,24 @@ from position_distribution import (
 )
 from stats_metrics import load_statistics, set_stats_metrics
 
+logger = logging.getLogger(__name__)
+
 
 def update(
     frame_num: int,
     cfg: DictConfig,
-    axs: list,
+    axs: List,
     past_coordinate_df: pd.DataFrame,
-    stats_dict: dict,
-) -> NoReturn:
-    """update function for movie frame
+    stats_dict: Dict,
+) -> None:
+    """Update function for movie frame
 
-    :param frame_num: current frame number
-    :param cfg: hydra config for monitoring environment
-    :param axs: list of matplotlib axis
-    :param past_coordinate_df: DataFrame containing past coordinates for comparison
-    :param stats_dict: dictionary containing each stats array
-    :return: no return value
+    Args:
+        frame_num (int): current frame number
+        cfg (DictConfig): hydra config for monitoring environment
+        axs (List): list of matplotlib axis
+        past_coordinate_df (pd.DataFrame): DataFrame containing past coordinates for comparison
+        stats_dict (Dict): dictionary containing each stats array
     """
     # clear all axis
     for ax in axs:
@@ -57,21 +60,21 @@ def update(
     set_stats_metrics(cfg, frame_num, stats_dict, axs[3], axs[4], axs[5])
 
 
-def generate_animation(cfg: DictConfig, fig: plt.figure, axs: list) -> NoReturn:
-    """generate a video for monitoring environment
+def generate_animation(cfg: DictConfig, fig: plt.figure, axs: List) -> None:
+    """Generate a video for monitoring environment
 
-    :param cfg: hydra config for monitoring environment
-    :param fig: matplotlib figure
-    :param axs: list of matplotlib axis
-    :return: no return value
+    Args:
+        cfg (DictConfig): hydra config for monitoring environment
+        fig (plt.figure): matplotlib figure
+        axs (List): list of matplotlib axis
     """
-    print("[START] Load Coordinate Data ...")
+    logger.info("[START] Load Coordinate Data ...")
     past_coordinate_df = load_past_coordinate(cfg)
-    print("------------ [DONE] ------------")
+    logger.info("------------ [DONE] ------------")
 
-    print("[START] Load Statistics Data ...")
+    logger.info("[START] Load Statistics Data ...")
     stats_dict = load_statistics(cfg)
-    print("------------ [DONE] ------------")
+    logger.info("------------ [DONE] ------------")
 
     anim = FuncAnimation(
         fig,
@@ -83,4 +86,5 @@ def generate_animation(cfg: DictConfig, fig: plt.figure, axs: list) -> NoReturn:
     save_movie_path = cfg["path"]["save_movie_path"]
     anim.save(save_movie_path, writer=cfg["animation"]["format"])
     plt.close()
-    print(f"[END] Saved Animation in [{save_movie_path}]")
+
+    logger.info(f"[END] Saved Animation in [{save_movie_path}]")

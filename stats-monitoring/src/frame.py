@@ -1,6 +1,5 @@
 import os
 import sys
-from typing import NoReturn
 
 import cv2
 import matplotlib.pyplot as plt
@@ -10,11 +9,14 @@ from omegaconf import DictConfig
 
 
 def load_one_hour_density(coord_dirc: str, end_frame_num: int) -> pd.DataFrame:
-    """load the density over the past 1 hour
+    """Load the density over the past 1 hour
 
-    :param coord_dirc: directory name of coordinate data
-    :param end_frame_num: frame number of end data
-    :return: DataFrame containing past 1 hour coordinates
+    Args:
+        coord_dirc (str): directory name of coordinate data
+        end_frame_num (int): frame number of end data
+
+    Returns:
+        pd.DataFrame: DataFrame containing past 1 hour coordinates
     """
     # get frame number 1 hour ago
     start_frame_num = max(0, end_frame_num - 3600)
@@ -38,15 +40,15 @@ def set_frame(
     detected_coordinate_df: pd.DataFrame,
     one_hour_density_df: pd.DataFrame,
     ax: plt.axis,
-) -> NoReturn:
-    """set the current frame on frame axis
+) -> None:
+    """Set the current frame on frame axis
 
-    :param cfg: hydra config for monitoring environment
-    :param frame_num: current frame number
-    :param detected_coordinate_df: DataFrame containing current frame coordinates
-    :param one_hour_density_df: DataFrame containing past 1 hour coordinates
-    :param ax: matplotlib figure axis of frame
-    :return: no return value
+    Args:
+        cfg (DictConfig): hydra config for monitoring environment
+        frame_num (int): current frame number
+        detected_coordinate_df (pd.DataFrame): DataFrame containing current frame coordinates
+        one_hour_density_df (pd.DataFrame): DataFrame containing past 1 hour coordinates
+        ax (plt.axis): matplotlib figure axis of frame
     """
     frame_path = os.path.join(cfg["path"]["frame_directory"], f"{frame_num}.png")
     if os.path.isfile(frame_path):

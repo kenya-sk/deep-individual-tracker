@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import NoReturn
+from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,15 +34,21 @@ LABELS = [
 def load_statistics(cfg: DictConfig) -> dict:
     """Load the statistics used in the monitoring environment
 
-    :param cfg: hydra config for monitoring environment
-    :return: dictionary containing each stats array
+    Args:
+        cfg (DictConfig): hydra config for monitoring environment
+
+    Returns:
+        dict: dictionary containing each stats array
     """
 
     def load_value(path: str) -> np.array:
         """Load statistics value from CSV file
 
-        :param path: CSV file path
-        :return: target numpy array
+        Args:
+            path (str): CSV file path
+
+        Returns:
+            np.array: target numpy array
         """
         if os.path.isfile(path):
             return np.loadtxt(path, delimiter=",")
@@ -62,12 +68,15 @@ def load_statistics(cfg: DictConfig) -> dict:
     return stats_dict
 
 
-def load_array(stats_dict: dict, key: str) -> np.array:
-    """load array from statistics dictionary
+def load_array(stats_dict: Dict, key: str) -> np.array:
+    """Load array from statistics dictionary
 
-    :param stats_dict: dictionary containing each stats array
-    :param key: dictionary key
-    :return: target stats array
+    Args:
+        stats_dict (Dict): dictionary containing each stats array
+        key (str): dictionary key
+
+    Returns:
+        np.array: target stats array
     """
     if key in stats_dict.keys():
         return stats_dict[key]
@@ -79,20 +88,20 @@ def load_array(stats_dict: dict, key: str) -> np.array:
 def set_stats_metrics(
     cfg: DictConfig,
     frame_num: int,
-    stats_dict: dict,
+    stats_dict: Dict,
     mean_ax: plt.axis,
     acc_ax: plt.axis,
     cnt_ax: plt.axis,
-) -> NoReturn:
-    """set the stats for the current frame on each axis
+) -> None:
+    """Set the stats for the current frame on each axis
 
-    :param cfg: hydra config for monitoring environment
-    :param frame_num: current frame number
-    :param stats_dict: dictionary containing each stats array
-    :param mean_ax: matplotlib figure axis of mean speed
-    :param acc_ax: matplotlib figure axis of acceleration count
-    :param cnt_ax: matplotlib figure axis of individual count
-    :return: no return value
+    Args:
+        cfg (DictConfig): hydra config for monitoring environment
+        frame_num (int): current frame number
+        stats_dict (Dict): dictionary containing each stats array
+        mean_ax (plt.axis): matplotlib figure axis of mean speed
+        acc_ax (plt.axis): matplotlib figure axis of acceleration count
+        cnt_ax (plt.axis): matplotlib figure axis of individual count
     """
     mean_arr = load_array(stats_dict, "mean")
     x = [i for i in range(len(mean_arr))]

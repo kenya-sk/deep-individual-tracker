@@ -1,24 +1,36 @@
-from typing import NoReturn
+import logging
+import time
 
-from hydra.experimental import compose, initialize
+import hydra
+from omegaconf import DictConfig, OmegaConf
 
 from generate_animation import generate_animation
 from get_init_figure import get_init_figure
 
+# logger setting
+log_path = f"./logs/stats_monitoring_{time.time()}.log"
+logging.basicConfig(
+    filename=log_path,
+    level=logging.DEBUG,
+    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+)
+logger = logging.getLogger(__name__)
 
-def main() -> NoReturn:
-    print("[START] Set Figure and Each Axis ...")
+
+@hydra.main(config_path="../conf", config_name="monitoring_config")
+def main(cfg: DictConfig) -> None:
+    # load parameter from hydra
+    cfg = OmegaConf.to_container(cfg)
+    logger.info(f"Loaded config: {cfg}")
+
+    logger.info("[START] Set Figure and Each Axis ...")
     fig, axs = get_init_figure(cfg)
-    print("------------ [DONE] ------------")
+    logger.info("------------ [DONE] ------------")
 
-    print("[START] Generate Animation ...")
+    logger.info("[START] Generate Animation ...")
     generate_animation(cfg, fig, axs)
-    print("------------ [DONE] ------------")
+    logger.info("------------ [DONE] ------------")
 
 
 if __name__ == "__main__":
-    # load parameter from hydra
-    initialize(config_path="../conf", job_name="stats-monitoring")
-    cfg = compose(config_name="config")
-
     main()

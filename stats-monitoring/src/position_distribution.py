@@ -4,7 +4,6 @@ import sys
 # [FIXME] support displot or kdeplot
 import warnings
 from glob import glob
-from typing import NoReturn
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -17,11 +16,14 @@ warnings.simplefilter("ignore", FutureWarning)
 
 
 def load_current_coordinate(cfg: DictConfig, frame_num: int) -> pd.DataFrame:
-    """load the current frame distribution
+    """Load the current frame distribution
 
-    :param cfg: hydra config for monitoring environment
-    :param frame_num: current frame number
-    :return: DataFrame of current frame distribution
+    Args:
+        cfg (DictConfig): hydra config for monitoring environment
+        frame_num (int): current frame number
+
+    Returns:
+        pd.DataFrame: DataFrame of current frame distribution
     """
     # Each coordinate is defined by the column names "x" and "y"
     coordinate_path = os.path.join(
@@ -38,10 +40,13 @@ def load_current_coordinate(cfg: DictConfig, frame_num: int) -> pd.DataFrame:
 
 
 def load_past_coordinate(cfg: DictConfig) -> pd.DataFrame:
-    """load the past distribution used for comparison
+    """Load the past distribution used for comparison
 
-    :param cfg: hydra config for monitoring environment
-    :return: DataFrame of past distribution
+    Args:
+        cfg (DictConfig): hydra config for monitoring environment
+
+    Returns:
+        pd.DataFrame: DataFrame of past distribution
     """
     if os.path.isdir(cfg["path"]["past_coordinate_directory"]):
         coordinate_path_lst = glob(f'{cfg["path"]["past_coordinate_directory"]}/*.csv')
@@ -66,17 +71,16 @@ def set_histogram(
     past_coordinate_df: pd.DataFrame,
     x_ax: plt.axis,
     y_ax: plt.axis,
-) -> NoReturn:
-    """set the individual distribution on histogram axis
+) -> None:
+    """Set the individual distribution on histogram axis
 
-    :param cfg: hydra config for monitoring environment
-    :param current_coordinate_df: DataFrame containing current frame coordinates
-    :param past_coordinate_df: DataFrame containing past coordinates for comparison
-    :param x_ax: matplotlib figure axis of X-histogram
-    :param y_ax: matplotlib figure axis of Y-histogram
-    :return: no return values
+    Args:
+        cfg (DictConfig): hydra config for monitoring environment
+        current_coordinate_df (pd.DataFrame): DataFrame containing current frame coordinates
+        past_coordinate_df (pd.DataFrame): DataFrame containing past coordinates for comparison
+        x_ax (plt.axis): matplotlib figure axis of X-histogram
+        y_ax (plt.axis): matplotlib figure axis of Y-histogram
     """
-
     # plot X-axis histogram
     # set X-axis histogram bin number
     x_bins = int(cfg["figure"]["width"] / cfg["histogram"]["x_bin_granularity"])
