@@ -158,13 +158,13 @@ def load_sample(
     X_image = load_image(X_path, is_rgb=is_rgb)
     assert (
         X_image.shape == input_image_shape
-    ), f"Invalid image shape. Expected is {input_image_shape} but {X_image}"
+    ), f"Invalid image shape. Expected is {input_image_shape} but {X_image.shape}"
 
     y_dens = np.load(y_path)
     assert (
-        X_image.shape == y_dens.shape
+        X_image.shape[:2] == y_dens.shape
     ), f"The input image and the density map must have the same shape.\
-    image={X_image.shape}, density map={y_dens.shape}"
+    image={X_image.shape[:2]}, density map={y_dens.shape}"
 
     if mask_image is not None:
         X_image = apply_masking_on_image(X_image, mask_image, channel=3)

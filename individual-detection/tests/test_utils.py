@@ -14,12 +14,14 @@ from utils import (
     get_masked_index,
     load_image,
     load_mask_image,
+    load_sample,
+    save_dataset_path,
 )
 
 
 class TestFileLoader(unittest.TestCase):
     def test_load_image(self):
-        image_path = "./data/demo/demo.png"
+        image_path = "./data/demo/demo_image.png"
         image = load_image(image_path)
         self.assertIs(type(image), np.ndarray)
 
@@ -33,13 +35,29 @@ class TestFileLoader(unittest.TestCase):
         self.assertTrue(1 <= len(np.unique(normalized_mask)) <= 2)
         self.assertTrue(none_mask is None)
 
+    def test_load_smple(self):
+        x_path = "./data/demo/demo_image.png"
+        y_path = "./data/demo/demo_label.npy"
+        input_image_shape = (853, 1280, 3)
+        mask_image = None
+        X_image, y_dens = load_sample(
+            x_path, y_path, input_image_shape, mask_image, is_rgb=True
+        )
+
+        self.assertIs(type(X_image), np.ndarray)
+        self.assertIs(type(y_dens), np.ndarray)
+
+        expected_X_channel = 3
+        self.assertEqual(expected_X_channel, X_image.shape[2])
+        self.assertEqual(2, len(y_dens.shape))  # expected 1 channel
+
     def test_load_model(self):
         pass
 
 
 class TestMaskImage(unittest.TestCase):
     def test_apply_masking_on_image(self):
-        image_3channel = load_image("./data/demo/demo.png")
+        image_3channel = load_image("./data/demo/demo_image.png")
         image_1channel = image_3channel[:, :, 0]
         all_valid_mask = np.ones(image_3channel.shape)
         all_ignore_mask = np.zeros(image_3channel.shape)
@@ -158,8 +176,26 @@ class TestDirectoryList(unittest.TestCase):
         blank_expected = []
         self.assertEqual(blank_expected, get_directory_list(self.root_blank_directory))
 
-        exist_expected = ["test_1", "test_2"]
-        self.assertEqual(exist_expected, get_directory_list(self.root_test_directory))
+        exist_expected = sorted(["test_1", "test_2"])
+        self.assertEqual(
+            exist_expected, sorted(get_directory_list(self.root_test_directory))
+        )
+
+
+class TestFileSaver(unittest.TestCase):
+    def setUp(self):
+        self.root_directory = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.root_directory)
+
+    def test_save_dataset_path(self):
+        X_path_list = ["test1.png", "test2.png", "test3.png"]
+        y_path_list = ["test1.npy", "test2.npy", "test3.npy"]
+        save_path = f"{self.root_directory}/test.csv"
+        save_dataset_path(X_path_list, y_path_list, save_path)
+
+        self.assertTrue(os.path.isfile(save_path))
 
 
 class TestFrameNumber(unittest.TestCase):
