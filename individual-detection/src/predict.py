@@ -144,7 +144,7 @@ def batch_prediction(
 
         # predcit for each image
         for path in image_path_list:
-            image = load_image(path, is_rgb=True)
+            image = load_image(path, is_rgb=True, normalized=True)
             # apply mask on input image
             if cfg["mask_path"] is not None:
                 mask_image = load_mask_image(cfg["mask_path"], normalized=True)

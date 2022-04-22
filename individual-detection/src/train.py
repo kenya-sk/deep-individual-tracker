@@ -288,6 +288,7 @@ def train(
             input_image_shape,
             mask_image,
             is_rgb=True,
+            normalized=True,
         )
 
         # load training local image
@@ -425,6 +426,7 @@ def validation(
             input_image_shape,
             mask_image,
             is_rgb=True,
+            normalized=True,
         )
 
         # load validation local image
@@ -517,6 +519,7 @@ def test(
             input_image_shape,
             mask_image,
             is_rgb=True,
+            normalized=True,
         )
 
         # load test local image

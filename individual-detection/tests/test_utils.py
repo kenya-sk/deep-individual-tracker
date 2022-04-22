@@ -11,6 +11,7 @@ from utils import (
     apply_masking_on_image,
     get_directory_list,
     get_frame_number_from_path,
+    get_image_shape,
     get_masked_index,
     load_image,
     load_mask_image,
@@ -22,8 +23,12 @@ from utils import (
 class TestFileLoader(unittest.TestCase):
     def test_load_image(self):
         image_path = "./data/demo/demo_image.png"
-        image = load_image(image_path)
+        image = load_image(image_path, normalized=False)
         self.assertIs(type(image), np.ndarray)
+
+        normalized_image = load_image(image_path, normalized=True)
+        self.assertTrue(0.0 <= np.min(normalized_image))
+        self.assertTrue(np.max(normalized_image) <= 1.0)
 
     def test_load_mask_image(self):
         mask_path = "./data/demo/demo_mask.png"
@@ -41,7 +46,7 @@ class TestFileLoader(unittest.TestCase):
         input_image_shape = (853, 1280, 3)
         mask_image = None
         X_image, y_dens = load_sample(
-            x_path, y_path, input_image_shape, mask_image, is_rgb=True
+            x_path, y_path, input_image_shape, mask_image, is_rgb=True, normalized=False
         )
 
         self.assertIs(type(X_image), np.ndarray)
@@ -154,6 +159,19 @@ class TestMaskImage(unittest.TestCase):
         )
         self.assertEqual(sorted(expected_3_index_h), sorted(actual_3_index_h))
         self.assertEqual(sorted(expected_3_index_w), sorted(actual_3_index_w))
+
+
+class TestImageInfo(unittest.TestCase):
+    def test_get_image_shape(self):
+        image_path = "./data/demo/demo_image.png"
+        image_3channel = load_image(image_path, normalized=False)
+        image_1channel = image_3channel[:, :, 1]
+
+        expected_3channel_shape = (853, 1280, 3)
+        expected_1channel_shape = (853, 1280, 1)
+
+        self.assertEqual(expected_3channel_shape, get_image_shape(image_3channel))
+        self.assertEqual(expected_1channel_shape, get_image_shape(image_1channel))
 
 
 class TestLocalImage(unittest.TestCase):

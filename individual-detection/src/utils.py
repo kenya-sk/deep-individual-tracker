@@ -111,12 +111,13 @@ def pretty_print(
     logger.info("****************************************************************")
 
 
-def load_image(path: str, is_rgb: bool = True) -> np.array:
+def load_image(path: str, is_rgb: bool = True, normalized: bool = False) -> np.array:
     """Loads image data frosm the input path and returns image in numpy array format.
 
     Args:
         path (str): input image file path
         is_rgb (bool, optional): whether convert RGB format. Defaults to True.
+        normalized (bool, optional): whether normalize loaded image. Defaults to False.
 
     Returns:
         np.array: loaded image
@@ -133,6 +134,10 @@ def load_image(path: str, is_rgb: bool = True) -> np.array:
     if is_rgb:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+    # normalization
+    if normalized:
+        image = image / 255.0
+
     return image
 
 
@@ -141,7 +146,8 @@ def load_sample(
     y_path: str,
     input_image_shape: Tuple,
     mask_image: np.array,
-    is_rgb: bool = True,
+    is_rgb: bool,
+    normalized: bool,
 ) -> Tuple:
     """_summary_
 
@@ -150,12 +156,13 @@ def load_sample(
         y_path (str): _description_
         input_image_shape (Tuple): _description_
         mask_image (np.array): _description_
-        is_rgb (bool, optional): _description_. Defaults to True.
+        is_rgb (bool): _description_
+        normalized (bool): _description_
 
     Returns:
         Tuple: _description_
     """
-    X_image = load_image(X_path, is_rgb=is_rgb)
+    X_image = load_image(X_path, is_rgb=is_rgb, normalized=normalized)
     assert (
         X_image.shape == input_image_shape
     ), f"Invalid image shape. Expected is {input_image_shape} but {X_image.shape}"
@@ -263,6 +270,25 @@ def get_masked_index(
     return index_h, index_w
 
 
+def get_image_shape(image: np.array) -> Tuple:
+    """Get the height, width, and channel of the input image.
+
+    Args:
+        image (np.array): input image
+
+    Returns:
+        Tuple: image shape=(height, width, channel)
+    """
+    height = image.shape[0]
+    width = image.shape[1]
+    if len(image.shape) == 3:
+        channel = image.shape[2]
+    else:
+        channel = 1
+
+    return (height, width, channel)
+
+
 def get_local_data(
     image: np.array, density_map: np.array, params_dict: dict, is_flip: bool
 ) -> Tuple:
@@ -277,8 +303,6 @@ def get_local_data(
     Returns:
         Tuple: numpy array of local image and density map
     """
-
-    assert len(image.shape) == 3
     # triming original image
     image = image[
         params_dict["analysis_image_height_min"] : params_dict[
@@ -288,12 +312,10 @@ def get_local_data(
             "analysis_image_width_max"
         ],
     ]
-    height = image.shape[0]
-    width = image.shape[1]
-    channel = image.shape[2]
+    height, width, channel = get_image_shape(image)
 
     pad = math.floor(params_dict["local_image_size"] / 2)
-    pad_image = np.zeros((height + pad * 2, width + pad * 2, channel), dtype="uint8")
+    pad_image = np.zeros((height + pad * 2, width + pad * 2, channel), dtype="float32")
     pad_image[pad : pad + height, pad : pad + width] = image
 
     # get each axis index
@@ -316,7 +338,7 @@ def get_local_data(
             params_dict["local_image_size"],
             channel,
         ),
-        dtype="uint8",
+        dtype="float32",
     )
 
     density_array = np.zeros((local_data_number), dtype="float32")
