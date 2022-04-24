@@ -1,26 +1,7 @@
-# Introduction
-NOW DEVELOPMENT
+# Deep Individual Tracker / Indeividual Tracking
+## Introduction
+Tracking is performed based on the location of the individual detected by 'indevidual-detection'. When tracking, template matching is performed for the neighborhood of the detection point and correspondence is made between frames.
 
-<!-- # Directory structure
-root/  
-&emsp;├ data/  
-&emsp;├ image/  
-&emsp;├ movie/  
-&emsp;└  src/  
-&emsp;&emsp;&ensp;├ cpp/  
-&emsp;&emsp;&ensp;│&emsp;├ Makefile   
-&emsp;&emsp;&ensp;│&emsp;├ main.cpp   
-&emsp;&emsp;&ensp;│&emsp;├ tracking_template.cpp   
-&emsp;&emsp;&ensp;│&emsp;└ tracking_util.cpp   
-&emsp;&emsp;&ensp;│   
-&emsp;&emsp;&ensp;└ python/  
-&emsp;&emsp;&emsp;&emsp;&emsp;├ tracking_hungarian.py   
-&emsp;&emsp;&emsp;&emsp;&emsp;├ tracking_template.py  
-&emsp;&emsp;&emsp;&emsp;&emsp;└ tracking_util.py    -->
-
-# Requirements
-* Python3
-* C++
-* OpenCV
-* Scikit-learn
-* TensorFlow
+## Dependencies
+- g++: 7.5.0
+- opencv: 4.0.0

@@ -1,4 +1,4 @@
-# stats-monitoring
+# Deep Individual Tracker / Statistic Monitoring
 
 ## Overview
 
