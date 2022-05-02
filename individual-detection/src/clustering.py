@@ -25,15 +25,17 @@ logger = logging.getLogger(__name__)
 def apply_clustering_to_density_map(
     density_map: np.array, band_width: int, thresh: float = 0.5
 ) -> np.array:
-    """Apply Mean-Shift Clustering to density maps
+    """Apply Mean-Shift Clustering to density maps.
+    The center coordinates of the computed clusters are considered the final individual detection position.
 
     Args:
-        density_map (np.array): _description_
-        band_width (int): _description_
-        thresh (float, optional): _description_. Defaults to 0.5.
+        density_map (np.array): predicted density map by trained CNN
+        band_width (int): bandwidth used in the RBF kernel.
+        thresh (float, optional): threshold value to be applied to the density map.
+            Values below the threshold are ignored. Defaults to 0.5.
 
     Returns:
-        np.array: _description_
+        np.array: array containing the cluster's centroid.
     """
     # search high value coordinates
     while True:
@@ -61,17 +63,17 @@ def apply_clustering_to_density_map(
 
 
 def batch_clustering(
-    density_map_path: str, band_width: int, thresh: float, save_directory: str
+    density_map_directory: str, band_width: int, thresh: float, save_directory: str
 ) -> None:
-    """Apply clustering to multiple files individually
+    """Apply clustering to multiple files individually.
 
     Args:
-        density_map_path (str): _description_
-        band_width (int): _description_
-        thresh (float): _description_
-        save_directory (str): _description_
+        density_map_directory (str): directory of density map
+        band_width (int): bandwidth used in the RBF kernel.
+        thresh (float): threshold value to be applied to the density map.
+        save_directory (str): directory of save results
     """
-    file_list = glob.glob(density_map_path)
+    file_list = glob.glob(f"{density_map_directory}/*.npy")
     for i, path in enumerate(file_list):
         # apply clustering for predicted density map
         pred_density_map = np.load(path)
@@ -94,23 +96,16 @@ def batch_clustering(
 def plot_prediction_box(
     image: np.array,
     centroid_array: np.array,
-    hour: int,
-    minute: int,
-    output_directory: str,
+    save_path: str,
     box_size: int = 12,
 ) -> None:
-    """Plot the location and Box of detected individuals on the image
+    """Plot the location and Box of detected individuals on the image.
 
     Args:
-        image (np.array): _description_
-        centroid_array (np.array): _description_
-        hour (int): _description_
-        minute (int): _description_
-        output_directory (str): _description_
-        box_size (int, optional): _description_. Defaults to 12.
-
-    Returns:
-        _type_: _description_
+        image (np.array): raw image
+        centroid_array (np.array): array of calculted centroid
+        save_path (str): path of saved image
+        box_size (int, optional): size of the box to be plotted. Defaults to 12.
     """
 
     # get coordinates of vertex(left top and right bottom)
@@ -142,6 +137,5 @@ def plot_prediction_box(
         )
 
     # save plotted image
-    save_path = f"{output_directory}/{hour}_{hour}.png"
     cv2.imwrite(save_path, img)
-    logger.info(f"Saved in '{save_path}'. (data={hour}:{minute})")
+    logger.info(f"Saved in '{save_path}'.")

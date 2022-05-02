@@ -12,19 +12,11 @@ from tensorflow.compat.v1 import InteractiveSession
 
 from clustering import apply_clustering_to_density_map
 from model import DensityModel
-from utils import (
-    apply_masking_on_image,
-    display_data_info,
-    get_current_time_str,
-    get_directory_list,
-    get_frame_number_from_path,
-    get_local_data,
-    get_masked_index,
-    load_image,
-    load_mask_image,
-    load_model,
-    set_capture,
-)
+from utils import (apply_masking_on_image, display_data_info,
+                   get_current_time_str, get_directory_list,
+                   get_frame_number_from_path, get_local_data,
+                   get_masked_index, load_image, load_mask_image, load_model,
+                   set_capture)
 
 # logger setting
 current_time = get_current_time_str()
@@ -45,15 +37,15 @@ def image_prediction(
     output_directory: str,
     cfg: dict,
 ) -> None:
-    """_summary_
+    """Predictions are applied to single image data using trained model.
 
     Args:
-        model (DensityModel): _description_
-        tf_session (InteractiveSession): _description_
-        image (np.array): _description_
-        frame_num (int): _description_
-        output_directory (str): _description_
-        cfg (dict): _description_
+        model (DensityModel): trained model
+        tf_session (InteractiveSession): tensorflow session
+        image (np.array): target raw image
+        frame_num (int): target frame number
+        output_directory (str): output directory name
+        cfg (dict): config dictionary
     """
     # load local images to be predicted
     X_local, _ = get_local_data(image, None, cfg, is_flip=False)
@@ -122,12 +114,12 @@ def image_prediction(
 def batch_prediction(
     model: DensityModel, tf_session: InteractiveSession, cfg: dict
 ) -> None:
-    """_summary_
+    """Predictions are applied to multipule image data using trained model.
 
     Args:
-        model (DensityModel): _description_
-        tf_session (InteractiveSession): _description_
-        cfg (dict): _description_
+        model (DensityModel): trained model
+        tf_session (InteractiveSession): tensorflow session
+        cfg (dict): config dictionary
     """
     root_image_path = f"{cfg['image_directory']}/{cfg['target_date']}"
     image_directory_list = get_directory_list(root_image_path)
@@ -160,12 +152,12 @@ def batch_prediction(
 def video_prediction(
     model: DensityModel, tf_session: InteractiveSession, cfg: dict
 ) -> None:
-    """_summary_
+    """Predictions are applied to video data using trained model.
 
     Args:
-        model (DensityModel): _description_
-        tf_session (InteractiveSession): _description_
-        cfg (dict): _description_
+        model (DensityModel): trained model
+        tf_session (InteractiveSession): tensorflow session
+        cfg (dict): config dictionary
     """
     for hour in range(cfg["start_hour"], cfg["end_hour"]):
         output_directory = f"{cfg['output_directory']}/{cfg['target_date']}/{hour}"

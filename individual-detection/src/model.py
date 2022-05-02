@@ -1,5 +1,6 @@
 import math
 import sys
+from typing import List, Tuple
 
 import tensorflow as tf
 from tensorflow.compat.v1 import placeholder, summary
@@ -7,6 +8,10 @@ from tensorflow.compat.v1.train import AdamOptimizer
 
 
 class DensityModel(object):
+    """Class defined by 7-layer convolutional neural networks.
+    The model takes as input a 3-channel image and outputs the value of the density map corresponding to its center.
+    The density map represents the likelihood that each individual is present at that location.
+    """
     def __init__(self):
         # input image
         with tf.name_scope("input"):
@@ -174,16 +179,15 @@ class DensityModel(object):
             ).minimize(self.loss)
 
     @staticmethod
-    def __weight_variable(shape, name=None):
-        """
-        initialize weight by He initialization
+    def __weight_variable(shape: Tuple, name: str = None) -> tf.Variable:
+        """Initialized weight by He initialization
 
-        input:
-            shape: size of weight filter
-            name: variable name
+        Args:
+            shape (Tuple): weight shape
+            name (str, optional): variable name. Defaults to None.
 
-        output:
-            weight filter
+        Returns:
+            tf.Variable: weight variable
         """
 
         # He initialization
@@ -204,16 +208,15 @@ class DensityModel(object):
             return tf.Variable(initial, name=name)
 
     @staticmethod
-    def __bias_variable(shape, name=None):
-        """
-        initialize bias by normal distribution (standard deviation: 0.1)
+    def __bias_variable(shape: Tuple, name: str = None) -> tf.Variable:
+        """Initialize the bias with a normal distribution (standard deviation: 0.1).
 
-        input:
-            shape: size of bias
-            name: variable name
+        Args:
+            shape (Tuple): shape of bias tensor
+            name (str, optional): variable name. Defaults to None.
 
-        output:
-            bias
+        Returns:
+            tf.Variable: initialized bias
         """
 
         initial = tf.constant(0.1, shape=shape)
@@ -223,30 +226,28 @@ class DensityModel(object):
             return tf.Variable(initial, name=name)
 
     @staticmethod
-    def __conv2d(X, W):
-        """
-        2d convolutional layer
+    def __conv2d(X: tf.Tensor, W: tf.Tensor) -> tf.Tensor:
+        """Apply a 2D convolutional layer.
 
-        input:
-            X: input value
-            W: weight
+        Args:
+            X (tf.Tensor): inputs of counvolutional layer
+            W (tf.Tensor): weights of counvolutional layer
 
-        output:
-            convolved value
+        Returns:
+            tf.Tensor: output value of counvolutional layer
         """
 
         return tf.nn.conv2d(X, W, strides=[1, 1, 1, 1], padding="SAME")
 
     @staticmethod
-    def __max_pool_2x2(X):
-        """
-        2x2 maximum pooling layer
+    def __max_pool_2x2(X: tf.Tensor) -> tf.Tensor:
+        """Apply 2x2 max pooling layer
 
-        input:
-            X: input value
+        Args:
+            X (tf.Tensor): inputs of pooling layer
 
-        output:
-            pooled value
+        Returns:
+            tf.Tensor: output value of pooling layer
         """
 
         return tf.nn.max_pool2d(
@@ -254,18 +255,17 @@ class DensityModel(object):
         )
 
     @staticmethod
-    def __batch_norm(X, axes, shape, is_training):
-        """
-        batch normalization
+    def __batch_norm(X: tf.Tensor, axes: List, shape: int, is_training: bool) -> tf.Tensor:
+        """Apply batch normalization on each output layer
 
-        input:
-            X: input value
-            axes: order of dimension
-            shape: chanel number
-            is_training: True or False
+        Args:
+            X (tf.Tensor): inputs of batch normalization
+            axes (List): applied axis list
+            shape (int): output shape
+            is_training (bool): whether training or not
 
-        output:
-            batch normalized value
+        Returns:
+            tf.Tensor: output value of batch normalization
         """
 
         if is_training is False:
@@ -277,15 +277,11 @@ class DensityModel(object):
         return tf.nn.batch_normalization(X, mean, variance, offset, scale, epsilon)
 
     @staticmethod
-    def __variable_summaries(var):
-        """
-        processing variables and it output tensorboard
+    def __variable_summaries(var: tf.Variable) -> None:
+        """Processing variables and it output tensorboard
 
-        input:
-            var: value of several layer
-
-        output:
-            mean, stddev, max, min, histogram
+        Args:
+            var (tf.Variable): variable of each layer
         """
 
         with tf.name_scope("summaries"):

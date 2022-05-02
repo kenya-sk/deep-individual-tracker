@@ -11,28 +11,17 @@ import tensorflow as tf
 from omegaconf import DictConfig, OmegaConf
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
-from tensorflow.compat.v1 import (
-    ConfigProto,
-    GPUOptions,
-    InteractiveSession,
-    global_variables_initializer,
-)
+from tensorflow.compat.v1 import (ConfigProto, GPUOptions, InteractiveSession,
+                                  global_variables_initializer)
 from tensorflow.compat.v1.summary import FileWriter
 from tensorflow.compat.v1.train import Saver
 from tensorflow.python.framework.ops import Tensor as OpsTensor
 from tqdm import trange
 
 from model import DensityModel
-from utils import (
-    get_current_time_str,
-    get_elapsed_time_str,
-    get_local_data,
-    get_masked_index,
-    load_mask_image,
-    load_sample,
-    save_dataset_path,
-    set_tensorboard,
-)
+from utils import (get_current_time_str, get_elapsed_time_str, get_local_data,
+                   get_masked_index, load_mask_image, load_sample,
+                   save_dataset_path, set_tensorboard)
 
 # logger setting
 current_time = get_current_time_str()
@@ -49,14 +38,14 @@ def load_dataset(
     image_directory: str,
     density_directory: str,
 ) -> Tuple:
-    """_summary_
+    """Load the file name of the data set.
 
     Args:
-        image_directory (str): _description_
-        density_directory (str): _description_
+        image_directory (str): directory name of image (input)
+        density_directory (str): directory name of density map (label)
 
     Returns:
-        Tuple: _description_
+        Tuple: tuple with image and label filename pairs 
     """
     X_list, y_list = [], []
     file_list = glob(f"{image_directory}/*.png")
@@ -84,17 +73,17 @@ def split_dataset(
     ranodm_state: int = 42,
     save_path_directory: str = None,
 ) -> Tuple:
-    """_summary_
+    """Randomly split the dataset into train, validation, and test.
 
     Args:
-        X_list (List): _description_
-        y_list (List): _description_
-        test_size (float): _description_
-        ranodm_state (int, optional): _description_. Defaults to 42.
-        save_path_directory (str, optional): _description_. Defaults to None.
+        X_list (List): input image path list
+        y_list (List): label path list
+        test_size (float): test data size (0.0 - 1.0)
+        ranodm_state (int, optional): random state of split dataset. Defaults to 42.
+        save_path_directory (str, optional): directory name to save the file name of each dataset. Defaults to None.
 
     Returns:
-        Tuple: _description_
+        Tuple: tuple containing the filenames of train, validation, and test
     """
     # splite dataset into train and test
     X_train, X_test, y_train, y_test = train_test_split(
@@ -122,28 +111,28 @@ def split_dataset(
 def hard_negative_mining(
     X: np.array, y: np.array, loss_array: np.array, prams_dict: dict
 ) -> Tuple:
-    """_summary_
+    """Hard negative mining is performed based on the error in each sample.
 
     Args:
-        X (np.array): _description_
-        y (np.array): _description_
-        loss_array (np.array): _description_
-        prams_dict (dict): _description_
+        X (np.array): array of local image
+        y (np.array): array of density map
+        loss_array (np.array): array of each sample loss
+        prams_dict (dict): parameter dictionary
 
     Returns:
-        Tuple: _description_
+        Tuple: tuple of hard negative image and label
     """
 
     # get index that error is greater than the threshold
     def hard_negative_index(loss_array: np.array, thresh: float) -> np.array:
-        """_summary_
+        """Get the index of the target data from the input sample.
 
         Args:
-            loss_array (np.array): _description_
-            thresh (float): _description_
+            loss_array (np.array): array of each sample loss
+            thresh (float): threshold of hard negative
 
         Returns:
-            np.array: _description_
+            np.array: array of hard negative index
         """
         index = np.where(loss_array > thresh)[0]
         return index
@@ -204,16 +193,16 @@ def under_sampling(
 def get_local_samples(
     X_image: np.array, y_dens: np.array, is_flip: bool, params_dict: dict
 ) -> Tuple:
-    """_summary_
+    """Get samples of local images to be input to the model from the image and label pairs.
 
     Args:
-        X_image (np.array): _description_
-        y_dens (np.array): _description_
-        is_flip (bool): _description_
-        params_dict (dict): _description_
+        X_image (np.array): target raw image (input)
+        y_dens (np.array): target density map (label)
+        is_flip (bool): whether apply horizontal flip or not
+        params_dict (dict): parameter dictionary
 
     Returns:
-        Tuple: _description_
+        Tuple: local samples array
     """
 
     if (is_flip) and (np.random.rand() < params_dict["flip_prob"]):
@@ -243,21 +232,21 @@ def train(
     summuray_merged: OpsTensor,
     writer: FileWriter,
 ) -> float:
-    """_summary_
+    """Update and train the parameters of the model using the training data.
 
     Args:
-        tf_session (InteractiveSession): _description_
-        epoch (int): _description_
-        model (DensityModel): _description_
-        X_train (List): _description_
-        y_train (List): _description_
-        mask_image (np.array): _description_
-        params_dict (dict): _description_
-        summuray_merged (OpsTensor): _description_
-        writer (FileWriter): _description_
+        tf_session (InteractiveSession): tensorflow session
+        epoch (int): epoch number
+        model (DensityModel): trained model
+        X_train (List): training input image path List
+        y_train (List): training label path List
+        mask_image (np.array): mask image
+        params_dict (dict): parameter dictionary
+        summuray_merged (OpsTensor): tensorflow dashboard summury
+        writer (FileWriter): tensorflow dashboard writer
 
     Returns:
-        float: _description_
+        float: training data result (MSE value).
     """
 
     # initialization of training
@@ -394,21 +383,22 @@ def validation(
     summuray_merged: OpsTensor,
     writer: FileWriter,
 ) -> float:
-    """_summary_
+    """Perform an interim evaluation of the trained model.
+    Determine whether overfitting has occurred and whether Early stopping should be performed.
 
     Args:
-        tf_session (InteractiveSession): _description_
-        epoch (int): _description_
-        model (DensityModel): _description_
-        X_valid (List): _description_
-        y_valid (List): _description_
-        mask_image (np.array): _description_
-        params_dict (dict): _description_
-        summuray_merged (OpsTensor): _description_
-        writer (FileWriter): _description_
+        tf_session (InteractiveSession): tensorflow session
+        epoch (int): epoch number
+        model (DensityModel): trained model
+        X_valid (List): validation input image path List
+        y_valid (List): validation label path List
+        mask_image (np.array): mask image
+        params_dict (dict): parameter dictionary
+        summuray_merged (OpsTensor): tensorflow dashboard summury
+        writer (FileWriter): tensorflow dashboard writer
 
     Returns:
-        float: _description_
+        float: vaalidation data result (MSE value).
     """
 
     valid_loss = 0.0
@@ -488,20 +478,20 @@ def test(
     summuray_merged: OpsTensor,
     writer: FileWriter,
 ) -> float:
-    """_summary_
+    """Perform a final performance evaluation of the trained model.
 
     Args:
-        tf_session (InteractiveSession): _description_
-        model (DensityModel): _description_
-        X_test (List): _description_
-        y_test (List): _description_
-        mask_image (np.array): _description_
-        params_dict (dict): _description_
-        summuray_merged (OpsTensor): _description_
-        writer (FileWriter): _description_
+        tf_session (InteractiveSession): tensorflow session
+        model (DensityModel): trained model
+        X_test (List): test input image path List
+        y_test (List): test label path List
+        mask_image (np.array): mask image
+        params_dict (dict): parameter dictionary
+        summuray_merged (OpsTensor): tensorflow dashboard summury
+        writer (FileWriter): tensorflow dashboard writer
 
     Returns:
-        float: _description_
+        float: test data result (MSE value).
     """
 
     test_loss = 0.0
@@ -575,19 +565,17 @@ def model_training(
     y_test: List,
     cfg: dict,
 ) -> None:
-    """_summary_
+    """Training the model. Perform an interim evaluation using validation data, 
+    and finally evaluate the learning results with test data.
 
     Args:
-        X_train (List): _description_
-        X_valid (List): _description_
-        X_test (List): _description_
-        y_train (List): _description_
-        y_valid (List): _description_
-        y_test (List): _description_
-        cfg (dict): _description_
-
-    Returns:
-        None: _description_
+        X_train (List): training input image path List
+        X_valid (List): validation input image path List
+        X_test (List): test input image path List
+        y_train (List): training label path List
+        y_valid (List): validation label path List
+        y_test (List): test label path List
+        cfg (dict): config dictionary
     """
     # start TensorFlow session
     tf_config = ConfigProto(

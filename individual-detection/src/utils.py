@@ -149,18 +149,19 @@ def load_sample(
     is_rgb: bool,
     normalized: bool,
 ) -> Tuple:
-    """_summary_
+    """Load samples for input into the model.
+    Each sample is a set of image and label, with mask image applied as needed.
 
     Args:
-        X_path (str): _description_
-        y_path (str): _description_
-        input_image_shape (Tuple): _description_
-        mask_image (np.array): _description_
-        is_rgb (bool): _description_
-        normalized (bool): _description_
+        X_path (str): x (input) path
+        y_path (str): y (label) path
+        input_image_shape (Tuple): raw input image shape
+        mask_image (np.array): mask image array
+        is_rgb (bool): whether to convert the image to RGB format
+        normalized (bool): whether to normalize the image
 
     Returns:
-        Tuple: _description_
+        Tuple: raw image and label set
     """
     X_image = load_image(X_path, is_rgb=is_rgb, normalized=normalized)
     assert (
@@ -516,12 +517,12 @@ def get_frame_number_from_path(path: str) -> int:
 
 
 def save_dataset_path(X_path_list: List, y_path_list: List, save_path: str) -> None:
-    """_summary_
+    """Save the file names contained in the data set in CSV format.
 
     Args:
-        X_path_list (List): _description_
-        y_path_list (List): _description_
-        save_path (str): _description_
+        X_path_list (List): x (input) path list
+        y_path_list (List): y (label) path list
+        save_path (str): path of save destination
     """
     pd.DataFrame({"X_path": X_path_list, "y_path": y_path_list}).to_csv(
         save_path, index=False
