@@ -1,0 +1,13 @@
+sample_rate: 9000
+
+path:
+  input_video_list:
+    - "/data/sakka/movie/20181103/09/20181103_0900_0959.mp4"
+    - "/data/sakka/movie/20181103/10/20181103_1000_1059.mp4"
+    - "/data/sakka/movie/20181103/11/20181103_1100_1159.mp4"
+    - "/data/sakka/movie/20181103/12/20181103_1200_1259.mp4"
+    - "/data/sakka/movie/20181103/13/20181103_1300_1359.mp4"
+    - "/data/sakka/movie/20181103/14/20181103_1400_1459.mp4"
+    - "/data/sakka/movie/20181103/15/20181103_1500_1559.mp4"
+    - "/data/sakka/movie/20181103/16/20181103_1600_1659.mp4"
+  save_frame_dirc: "/data/sakka/sampling_images/20181103"

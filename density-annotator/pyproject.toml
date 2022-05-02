@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "density-annotator"
+version = "0.1.0"
+description = "An annotation tool that creates a density map from an image."
+authors = ["kenya-sk"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+hydra-core = "^1.1.1"
+numpy = "^1.21.5"
+opencv-python = "^4.5.4"
+tqdm = "^4.62.3"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0.1"
+black = {version = "^22.3.0", allow-prereleases = true}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
