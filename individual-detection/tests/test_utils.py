@@ -12,6 +12,7 @@ from utils import (
     get_directory_list,
     get_frame_number_from_path,
     get_image_shape,
+    get_local_data,
     get_masked_index,
     load_image,
     load_mask_image,
@@ -55,9 +56,6 @@ class TestFileLoader(unittest.TestCase):
         expected_X_channel = 3
         self.assertEqual(expected_X_channel, X_image.shape[2])
         self.assertEqual(2, len(y_dens.shape))  # expected 1 channel
-
-    def test_load_model(self):
-        pass
 
 
 class TestMaskImage(unittest.TestCase):
@@ -176,7 +174,34 @@ class TestImageInfo(unittest.TestCase):
 
 class TestLocalImage(unittest.TestCase):
     def test_get_local_data(self):
-        pass
+        params_dict = {
+            "image_height": 108,
+            "image_width": 192,
+            "analysis_image_height_min": 0,
+            "analysis_image_height_max": 72,
+            "analysis_image_width_min": 0,
+            "analysis_image_width_max": 192,
+            "index_h": [10, 20, 30],
+            "index_w": [15, 25, 35],
+            "local_image_size": 32,
+        }
+        image = load_image("./data/demo/demo_image.png")
+        density_map = np.load("./data/demo/demo_label.npy")
+        local_image_array, local_density_array = get_local_data(
+            image, density_map, params_dict, is_flip=False
+        )
+
+        expected_local_data_num = 3
+        self.assertEqual(expected_local_data_num, len(local_image_array))
+        self.assertEqual(expected_local_data_num, len(local_density_array))
+
+        expected_local_image_shape = (
+            params_dict["local_image_size"],
+            params_dict["local_image_size"],
+            3,
+        )
+        self.assertEqual(expected_local_image_shape, local_image_array[0].shape)
+        self.assertEqual(local_density_array.dtype, "float32")
 
 
 class TestDirectoryList(unittest.TestCase):

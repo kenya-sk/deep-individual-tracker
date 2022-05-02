@@ -1,4 +1,3 @@
-import argparse
 import logging
 
 import cv2
@@ -45,23 +44,20 @@ def apply_clustering_to_density_map(
         if X.shape[0] > 0:
             break
         else:
-            if thresh > 0:
-                thresh -= 0.05
-            else:
-                return np.zeros((0, 2))
+            return np.zeros((0, 2))
 
     # MeanShift clustering
-    ms = MeanShift(bandwidth=band_width, seeds=X)
+    ms = MeanShift(bandwidth=band_width, n_jobs=-1)
     ms.fit(X)
     labels = ms.labels_
     cluster_centers = ms.cluster_centers_
     labels_unique = np.unique(labels)
     n_clusters = len(labels_unique)
-    centroid_arr = np.zeros((n_clusters, 2))
+    centroid_array = np.zeros((n_clusters, 2))
     for k in range(n_clusters):
-        centroid_arr[k] = cluster_centers[k]
+        centroid_array[k] = cluster_centers[k]
 
-    return centroid_arr.astype(np.int32)
+    return centroid_array.astype(np.int32)
 
 
 def batch_clustering(

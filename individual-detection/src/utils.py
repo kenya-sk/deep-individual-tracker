@@ -341,16 +341,16 @@ def get_local_data(
         dtype="float32",
     )
 
-    density_array = np.zeros((local_data_number), dtype="float32")
+    local_density_array = np.zeros((local_data_number), dtype="float32")
     for idx in range(local_data_number):
         # raw image index convert to padding image index
         h = index_h[idx]
         w = index_w[idx]
         local_image_array[idx] = pad_image[h : h + 2 * pad, w : w + 2 * pad]
         if density_map is not None:
-            density_array[idx] = density_map[h, w]
+            local_density_array[idx] = density_map[h, w]
 
-    return local_image_array, density_array
+    return local_image_array, local_density_array
 
 
 def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
@@ -377,11 +377,11 @@ def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
     ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
         last_model = ckpt.model_checkpoint_path
-        logger.info("LODE MODEL: {}".format(last_model))
+        logger.info("Load model: {}".format(last_model))
         saver.restore(sess, last_model)
     else:
         logger.error("Eroor: Not exist model!")
-        logger.error("Please check model_path")
+        logger.error(f"Please check model_path (model_path={model_path})")
         sys.exit(1)
 
     return model, sess
@@ -407,7 +407,7 @@ def set_capture(video_path: str) -> Tuple:
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     total_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    logger.info(f"****************************************")
+    logger.info("****************************************")
     logger.info(f"Video path             : {video_path}")
     logger.info(f"Fourcc                 : {fourcc}")
     logger.info(f"FPS                    : {fps}")
