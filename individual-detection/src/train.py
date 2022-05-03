@@ -155,26 +155,27 @@ def hard_negative_mining(
 def under_sampling(
     local_iamge_array: np.array, density_array: np.array, thresh: float
 ) -> Tuple:
-    """_summary_
+    """Undersampling to avoid unbalanced labels in the data set. 
+    The ratio of positive to negative examples should be 1:1.
 
     Args:
-        local_iamge_array (np.array): _description_
-        density_array (np.array): _description_
-        thresh (float): _description_
+        local_iamge_array (np.array): target local image array
+        density_array (np.array): target density value array
+        thresh (float): threshold of positive sample
 
     Returns:
-        Tuple: _description_
+        Tuple: sampled dataset
     """
 
     def select(length: int, k: int) -> np.array:
         """Array of boolean which length = length and #True = k
 
         Args:
-            length (int): _description_
-            k (int): _description_
+            length (int): negative sample number
+            k (int): positive sample number
 
         Returns:
-            np.array: _description_
+            np.array: selected negative sample index
         """
         seed = np.arange(length)
         np.random.shuffle(seed)
