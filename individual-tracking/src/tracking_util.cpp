@@ -61,12 +61,12 @@ bool numeric_string_compare(const string &s1, const string &s2)
 void display_video_info(string file_path, int width, int height, int total_frame, int fourcc, double fps)
 {
     cout << "\n*******************************************" << endl;
-    cout << "VIDEO PATH: " << file_path << endl;
-    cout << "WIDTH: " << width << endl;
-    cout << "HEIGHT: " << height << endl;
+    cout << "VIDEO PATH : " << file_path << endl;
+    cout << "WIDTH      : " << width << endl;
+    cout << "HEIGHT     : " << height << endl;
     cout << "TOTAL FRAME: " << total_frame << endl;
-    cout << "FOURCC: " << fourcc << endl;
-    cout << "FPS: " << fps << endl;
+    cout << "FOURCC     : " << fourcc << endl;
+    cout << "FPS        : " << fps << endl;
     cout << "*******************************************\n"
          << endl;
 }
@@ -89,8 +89,8 @@ void make_file_vec(string input_dircpath, std::vector<string> &file_vec, string 
     dp = opendir(input_dircpath.c_str());
     if (dp == NULL)
     {
-        cout << "ERROR: can not open file. please check directory path." << endl;
-        cout << "PATH: " << input_dircpath << endl;
+        cout << "ERROR: can not open the file. please check directory path." << endl;
+        cout << "input path: " << input_dircpath << endl;
         exit(1);
     }
 
@@ -118,7 +118,7 @@ void make_file_vec(string input_dircpath, std::vector<string> &file_vec, string 
     }
 }
 
-void read_csv(string input_csv_file_path, std::vector<std::vector<int> > &table, const char delimiter = ',')
+void read_csv(string input_csv_file_path, std::vector<std::vector<int>> &table, const char delimiter = ',')
 {
     /**
      * to make vector table of csv data
@@ -132,7 +132,7 @@ void read_csv(string input_csv_file_path, std::vector<std::vector<int> > &table,
     if (!filestream.is_open())
     {
         cout << "ERROR: can not open file (input csv). please check file path." << endl;
-        cout << "PATH: " << input_csv_file_path << endl;
+        cout << "input path: " << input_csv_file_path << endl;
         exit(1);
     }
 
@@ -181,7 +181,7 @@ void write_csv(std::vector<float> &data_vec, std::vector<int> &frame_num_vec,
     else
     {
         cout << "ERROR: can not open file (output csv). please check file path." << endl;
-        cout << "PATH: " << output_csv_path << endl;
+        cout << "input path: " << output_csv_path << endl;
         exit(1);
     }
 
@@ -189,7 +189,7 @@ void write_csv(std::vector<float> &data_vec, std::vector<int> &frame_num_vec,
     cout << "DONE: " << output_csv_path << endl;
 }
 
-void write_csv_2d(std::vector<std::vector<int> > &data_vec, std::vector<int> &frame_num_vec,
+void write_csv_2d(std::vector<std::vector<int>> &data_vec, std::vector<int> &frame_num_vec,
                   std::vector<string> &header_vec, string output_csv_path)
 {
     /**
@@ -222,7 +222,7 @@ void write_csv_2d(std::vector<std::vector<int> > &data_vec, std::vector<int> &fr
     else
     {
         cout << "ERROR: can not open file (output csv). please check file path." << endl;
-        cout << "PATH: " << output_csv_path << endl;
+        cout << "input path: " << output_csv_path << endl;
         exit(1);
     }
 
@@ -230,7 +230,7 @@ void write_csv_2d(std::vector<std::vector<int> > &data_vec, std::vector<int> &fr
     cout << "DONE: " << output_csv_path << endl;
 }
 
-std::vector<float> point_norm(std::vector<std::vector<int> > &point_vec)
+std::vector<float> point_norm(std::vector<std::vector<int>> &point_vec)
 {
     /** caluculate norm between two point
      *

@@ -1,21 +1,14 @@
-import sys
-import os
 import logging
+import os
+import sys
 
 import cv2
 import numpy as np
 from omegaconf import DictConfig
 from tqdm import tqdm
 
-from utils import (
-    get_path_list,
-    get_input_data_type,
-    load_image,
-    load_video,
-    save_image,
-    save_coordinate,
-    save_density_map,
-)
+from utils import (get_input_data_type, get_path_list, load_image, load_video,
+                   save_coordinate, save_density_map, save_image)
 
 # logging setting
 logging.basicConfig(
@@ -31,8 +24,7 @@ S_KEY = 0x73  # s key (save data and restart)
 
 
 class DensityAnnotator:
-    """
-    DensityAnnotator is a class that labels the position of an object
+    """DensityAnnotator is a class that labels the position of an object
     with a mouse and calculates a density map for image or video data.
 
     After annotation, save the raw image, the coordinate of the object,
@@ -85,8 +77,7 @@ class DensityAnnotator:
         os.makedirs(self.save_annotated_density_dir, exist_ok=True)
 
     def run(self) -> None:
-        """
-        Select the data type of the image or video from the extension
+        """Select the data type of the image or video from the extension
         of the input data and execute the annotation.
 
         :return: None
@@ -111,8 +102,7 @@ class DensityAnnotator:
         cv2.destroyAllWindows()
 
     def annotator_initialization(self) -> None:
-        """
-        Initialize coordinate matrix that store the clicked position.
+        """Initialize coordinate matrix that store the clicked position.
 
         :return: None
         """
@@ -125,8 +115,7 @@ class DensityAnnotator:
                 self.coordinate_matrix[i][j] = [i, j]
 
     def image_annotation(self) -> None:
-        """
-        A function to perform annotation on a single image.
+        """A function to perform annotation on a single image.
 
         :return: None
         """
@@ -154,8 +143,7 @@ class DensityAnnotator:
                 break
 
     def video_annotation(self) -> None:
-        """
-        A function to perform annotation on movie.
+        """A function to perform annotation on movie.
         This function allow to annotate multiple images cut out
         from the video data at any time.
 
@@ -203,8 +191,7 @@ class DensityAnnotator:
         self.video.release()
 
     def mouse_event(self, event: int, x: int, y: int, flags: int, param: dict) -> None:
-        """
-        Select annotated point by left click of mouse
+        """Select annotated point by left click of mouse
 
         :param event: the type of mouse event
         :param x: x coordinate of the clicked position
@@ -223,8 +210,7 @@ class DensityAnnotator:
         cv2.imshow("click annotation points", self.frame)
 
     def add_point(self, x, y) -> None:
-        """
-        Add new feature point on stored list
+        """Add new feature point on stored list
 
         :param x: x coordinate of the clicked position
         :param y: y coordinate of the clicked position
@@ -237,8 +223,7 @@ class DensityAnnotator:
         self.frame_list.append(self.frame.copy())
 
     def delete_point(self) -> None:
-        """
-        Delete the previous feature point from stored list.
+        """Delete the previous feature point from stored list.
 
         :return: None
         """
@@ -249,8 +234,7 @@ class DensityAnnotator:
             cv2.imshow("click annotation points", self.frame)
 
     def calculate_gaussian_kernel(self) -> np.array:
-        """
-        Calculate the density map using the Gaussian kernel
+        """Calculate the density map using the Gaussian kernel
         based on the annotated coordinates.
 
         :return: calculated density map in numpy format
@@ -268,8 +252,7 @@ class DensityAnnotator:
         return kernel.T
 
     def save_annotated_data(self) -> None:
-        """
-        Save coordinate and raw image. There are feature point information.
+        """Save coordinate and raw image. There are feature point information.
 
         :return: None
         """

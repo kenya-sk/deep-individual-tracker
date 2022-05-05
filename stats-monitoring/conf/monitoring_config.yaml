@@ -1,0 +1,46 @@
+# Each unit is a pixel.
+
+animation:
+  format: ffmpeg
+  frame_number: 9000
+  interval: 33  # milli second
+  display_dot: False
+  display_density: False
+
+# The initial value of figure is the same as frame,
+# but it is converted to the required value in the function.
+figure:
+  height: 1280
+  width: 720
+
+frame:
+  width: 1280
+  height: 720
+
+graph:
+  x_axis_height: 240
+  y_axis_height: 240
+  stats_graph_num: 3
+  margin: 20
+  font_size: 18
+
+histogram:
+  x_bin_granularity: 50
+  y_bin_granularity: 50
+
+statistics:
+  mean_max: 120
+  acceleration_max: 150
+  count_max: 70
+
+path:
+  frame_directory: ./data/frame/tracking
+  coordinate_directory: ./data/coordinate/tracking/current
+  past_coordinate_directory: ./data/coordinate/tracking/past
+  mean_speed_path: ./data/stats/mean/tracking/current/mean.csv
+  past_mean_speed_path: ./data/stats/mean/tracking/past/mean.csv
+  individual_count_path: ./data/stats/count/tracking/current/count.csv
+  past_individual_count_path: ./data/stats/count/tracking/past/count.csv
+  acceleration_count_path: ./data/stats/acceleration/tracking/current/acceleration.csv
+  past_acceleration_count_path: ./data/stats/acceleration/tracking/past/acceleration.csv
+  save_movie_path: ./data/movie/tracking_2018.mp4
