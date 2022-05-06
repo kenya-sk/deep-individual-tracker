@@ -33,7 +33,7 @@ def get_ground_truth(ground_truth_path: str, mask_image_path: str = None) -> np.
         np.array: array showing the positon of target
     """
 
-    ground_truth_array = np.loadtxt(ground_truth_path, delimiter=",", dtype="int8")
+    ground_truth_array = np.loadtxt(ground_truth_path, delimiter=",", dtype="int32")
     if mask_image_path is None:
         return ground_truth_array
     else:
@@ -138,7 +138,7 @@ def evaluate(
     predict_path_list = glob.glob(f"{predict_dirctory}/*.csv")
     for path in tqdm(predict_path_list):
         file_name = path.split("/")[-1]
-        predcit_centroid_array = np.loadtxt(path, delimiter=",", dtype="int8")
+        predcit_centroid_array = np.loadtxt(path, delimiter=",", dtype="int32")
         if predcit_centroid_array.shape[0] == 0:
             # "not" exist detection point case
             logger.info(

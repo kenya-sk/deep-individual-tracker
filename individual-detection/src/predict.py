@@ -12,11 +12,19 @@ from tensorflow.compat.v1 import InteractiveSession
 
 from clustering import apply_clustering_to_density_map
 from model import DensityModel
-from utils import (apply_masking_on_image, display_data_info,
-                   get_current_time_str, get_directory_list,
-                   get_frame_number_from_path, get_local_data,
-                   get_masked_index, load_image, load_mask_image, load_model,
-                   set_capture)
+from utils import (
+    apply_masking_on_image,
+    display_data_info,
+    get_current_time_str,
+    get_directory_list,
+    get_frame_number_from_path,
+    get_local_data,
+    get_masked_index,
+    load_image,
+    load_mask_image,
+    load_model,
+    set_capture,
+)
 
 # logger setting
 current_time = get_current_time_str()
@@ -51,10 +59,14 @@ def image_prediction(
     X_local, _ = get_local_data(image, None, cfg, is_flip=False)
 
     # set horizontal index
-    index_lst = []
-    for step in range(len(cfg["index_h"])):
-        if (cfg["skip_width"] == 0) or (step % cfg["skip_width"] == 0):
-            index_lst.append(step)
+    if cfg["skip_width"] == 0:
+        index_lst = cfg["index_h"]
+    else:
+        index_lst = [
+            i
+            for i, (h, w) in enumerate(zip(cfg["index_h"], cfg["index_w"]))
+            if (h % cfg["skip_width"] == 0) or (w % cfg["skip_width"] == 0)
+        ]
 
     # set prediction parameters
     pred_batch_size = cfg["predict_batch_size"]
