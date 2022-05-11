@@ -20,6 +20,27 @@ using std::endl;
 using std::string;
 using std::vector;
 
+string fourcc_to_string(int fourcc) {
+  /*
+   * number fourcc (video codec) convert to string
+   */
+  return cv::format("%c%c%c%c", fourcc & 255, (fourcc >> 8) & 255,
+                    (fourcc >> 16) & 255, (fourcc >> 24) & 255);
+}
+
+void display_video_info(string video_path, int width, int height,
+                        int total_frame, int fourcc, double fps) {
+  string fourcc_str = fourcc_to_string(fourcc);
+  cout << "\n*******************************************" << endl;
+  cout << "VIDEO PATH : " << video_path << endl;
+  cout << "WIDTH      : " << width << endl;
+  cout << "HEIGHT     : " << height << endl;
+  cout << "TOTAL FRAME: " << total_frame << endl;
+  cout << "FOURCC     : " << fourcc_str << " (" << fourcc << ")" << endl;
+  cout << "FPS        : " << fps << endl;
+  cout << "*******************************************\n" << endl;
+}
+
 bool is_not_digit(char c) {
   /*
    * returns True if the input character is not a number
@@ -99,18 +120,6 @@ void make_file_vector(string input_dircpath, vector<string>& file_vec,
   for (int i = 0; i < file_vec.size(); i++) {
     file_vec.at(i).insert(0, input_dircpath);
   }
-}
-
-void display_video_info(string file_path, int width, int height,
-                        int total_frame, int fourcc, double fps) {
-  cout << "\n*******************************************" << endl;
-  cout << "VIDEO PATH : " << file_path << endl;
-  cout << "WIDTH      : " << width << endl;
-  cout << "HEIGHT     : " << height << endl;
-  cout << "TOTAL FRAME: " << total_frame << endl;
-  cout << "FOURCC     : " << fourcc << endl;
-  cout << "FPS        : " << fps << endl;
-  cout << "*******************************************\n" << endl;
 }
 
 void read_csv(string input_csv_file_path, vector<vector<int>>& table,

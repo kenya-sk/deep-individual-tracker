@@ -9,12 +9,12 @@ using std::map;
 using std::string;
 
 TrackingConfig::TrackingConfig() {
-  cfg = {
-      {"video_path", ""},
-      {"coord_dirctory", ""},
-      {"output_stats_dirctory", ""},
-      {"output_video_path", ""},
-  };
+  cfg = {{"video_path", ""},
+         {"coord_dirctory", ""},
+         {"output_stats_dirctory", ""},
+         {"output_video_path", ""},
+         {"tracking_thresh", ""},
+         {"template_thresh", ""}};
 }
 
 map<string, string> TrackingConfig::config_parser(string config_path) {

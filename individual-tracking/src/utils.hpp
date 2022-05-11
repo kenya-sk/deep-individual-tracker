@@ -6,15 +6,18 @@
 using std::string;
 using std::vector;
 
+// number fourcc (video codec) convert to string
+string fourcc_to_number(int fourcc);
+
+// output video information to standard output.
+void display_video_info(string video_path, int width, int height,
+                        int total_frame, int fourcc, double fps);
+
 // returns True if the input character is not a number.
 bool is_not_digit(char c);
 
 // numerical compare two strings.
 bool numeric_string_compare(const string& s1, const string& s2);
-
-// output video information to standard output.
-void display_video_info(string file_path, int width, int height,
-                        int total_frame, int fourcc, double fps);
 
 // make a vector of filepath with the specified extension.
 void make_file_vector(string input_dircpath, vector<string>& file_vec,

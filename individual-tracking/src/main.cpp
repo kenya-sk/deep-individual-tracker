@@ -1,22 +1,10 @@
-#include <ctype.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <algorithm>
-#include <chrono>
-#include <deque>
-#include <fstream>
 #include <iostream>
 #include <map>
-#include <numeric>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/opencv.hpp>
-#include <opencv2/videoio.hpp>
-#include <vector>
 #include "timer.hpp"
+#include "tracker.hpp"
 #include "tracking_config.hpp"
+#include "utils.hpp"
 
-using std::cerr;
-using std::cin;
 using std::cout;
 using std::endl;
 using std::map;
@@ -32,8 +20,11 @@ int main(int argc, char** argv) {
   // set timer
   Timer timer;
 
-  tracking(cfg["video_path"], cfg["coord_dirctory"],
-           cfg["output_stats_dirctory"], cfg["output_video_path"]);
+  // define tracker
+  Tracker tracker = Tracker(cfg);
+  display_video_info(tracker.video_path, tracker.width, tracker.height,
+                     tracker.total_frame, tracker.fourcc, tracker.fps);
+  tracker.tracking();
 
   // display calculation time
   timer.output_calculate_time();
