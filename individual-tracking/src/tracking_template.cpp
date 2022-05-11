@@ -12,6 +12,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include "utils.hpp"
 
 using cv::Mat;
 using std::cout;
@@ -24,19 +25,6 @@ typedef cv::Point2f Pixel;
 
 // define anti-aliasing
 // int CV_AA = 16;
-
-extern bool is_not_digit(char c);
-extern bool numeric_string_compare(const string &, const string &);
-extern void display_video_info(string, int, int, int, int, double);
-extern void make_file_vec(string, std::vector<string> &, string);
-extern void read_csv(string, std::vector<std::vector<int>> &, const char);
-extern void write_csv(std::vector<float> &, std::vector<int> &, std::vector<string> &, string);
-extern void write_csv_2d(std::vector<std::vector<int>> &, std::vector<int> &, std::vector<string> &, string);
-extern void save_frame_num(std::vector<int> &, string);
-extern std::vector<float> point_norm(std::vector<std::vector<int>> &);
-extern float vec_variance(std::vector<float> &, float);
-extern float is_moved(std::vector<int> &, std::vector<int> &);
-extern float calc_degree(std::vector<int> &, std::vector<int> &);
 
 Mat padding(Mat &frame, int padding_size)
 {
@@ -279,7 +267,7 @@ void tracking(string video_filepath, string cord_dircpath, string output_stats_d
         {
             movement_norm_vec = point_norm(movement_vec);
             movement_mean = std::accumulate(movement_norm_vec.begin(), movement_norm_vec.end(), 0.0) / movement_norm_vec.size();
-            movement_var = vec_variance(movement_norm_vec, movement_mean);
+            movement_var = vector_variance(movement_norm_vec, movement_mean);
             movement_max = *std::max_element(movement_norm_vec.begin(), movement_norm_vec.end());
         }
         else
@@ -327,7 +315,7 @@ void tracking(string video_filepath, string cord_dircpath, string output_stats_d
             {
                 if (record_matching_vec.at(i))
                 {
-                    degree = calc_degree(start_point_vec.at(i), prev_cord.at(i));
+                    degree = calc_angle(start_point_vec.at(i), prev_cord.at(i));
                     frame_degree_vec.push_back(degree);
                 }
             }

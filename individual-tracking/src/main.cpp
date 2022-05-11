@@ -12,6 +12,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 #include <vector>
+#include "timer.hpp"
 #include "tracking_config.hpp"
 
 using std::cerr;
@@ -28,18 +29,14 @@ int main(int argc, char** argv) {
   string config_path = "../conf/tracking_config.cfg";
   map<string, string> cfg = trackingConfig.config_parser(config_path);
 
-  // start timer
-  std::chrono::system_clock::time_point start, end;
-  start = std::chrono::system_clock::now();
+  // set timer
+  Timer timer;
 
   tracking(cfg["video_path"], cfg["coord_dirctory"],
            cfg["output_stats_dirctory"], cfg["output_video_path"]);
 
   // display calculation time
-  end = std::chrono::system_clock::now();
-  double elapsed =
-      std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-  cout << "elapsed time: " << elapsed << "sec." << endl;
+  timer.output_calculate_time();
 
   return 0;
 }
