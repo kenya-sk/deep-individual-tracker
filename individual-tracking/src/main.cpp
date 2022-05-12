@@ -1,44 +1,38 @@
 #include <iostream>
-#include <chrono>
-#include <numeric>
-#include <vector>
-#include <deque>
 #include <map>
-#include <algorithm>
-#include <fstream>
-#include <dirent.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include <opencv2/opencv.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/imgcodecs.hpp>
+#include "timer.hpp"
+#include "tracker.hpp"
 #include "tracking_config.hpp"
+#include "utils.hpp"
 
-using std::cerr;
-using std::cin;
 using std::cout;
 using std::endl;
 using std::map;
 using std::string;
 
-extern void tracking(string, string, string, string);
+typedef tuple<vector<int>, vector<float>, vector<float>, vector<float>,
+              vector<vector<int>>>
+    StatsResultTuple;
 
-int main(int argc, char **argv)
-{
-    TrackingConfig trackingConfig;
-    string config_path = "../conf/tracking_config.cfg";
-    map<string, string> cfg = trackingConfig.config_parser(config_path);
+int main(int argc, char** argv) {
+  TrackingConfig trackingConfig;
+  string config_path = "../conf/tracking_config.cfg";
+  map<string, string> cfg = trackingConfig.config_parser(config_path);
 
-    // start timer
-    std::chrono::system_clock::time_point start, end;
-    start = std::chrono::system_clock::now();
+  // set timer
+  Timer timer;
 
-    tracking(cfg["video_path"], cfg["coord_dirctory"], cfg["output_stats_dirctory"], cfg["output_video_path"]);
+  // define tracker
+  Tracker tracker = Tracker(cfg);
+  display_video_info(tracker.video_path, tracker.width, tracker.height,
+                     tracker.total_frame, tracker.fourcc, tracker.fps);
 
-    // display calculation time
-    end = std::chrono::system_clock::now();
-    double elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    cout << "elapsed time: " << elapsed << "sec." << endl;
+  // tracking and save results
+  StatsResultTuple stats_tuple = tracker.tracking();
+  tracker.save_stats_results(stats_tuple);
 
-    return 0;
+  // display calculation time
+  timer.output_calculate_time();
+
+  return 0;
 }
