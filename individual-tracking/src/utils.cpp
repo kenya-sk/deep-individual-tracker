@@ -183,7 +183,7 @@ void write_csv(vector<float>& data_vec, vector<int>& frame_num_vec,
   }
 
   ofs.close();
-  cout << "DONE: " << output_csv_path << endl;
+  cout << "Saved in " << output_csv_path << endl;
 }
 
 void write_csv_2d(vector<vector<int>>& data_vec, vector<int>& frame_num_vec,
@@ -219,7 +219,7 @@ void write_csv_2d(vector<vector<int>>& data_vec, vector<int>& frame_num_vec,
   }
 
   ofs.close();
-  cout << "DONE: " << output_csv_path << endl;
+  cout << "Saved in  " << output_csv_path << endl;
 }
 
 vector<float> point_norm(vector<vector<int>>& point_vec) {

@@ -36,12 +36,19 @@ class Tracker {
 
   Tracker(map<string, string> cfg);
 
+  // apply zero padding to the image.
   Mat padding(Mat& frame, int padding_size);
 
+  // create local images and perform template matching.
   vector<int> local_template_matching(Mat& prev_frame, Mat& current_frame,
                                       vector<int>& feature_vec,
                                       int template_size, int search_width,
                                       float matching_thresh);
 
+  // tracking is performed based on the location of detected individuals and
+  // statistics are calculated.
   StatsResultTuple tracking();
+
+  // save statistics computed by tracking.
+  void save_stats_results(StatsResultTuple& status_results);
 };

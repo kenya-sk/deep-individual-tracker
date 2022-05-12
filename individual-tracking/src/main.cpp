@@ -26,7 +26,10 @@ int main(int argc, char** argv) {
   Tracker tracker = Tracker(cfg);
   display_video_info(tracker.video_path, tracker.width, tracker.height,
                      tracker.total_frame, tracker.fourcc, tracker.fps);
+
+  // tracking and save results
   StatsResultTuple stats_tuple = tracker.tracking();
+  tracker.save_stats_results(stats_tuple);
 
   // display calculation time
   timer.output_calculate_time();

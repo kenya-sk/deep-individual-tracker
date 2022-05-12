@@ -1,4 +1,5 @@
 #include "tracker.hpp"
+#include <cassert>
 #include <iostream>
 #include <map>
 #include <numeric>
@@ -23,9 +24,6 @@ typedef cv::Point2f Pixel;
 typedef tuple<vector<int>, vector<float>, vector<float>, vector<float>,
               vector<vector<int>>>
     StatsResultTuple;
-
-// define anti-aliasing
-// int CV_AA = 16;
 
 Tracker::Tracker(map<string, string> cfg) {
   // caputure the video.
@@ -58,7 +56,8 @@ Tracker::Tracker(map<string, string> cfg) {
 }
 
 Mat Tracker::padding(Mat& frame, int padding_size) {
-  /**
+  /** apply zero padding to the image.
+   *
    * input:
    *   frame: raw image
    *   padding_size: padding size on one side
@@ -79,15 +78,17 @@ Mat Tracker::padding(Mat& frame, int padding_size) {
 vector<int> Tracker::local_template_matching(
     Mat& prev_frame, Mat& current_frame, vector<int>& feature_vec,
     int template_size, int search_width, float matching_thresh) {
-  /**
-   * create local images and perform template matching
+  /** create local images and perform template matching.
+   * ref: https://docs.opencv.org/4.x/d4/dc6/tutorial_py_template_matching.html
+   *
    * input:
    *   prev_frame      : original frame of template
    *   current_frame   :　frame to be searched
-   *   feature_coord    : coordinate of target (center of template)
+   *   feature_coord   : coordinate of target (center of template)
    *   template_size   : template width and height (template is square image)
    *   search_width    : serch width in four directions (± x, ± y)
    *   matching_thresh : value range is 0.0-1.0
+   *
    * output: (the coordinate system is that of the original image)
    *   the matching template is
    *       found     -> center coordinate of the matched template
@@ -153,6 +154,10 @@ vector<int> Tracker::local_template_matching(
 }
 
 StatsResultTuple Tracker::tracking() {
+  /** tracking is performed based on the location of detected individuals and
+   * statistics are calculated.
+   **/
+
   // initialize processing
   int coord_index = 0;
   int frame_num = 0;
@@ -354,4 +359,42 @@ StatsResultTuple Tracker::tracking() {
       std::tie(frame_vec, mean_vec, var_vec, max_vec, angle_vec);
 
   return tracking_stats_tuple;
+}
+
+void Tracker::save_stats_results(StatsResultTuple& status_results) {
+  /** save statistics computed by tracking
+   *
+   **/
+  int tuple_size = std::tuple_size<StatsResultTuple>::value;
+  assert(tuple_size == 5 &&
+         "The tuple size of the statistical results is expected to be 5.");
+
+  // extract each result vector
+  auto frame_vec = std::get<0>(status_results);
+  auto mean_vec = std::get<1>(status_results);
+  auto var_vec = std::get<2>(status_results);
+  auto max_vec = std::get<3>(status_results);
+  auto angle_vec = std::get<4>(status_results);
+
+  cout << "\n*******************************************" << endl;
+  // mean result
+  vector<string> mean_header{"frame_num", "mean"};
+  string save_mean_path = output_stats_dir + "mean.csv";
+  write_csv(mean_vec, frame_vec, mean_header, save_mean_path);
+
+  // variance result
+  vector<string> var_header{"frame_num", "var"};
+  string save_var_path = output_stats_dir + "var.csv";
+  write_csv(var_vec, frame_vec, var_header, save_var_path);
+
+  // max result
+  vector<string> max_header{"frame_num", "max"};
+  string save_max_path = output_stats_dir + "max.csv";
+  write_csv(max_vec, frame_vec, max_header, save_max_path);
+
+  // angle result
+  vector<string> angle_header{"frame_num", "angle"};
+  string save_angle_path = output_stats_dir + "angle.csv";
+  write_csv_2d(angle_vec, frame_vec, angle_header, save_angle_path);
+  cout << "*******************************************" << endl;
 }
