@@ -10,7 +10,9 @@ using std::endl;
 using std::map;
 using std::string;
 
-extern void tracking(string, string, string, string);
+typedef tuple<vector<int>, vector<float>, vector<float>, vector<float>,
+              vector<vector<int>>>
+    StatsResultTuple;
 
 int main(int argc, char** argv) {
   TrackingConfig trackingConfig;
@@ -24,7 +26,7 @@ int main(int argc, char** argv) {
   Tracker tracker = Tracker(cfg);
   display_video_info(tracker.video_path, tracker.width, tracker.height,
                      tracker.total_frame, tracker.fourcc, tracker.fps);
-  tracker.tracking();
+  StatsResultTuple stats_tuple = tracker.tracking();
 
   // display calculation time
   timer.output_calculate_time();

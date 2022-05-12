@@ -13,6 +13,7 @@ TrackingConfig::TrackingConfig() {
          {"coord_dirctory", ""},
          {"output_stats_dirctory", ""},
          {"output_video_path", ""},
+         {"load_detected_point_interval", ""},
          {"tracking_thresh", ""},
          {"template_thresh", ""}};
 }
