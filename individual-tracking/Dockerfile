@@ -21,7 +21,7 @@ RUN git clone -b 3.4.0 https://github.com/opencv/opencv.git && \
     cd ../../ && \
     rm -rf opencv
 
-RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
 
 ADD . .
 
