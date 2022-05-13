@@ -21,7 +21,6 @@ using std::tuple;
 using std::vector;
 
 typedef cv::Point2f Pixel;
-int CV_AA = 16;
 typedef tuple<vector<int>, vector<float>, vector<float>, vector<float>,
               vector<vector<int>>>
     StatsResultTuple;
