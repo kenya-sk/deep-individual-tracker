@@ -21,7 +21,7 @@ Once the configuration is complete and the compiled main file is run, tracking i
 ```
 # comple main file
 cd src
-bash my_make.sh
+make all
 
 # excute tracking
 ./main

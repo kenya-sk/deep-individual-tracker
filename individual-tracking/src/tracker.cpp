@@ -307,9 +307,6 @@ StatsResultTuple Tracker::tracking() {
     max_window_deq.pop_front();
     prev_frame = current_frame.clone();
     if (frame_num % load_detected_point_interval == 0) {
-      // debug
-      break;
-
       // reset tracking mask
       tracking_mask = Mat::zeros(cv::Size(width, height), CV_8UC3);
 
