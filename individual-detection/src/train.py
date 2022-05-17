@@ -45,7 +45,7 @@ def load_dataset(
         density_directory (str): directory name of density map (label)
 
     Returns:
-        Tuple: tuple with image and label filename pairs 
+        Tuple: tuple with image and label filename pairs
     """
     X_list, y_list = [], []
     file_list = glob(f"{image_directory}/*.png")
@@ -155,7 +155,7 @@ def hard_negative_mining(
 def under_sampling(
     local_iamge_array: np.array, density_array: np.array, thresh: float
 ) -> Tuple:
-    """Undersampling to avoid unbalanced labels in the data set. 
+    """Undersampling to avoid unbalanced labels in the data set.
     The ratio of positive to negative examples should be 1:1.
 
     Args:
@@ -566,7 +566,7 @@ def model_training(
     y_test: List,
     cfg: dict,
 ) -> None:
-    """Training the model. Perform an interim evaluation using validation data, 
+    """Training the model. Perform an interim evaluation using validation data,
     and finally evaluate the learning results with test data.
 
     Args:
@@ -620,7 +620,7 @@ def model_training(
     # training model
     save_model_path = f"{cfg['save_trained_model_directory']}/{current_time}/model.ckpt"
     start_time = time.time()
-    valid_loss_list = []
+    best_valid_loss = sys.float_info.max
     not_improved_count = 0
     try:
         for epoch in range(cfg["n_epochs"]):
@@ -655,21 +655,23 @@ def model_training(
             )
 
             # record training results
-            valid_loss_list.append(mean_valid_loss)
             logger.info(f"Mean Train Data Loss [per image]: {mean_train_loss}")
             logger.info(f"Mean Valid Data Loss [per image]: {mean_valid_loss}")
             logger.info(f"Elapsed time: {get_elapsed_time_str(start_time)}")
 
             # check early stopping
             if (epoch > cfg["min_epochs"]) and (
-                valid_loss_list[-1] > valid_loss_list[-2]
+                mean_valid_loss > best_valid_loss
             ):
                 not_improved_count += 1
             else:
                 # learning is going well
                 not_improved_count = 0
+                best_valid_loss = mean_valid_loss
                 # save current model
                 saver.save(tf_session, save_model_path)
+
+            # excute early stopping
             if not_improved_count >= cfg["early_stopping_epochs"]:
                 logger.info(
                     f"early stopping due to not improvement after {cfg['early_stopping_epochs']} epochs."
