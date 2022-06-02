@@ -8,7 +8,8 @@ from omegaconf import DictConfig, OmegaConf
 from scipy import optimize
 from tqdm import tqdm
 
-from utils import eval_metrics, get_current_time_str, get_masked_index, pretty_print
+from utils import (eval_metrics, get_current_time_str, get_masked_index,
+                   load_mask_image, pretty_print)
 
 # logger setting
 current_time = get_current_time_str()
@@ -21,23 +22,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_ground_truth(ground_truth_path: str, mask_image_path: str = None) -> np.array:
+def get_ground_truth(ground_truth_path: str, mask_image: np.array, params_dict: dict) -> np.array:
     """Plots the coordinates of answer label on the black image(all value 0)
     and creates a correct image for accuracy evaluation.
 
     Args:
         ground_truth_path (str): coordinates of the estimated target (.csv)
-        mask_image_path (str, optional): path of mask image. Defaults to None.
+        mask_image (np.array): binay mask image
+        params_dict (dict): dictionary of parameters
 
     Returns:
         np.array: array showing the positon of target
     """
 
     ground_truth_array = np.loadtxt(ground_truth_path, delimiter=",", dtype="int32")
-    if mask_image_path is None:
+    if mask_image is None:
         return ground_truth_array
     else:
-        valid_h, valid_w = get_masked_index(mask_image_path)
+        valid_h, valid_w = get_masked_index(mask_image, params_dict, horizontal_flip=False)
         valid_ground_truth_list = []
         for i in range(ground_truth_array.shape[0]):
             index_w = np.where(valid_w == ground_truth_array[i][0])
@@ -115,6 +117,7 @@ def evaluate(
     ground_truth_dirctory: str,
     mask_image_path: str,
     detection_threshold: int,
+    params_dict: dict
 ) -> None:
     """The evaluation indices of accuracy, precision, recall, and f measure are calculated for each image.
     Then, the average value is calculated and the overall evaluation is performed.
@@ -124,6 +127,7 @@ def evaluate(
         ground_truth_dirctory (str): directory name of ground truth
         mask_image_path (str): path of mask image
         detection_threshold (int): threshold value used to determine detection
+        params_dict (dict): dictionary of parameters
 
     Returns:
         None:
@@ -150,8 +154,9 @@ def evaluate(
             sample_number_list.append(1)
         else:
             # exist detection point case
+            mask_image = load_mask_image(mask_image_path)
             ground_truth_array = get_ground_truth(
-                "{ground_truth_dirctory}/{file_name}", mask_image_path
+                "{ground_truth_dirctory}/{file_name}", mask_image, params_dict
             )
             true_pos, false_pos, false_neg, sample_number = eval_detection(
                 predcit_centroid_array, ground_truth_array, detection_threshold
@@ -186,6 +191,7 @@ def main(cfg: DictConfig) -> None:
         cfg["ground_truth_dirctory"],
         cfg["mask_image_path"],
         cfg["detection_threshold"],
+        cfg
     )
 
 
