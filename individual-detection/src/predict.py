@@ -37,30 +37,19 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def image_prediction(
+def predict_density_map(
     model: DensityModel,
     tf_session: InteractiveSession,
     image: np.array,
-    frame_num: int,
-    output_directory: str,
     cfg: dict,
-) -> None:
-    """Predictions are applied to single image data using trained model.
+) -> np.array:
 
-    Args:
-        model (DensityModel): trained model
-        tf_session (InteractiveSession): tensorflow session
-        image (np.array): target raw image
-        frame_num (int): target frame number
-        output_directory (str): output directory name
-        cfg (dict): config dictionary
-    """
     # load local images to be predicted
     X_local, _ = get_local_data(image, None, cfg, is_flip=False)
 
     # set horizontal index
     if cfg["skip_width"] == 0:
-        index_lst = cfg["index_h"]
+        index_lst = [i for i in range(len(cfg["index_h"]))]
     else:
         index_lst = [
             i
@@ -73,7 +62,6 @@ def image_prediction(
     pred_n_batches = int(len(index_lst) / pred_batch_size)
     pred_dens_map = np.zeros((cfg["image_height"], cfg["image_width"]), dtype="float32")
 
-    logger.info("STSRT: predict density map (frame number= {0})".format(frame_num))
     for batch in range(pred_n_batches):
         # array of skipped local image
         X_skip = np.zeros(
@@ -103,6 +91,32 @@ def image_prediction(
             h_pred = cfg["index_h"][index_lst[batch * pred_batch_size + batch_idx]]
             w_pred = cfg["index_w"][index_lst[batch * pred_batch_size + batch_idx]]
             pred_dens_map[h_pred, w_pred] = pred_array[batch_idx]
+
+    return pred_dens_map
+
+
+def image_prediction(
+    model: DensityModel,
+    tf_session: InteractiveSession,
+    image: np.array,
+    frame_num: int,
+    output_directory: str,
+    cfg: dict,
+) -> None:
+    """Predictions are applied to single image data using trained model.
+
+    Args:
+        model (DensityModel): trained model
+        tf_session (InteractiveSession): tensorflow session
+        image (np.array): target raw image
+        frame_num (int): target frame number
+        output_directory (str): output directory name
+        cfg (dict): config dictionary
+    """
+    logger.info("STSRT: predict density map (frame number= {0})".format(frame_num))
+
+    # predict density map by trained model
+    pred_dens_map = predict_density_map(model, tf_session, image, cfg)
 
     # save predicted data
     if cfg["is_saved_map"]:
