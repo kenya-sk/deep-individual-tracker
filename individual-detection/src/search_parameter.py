@@ -94,7 +94,10 @@ def search_clustering_threshold(
         result_dictlist["recall"].append(recall / sample_num)
         result_dictlist["f_measure"].append(f_measure / sample_num)
 
-    return pd.DataFrame(result_dictlist)
+    return pd.DataFrame.to_dict(
+        result_dictlist,
+        columns=["parameter", "accuracy", "precision", "recall", "f_measure"],
+    )
 
 
 def search_prediction_grid(
@@ -181,7 +184,17 @@ def search_prediction_grid(
         result_dictlist["recall"].append(recall / sample_num)
         result_dictlist["f_measure"].append(f_measure / sample_num)
 
-    return pd.DataFrame(result_dictlist)
+    return pd.DataFrame.to_dict(
+        result_dictlist,
+        columns=[
+            "parameter",
+            "calculation_time",
+            "accuracy",
+            "precision",
+            "recall",
+            "f_measure",
+        ],
+    )
 
 
 def search_parameter(
