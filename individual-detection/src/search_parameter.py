@@ -32,130 +32,178 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def search_clustering_threshold(
+class ParameterStore:
+    def __init__(self, cols_order: List[str]) -> None:
+        """Initialize ParameterStore class
+
+        Args:
+            cols_order (List[str]): define columns name and order to save
+        """
+        self.cols_order = cols_order
+        (
+            self.calculation_time_list,
+            self.accuracy_list,
+            self.precision_list,
+            self.recall_list,
+            self.f_measure_list,
+        ) = ([], [], [], [], [])
+        self.result_dictlist = {
+            "parameter": [],
+            "sample_number": [],
+            "mean_calculation_time_per_image": [],
+            "accuracy_min": [],
+            "accuracy_q1": [],
+            "accuracy_med": [],
+            "accuracy_q3": [],
+            "accuracy_max": [],
+            "precision_min": [],
+            "precision_q1": [],
+            "precision_med": [],
+            "precision_q3": [],
+            "precision_max": [],
+            "recall_min": [],
+            "recall_q1": [],
+            "recall_med": [],
+            "recall_q3": [],
+            "recall_max": [],
+            "f_measure_min": [],
+            "f_measure_q1": [],
+            "f_measure_med": [],
+            "f_measure_q3": [],
+            "f_measure_max": [],
+        }
+
+    def init_per_image_metrics(self) -> None:
+        """Initialize lists that store temporarily metrics value"""
+        (
+            self.calculation_time_list,
+            self.accuracy_list,
+            self.precision_list,
+            self.recall_list,
+            self.f_measure_list,
+        ) = ([], [], [], [], [])
+
+    def update_per_image_metrics(
+        self,
+        calculation_time: float,
+        accuracy: float,
+        precision: float,
+        recall: float,
+        f_measure: float,
+    ) -> None:
+        """Update lists that store temporarily metrics values
+
+        Args:
+            calculation_time (float): culculation time per image
+            accuracy (float): accuracy per image
+            precision (float): precision per image
+            recall (float): recall per image
+            f_measure (float): f-measure per image
+        """
+        self.calculation_time_list.append(calculation_time)
+        self.accuracy_list.append(accuracy)
+        self.precision_list.append(precision)
+        self.recall_list.append(recall)
+        self.f_measure_list.append(f_measure)
+
+    def store_percentile_results(self) -> None:
+        """Calculate percentiles based on a list of each metric."""
+        # calculate mean of metrics values
+        # time metrics is only calculate mean value
+        self.result_dictlist["calculation_time_per_image_mean"].append(
+            np.mean(self.calculation_time_list)
+        )
+        self.result_dictlist["accuracy_mean"].append(np.mean(self.accuracy_list))
+        self.result_dictlist["precision_mean"].append(np.mean(self.precision_list))
+        self.result_dictlist["recall_mean"].append(np.mean(self.recall_list))
+        self.result_dictlist["f_measure_mean"].append(np.mean(self.f_measure_list))
+
+        # other metrics calculate 0%, 25%, 50%, 75%, 100% percentile
+        str2num = {"min": 0, "q1": 25, "med": 50, "q3": 75, "max": 100}
+        for percentile in str2num.keys():
+            self.result_dictlist[f"accuracy_{percentile}"].append(
+                np.percentile(self.accuracy_list, str2num[percentile])
+            )
+            self.result_dictlist[f"precision_{percentile}"].append(
+                np.percentile(self.precision_list, str2num[percentile])
+            )
+            self.result_dictlist[f"recall_{percentile}"].append(
+                np.percentile(self.recall_list, str2num[percentile])
+            )
+            self.result_dictlist[f"f_measure_{percentile}"].append(
+                np.percentile(self.f_measure_list, str2num[percentile])
+            )
+
+    def save_results(self, save_path: str) -> None:
+        """Save search result in "save_path".
+
+        Args:
+            save_path (str): save path of CSV file
+        """
+        results_df = pd.DataFrame(self.result_dictlist)[self.cols_order]
+        results_df.to_csv(save_path, index=False)
+        logger.info(f'Searched Result Saved in "{save_path}".')
+
+
+def search(
+    search_param: str,
     dataset_path_df: pd.DataFrame,
     patterns: List[float],
     mask_image: np.array,
-    cfg: DictConfig,
-) -> pd.DataFrame:
-    """Try multiple patterns of threshold values used for clustering and evaluate the accuracy of each.
-
-    Args:
-        dataset_path_df (pd.DataFrame): DataFrame containing paths for input, label, and predicted density map
-        patterns (List[float]): serach parameter patterns list
-        mask_image (np.array): mask image
-        cfg (DictConfig): config about analysis image region
-
-    Returns:
-        pd.DataFrame: DataFrame on accuracy for each parameter
-    """
-    result_dictlist = {
-        "parameter": [],
-        "accuracy": [],
-        "precision": [],
-        "recall": [],
-        "f_measure": [],
-    }
-    for param in tqdm(patterns, desc="search threshold patterns"):
-        # initialized metrics
-        accuracy, precision, recall, f_measure = 0.0, 0.0, 0.0, 0.0
-        for predicted_path, label_path in zip(
-            dataset_path_df["predicted"], dataset_path_df["label"]
-        ):
-            # load predicted density map and label
-            ground_truth_array = get_ground_truth(label_path, mask_image, cfg)
-            predicted_density_map = np.load(predicted_path)
-            predicted_centroid_array = apply_clustering_to_density_map(
-                predicted_density_map, cfg["band_width"], param
-            )
-
-            # evaluate current frame
-            true_pos, false_pos, false_neg, sample_number = eval_detection(
-                predicted_centroid_array, ground_truth_array, cfg["detection_threshold"]
-            )
-            (
-                accuracy_per_image,
-                precision_per_image,
-                recall_per_image,
-                f_measure_per_image,
-            ) = eval_metrics(true_pos, false_pos, false_neg, sample_number)
-
-            # upadate metrics
-            accuracy += accuracy_per_image
-            precision += precision_per_image
-            recall += recall_per_image
-            f_measure += f_measure_per_image
-
-        # store current paramter results
-        sample_num = len(dataset_path_df)
-        result_dictlist["parameter"].append(param)
-        result_dictlist["accuracy"].append(accuracy / sample_num)
-        result_dictlist["precision"].append(precision / sample_num)
-        result_dictlist["recall"].append(recall / sample_num)
-        result_dictlist["f_measure"].append(f_measure / sample_num)
-
-    return pd.DataFrame.to_dict(
-        result_dictlist,
-        columns=["parameter", "accuracy", "precision", "recall", "f_measure"],
-    )
-
-
-def search_prediction_grid(
-    dataset_path_df: pd.DataFrame,
-    patterns: List[float],
     model: DensityModel,
     tf_session: InteractiveSession,
-    mask_image: np.array,
     cfg: DictConfig,
-) -> pd.DataFrame:
-    """Try multiple patterns of parameters related to the interval at which
-    predicts are made, and evaluate the accuracy of each.
+) -> None:
+    """Validate multiple combinations of parameters and evaluate accuracy, precision, recall, f-measure.
 
     Args:
+        search_param (str): search parameter name
         dataset_path_df (pd.DataFrame): DataFrame containing paths for input, label, and predicted density map
         patterns (List[float]): serach parameter patterns list
+        mask_image (np.array): mask image
         model (DensityModel): trained density model
         tf_session (InteractiveSession): tensorflow session
-        mask_image (np.array): mask image
         cfg (DictConfig): config about analysis image region
-
-    Returns:
-        pd.DataFrame: DataFrame on accuracy for each parameter
     """
-    result_dictlist = {
-        "parameter": [],
-        "calculation_time": [],
-        "accuracy": [],
-        "precision": [],
-        "recall": [],
-        "f_measure": [],
-    }
-    for param in tqdm(patterns, desc="search prediciton grid patterns"):
-        # initialized metrics
-        calculation_time, accuracy, precision, recall, f_measure = (
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        )
-        for input_path, label_path in zip(
-            dataset_path_df["input"], dataset_path_df["label"]
-        ):
+    params_store = ParameterStore(cfg["cols_order"])
+    for param in tqdm(patterns, desc=f"search {search_param} patterns"):
+        # store parameter value
+        params_store.result_dictlist["parameter"].append(param)
+        params_store.result_dictlist["sample_number"].append(len(dataset_path_df))
+        # initialized per image metrics
+        params_store.init_per_image_metrics()
+        for i in range(len(dataset_path_df)):
             # set timer
             start_time = time.time()
 
-            # Predicts a density map with the specified grid size
-            image = load_image(input_path, is_rgb=True)
-            if mask_image is not None:
-                image = apply_masking_on_image(image, mask_image)
-            predicted_density_map = predict_density_map(model, tf_session, image, cfg)
-            predicted_centroid_array = apply_clustering_to_density_map(
-                predicted_density_map, cfg["band_width"], cfg["fixed_cluster_thresh"]
-            )
+            if search_param == "threshold":
+                # load predicted density map
+                predicted_density_map = np.load(dataset_path_df["predicted"][i])
+                # clustering by target threshold
+                predicted_centroid_array = apply_clustering_to_density_map(
+                    predicted_density_map, cfg["band_width"], param
+                )
+            elif search_param == "grid":
+                # Predicts a density map with the specified grid size
+                image = load_image(dataset_path_df["input"][i], is_rgb=True)
+                if mask_image is not None:
+                    image = apply_masking_on_image(image, mask_image)
+                predicted_density_map = predict_density_map(
+                    model, tf_session, image, cfg
+                )
+                predicted_centroid_array = apply_clustering_to_density_map(
+                    predicted_density_map,
+                    cfg["band_width"],
+                    cfg["fixed_cluster_thresh"],
+                )
+            else:
+                logger.info(f"{param} is not defined.")
+                return
 
-            # load predicted density map and label
-            ground_truth_array = get_ground_truth(label_path, mask_image, cfg)
+            # load groud truth label
+            ground_truth_array = get_ground_truth(
+                dataset_path_df["label"][i], mask_image, cfg
+            )
 
             # evaluate current frame
             true_pos, false_pos, false_neg, sample_number = eval_detection(
@@ -169,32 +217,21 @@ def search_prediction_grid(
             ) = eval_metrics(true_pos, false_pos, false_neg, sample_number)
 
             # upadate metrics
-            calculation_time += time.time() - start_time
-            accuracy += accuracy_per_image
-            precision += precision_per_image
-            recall += recall_per_image
-            f_measure += f_measure_per_image
+            calculation_time = time.time() - start_time
+            params_store.update_per_image_metrics(
+                calculation_time,
+                accuracy_per_image,
+                precision_per_image,
+                recall_per_image,
+                f_measure_per_image,
+            )
 
-        # store current paramter results
-        sample_num = len(dataset_path_df)
-        result_dictlist["parameter"].append(param)
-        result_dictlist["calculation_time"].append(calculation_time / sample_num)
-        result_dictlist["accuracy"].append(accuracy / sample_num)
-        result_dictlist["precision"].append(precision / sample_num)
-        result_dictlist["recall"].append(recall / sample_num)
-        result_dictlist["f_measure"].append(f_measure / sample_num)
+        # store current paramter percentile results
+        params_store.store_percentile_results()
 
-    return pd.DataFrame.to_dict(
-        result_dictlist,
-        columns=[
-            "parameter",
-            "calculation_time",
-            "accuracy",
-            "precision",
-            "recall",
-            "f_measure",
-        ],
-    )
+    # save search result
+    save_path = f"{cfg['save_directory']}/search_result_{search_param}.csv"
+    params_store.save_results(save_path)
 
 
 def search_parameter(
@@ -221,22 +258,8 @@ def search_parameter(
         logger.info(f"Search Parameter: {param}")
         logger.info(f"Search Patterns: {patterns}")
 
-        if param == "threshold":
-            resutl_df = search_clustering_threshold(
-                dataset_path_df, patterns, mask_image, cfg
-            )
-        elif param == "prediction_grid":
-            resutl_df = search_prediction_grid(
-                dataset_path_df, patterns, model, tf_session, mask_image, cfg
-            )
-        else:
-            logger.info(f"{param} is not defined.")
-            continue
-
-        # save search result
-        save_path = f"{cfg['save_directory']}/search_result_{param}.csv"
-        resutl_df.to_csv(save_path, index=False)
-        logger.info(f'Searched Result Saved in "{save_path}".')
+        search(param, dataset_path_df, patterns, mask_image, model, tf_session, cfg)
+        logger.info(f"Completed: {param}")
 
 
 @hydra.main(config_path="../conf", config_name="search_parameter")

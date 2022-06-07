@@ -54,10 +54,28 @@ def eval_metrics(
     Returns:
         Tuple: calculated each metrics
     """
+    if sample_num <= 0:
+        logger.error("Sample is not existed. At least one sample is required.")
+        sys.exit(1)
+
+    # avoid zero division error
     accuracy = true_positive / sample_num
-    precision = true_positive / (true_positive + false_positive)
-    recall = true_positive / (true_positive + false_negative)
-    f_measure = (2 * recall * precision) / (recall + precision)
+
+    if true_positive + false_positive != 0:
+        precision = true_positive / (true_positive + false_positive)
+    else:
+        precision = 0.0
+
+    if true_positive + false_negative != 0:
+        recall = true_positive / (true_positive + false_negative)
+    else:
+        recall = 0.0
+
+    if recall + precision != 0:
+        f_measure = (2 * recall * precision) / (recall + precision)
+    else:
+        f_measure = 0.0
+
     return accuracy, precision, recall, f_measure
 
 
