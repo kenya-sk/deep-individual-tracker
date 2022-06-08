@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import List
+from typing import List, Dict
 
 import hydra
 import numpy as np
@@ -40,6 +40,7 @@ class ParameterStore:
             cols_order (List[str]): define columns name and order to save
         """
         self.cols_order = cols_order
+        self.result_dictlist = {key: [] for key in cols_order}
         (
             self.calculation_time_list,
             self.accuracy_list,
@@ -47,31 +48,6 @@ class ParameterStore:
             self.recall_list,
             self.f_measure_list,
         ) = ([], [], [], [], [])
-        self.result_dictlist = {
-            "parameter": [],
-            "sample_number": [],
-            "mean_calculation_time_per_image": [],
-            "accuracy_min": [],
-            "accuracy_q1": [],
-            "accuracy_med": [],
-            "accuracy_q3": [],
-            "accuracy_max": [],
-            "precision_min": [],
-            "precision_q1": [],
-            "precision_med": [],
-            "precision_q3": [],
-            "precision_max": [],
-            "recall_min": [],
-            "recall_q1": [],
-            "recall_med": [],
-            "recall_q3": [],
-            "recall_max": [],
-            "f_measure_min": [],
-            "f_measure_q1": [],
-            "f_measure_med": [],
-            "f_measure_q3": [],
-            "f_measure_max": [],
-        }
 
     def init_per_image_metrics(self) -> None:
         """Initialize lists that store temporarily metrics value"""
@@ -106,6 +82,33 @@ class ParameterStore:
         self.recall_list.append(recall)
         self.f_measure_list.append(f_measure)
 
+    def update_summury_metrics(
+        self,
+        key: str,
+        summury_method: str,
+        metrics_list: List[float],
+        percentile_num: int,
+    ) -> None:
+        """Receive a list of metrics and summarize by mean or percentile.
+
+        Args:
+            key (str): dictionary key name
+            summury_method (str): summry method name (mean of percentile)
+            metrics_list (List[float]): summurized metrics list
+            percentile_num (int): percentile number (ex: q1 -> 25)
+        """
+        if key not in self.result_dictlist.keys():
+            return
+
+        if summury_method == "mean":
+            self.result_dictlist[key].append(np.mean(metrics_list))
+        elif summury_method == "percentile":
+            self.result_dictlist[key].append(
+                np.percentile(metrics_list, percentile_num)
+            )
+        else:
+            logger.info(f"Invalid summury method: {summury_method}")
+
     def store_percentile_results(self) -> None:
         """Calculate percentiles based on a list of each metric."""
         # calculate mean of metrics values
@@ -113,25 +116,37 @@ class ParameterStore:
         self.result_dictlist["calculation_time_per_image_mean"].append(
             np.mean(self.calculation_time_list)
         )
-        self.result_dictlist["accuracy_mean"].append(np.mean(self.accuracy_list))
-        self.result_dictlist["precision_mean"].append(np.mean(self.precision_list))
-        self.result_dictlist["recall_mean"].append(np.mean(self.recall_list))
-        self.result_dictlist["f_measure_mean"].append(np.mean(self.f_measure_list))
+        self.update_summury_metrics("accuracy_mean", "mean", self.accuracy_list, None)
+        self.update_summury_metrics("precision_mean", "mean", self.precision_list, None)
+        self.update_summury_metrics("recall_mean", "mean", self.recall_list, None)
+        self.update_summury_metrics("f_measure_mean", "mean", self.f_measure_list, None)
 
         # other metrics calculate 0%, 25%, 50%, 75%, 100% percentile
         str2num = {"min": 0, "q1": 25, "med": 50, "q3": 75, "max": 100}
         for percentile in str2num.keys():
-            self.result_dictlist[f"accuracy_{percentile}"].append(
-                np.percentile(self.accuracy_list, str2num[percentile])
+            self.update_summury_metrics(
+                f"accuracy_{percentile}",
+                "percentile",
+                self.accuracy_list,
+                str2num[percentile],
             )
-            self.result_dictlist[f"precision_{percentile}"].append(
-                np.percentile(self.precision_list, str2num[percentile])
+            self.update_summury_metrics(
+                f"precision_{percentile}",
+                "percentile",
+                self.precision_list,
+                str2num[percentile],
             )
-            self.result_dictlist[f"recall_{percentile}"].append(
-                np.percentile(self.recall_list, str2num[percentile])
+            self.update_summury_metrics(
+                f"recall_{percentile}",
+                "percentile",
+                self.recall_list,
+                str2num[percentile],
             )
-            self.result_dictlist[f"f_measure_{percentile}"].append(
-                np.percentile(self.f_measure_list, str2num[percentile])
+            self.update_summury_metrics(
+                f"f_measure_{percentile}",
+                "percentile",
+                self.f_measure_list,
+                str2num[percentile],
             )
 
     def save_results(self, save_path: str) -> None:

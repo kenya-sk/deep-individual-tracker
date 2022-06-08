@@ -2,10 +2,12 @@ dataset_path: ""
 mask_path: "/data/image/mask.png"
 save_directory: "/data/output/search_params"
 trained_model_directory: "/data/models/density_model/"
+
+# columns parameter, sample_number and calculation_time_per_image_mean must required.
 cols_order:
   - "parameter"
   - "sample_number"
-  - "alculation_time_per_image_mean"
+  - "calculation_time_per_image_mean"
   - "accuracy_mean"
   - "accuracy_min"
   - "accuracy_q1"

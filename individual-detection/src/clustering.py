@@ -49,7 +49,7 @@ def apply_clustering_to_density_map(
             return np.zeros((0, 2))
 
     # MeanShift clustering
-    ms = MeanShift(bandwidth=band_width, n_jobs=-1)
+    ms = MeanShift(bandwidth=band_width)
     ms.fit(X)
     labels = ms.labels_
     cluster_centers = ms.cluster_centers_
