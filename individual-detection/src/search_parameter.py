@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import List, Dict
+from typing import List
 
 import hydra
 import numpy as np
