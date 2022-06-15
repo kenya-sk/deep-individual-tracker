@@ -58,6 +58,8 @@ analysis_image_width_max: 1920
 # square local image size: > 0
 local_image_size: 72
 
+# batch size for each epoch
+predict_batch_size: 2048
 # band width of Mean-Shift Clustering
 band_width: 10
 # fixed threshold to be subjected to clustering
