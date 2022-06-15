@@ -43,6 +43,9 @@ use_gpu_device: "0,1,2"
 # using each GPU memory rate: 0.0-1.0
 use_memory_rate: 0.9
 
+# sampling the dataset to reduce computation time
+sample_rate: 0.2
+
 # raw image information
 image_height: 1080
 image_width: 1920

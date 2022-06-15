@@ -283,7 +283,7 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Loaded config: {cfg}")
 
     # load input, label and predicted path list
-    dataset_path_df = pd.read_csv(cfg["dataset_path"])
+    dataset_path_df = pd.read_csv(cfg["dataset_path"]).sample(frac=cfg["sample_rate"])
     # load mask image
     mask_image = (
         load_mask_image(cfg["mask_path"]) if cfg["mask_path"] is not None else None
