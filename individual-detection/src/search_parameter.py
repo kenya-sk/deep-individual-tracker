@@ -1,3 +1,4 @@
+import copy
 import logging
 import time
 from typing import List
@@ -16,6 +17,7 @@ from predict import predict_density_map
 from utils import (
     load_image,
     get_current_time_str,
+    get_masked_index,
     load_mask_image,
     load_model,
     apply_masking_on_image,
@@ -198,18 +200,21 @@ def search(
                 predicted_centroid_array = apply_clustering_to_density_map(
                     predicted_density_map, cfg["band_width"], param
                 )
-            elif search_param == "grid":
+            elif search_param == "prediction_grid":
+                # create current parameter config
+                param_cfg = copy.deepcopy(cfg)
+                param_cfg["skip_width"] = param
                 # Predicts a density map with the specified grid size
                 image = load_image(dataset_path_df["input"][i], is_rgb=True)
                 if mask_image is not None:
                     image = apply_masking_on_image(image, mask_image)
                 predicted_density_map = predict_density_map(
-                    model, tf_session, image, cfg
+                    model, tf_session, image, param_cfg
                 )
                 predicted_centroid_array = apply_clustering_to_density_map(
                     predicted_density_map,
-                    cfg["band_width"],
-                    cfg["fixed_cluster_thresh"],
+                    param_cfg["band_width"],
+                    param_cfg["fixed_cluster_thresh"],
                 )
             else:
                 logger.info(f"{param} is not defined.")
@@ -283,11 +288,21 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Loaded config: {cfg}")
 
     # load input, label and predicted path list
-    dataset_path_df = pd.read_csv(cfg["dataset_path"]).sample(frac=cfg["sample_rate"])
-    # load mask image
-    mask_image = (
-        load_mask_image(cfg["mask_path"]) if cfg["mask_path"] is not None else None
+    dataset_path_df = (
+        pd.read_csv(cfg["dataset_path"])
+        .sample(frac=cfg["sample_rate"])
+        .reset_index(drop=True)
     )
+
+    # load mask image
+    if cfg["mask_path"] is not None:
+        mask_image = load_mask_image(cfg["mask_path"])
+        index_h, index_w = get_masked_index(mask_image, cfg)
+        cfg["index_h"] = index_h
+        cfg["index_w"] = index_w
+    else:
+        mask_image = None
+
     # load trained model
     if "prediction_grid" in cfg["search_params"].keys():
         model, tf_session = load_model(
