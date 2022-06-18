@@ -1,14 +1,13 @@
 import logging
 import os
-from curses import noraw
 from glob import glob
 
 import cv2
 import hydra
 import numpy as np
-from cv2 import normalize
 from omegaconf import DictConfig, OmegaConf
 from tensorflow.compat.v1 import InteractiveSession
+from tqdm import tqdm
 
 from clustering import apply_clustering_to_density_map
 from model import DensityModel
@@ -16,7 +15,6 @@ from utils import (
     apply_masking_on_image,
     display_data_info,
     get_current_time_str,
-    get_directory_list,
     get_frame_number_from_path,
     get_local_data,
     get_masked_index,
@@ -147,32 +145,26 @@ def batch_prediction(
         tf_session (InteractiveSession): tensorflow session
         cfg (dict): config dictionary
     """
-    root_image_path = f"{cfg['image_directory']}/{cfg['target_date']}"
-    image_directory_list = get_directory_list(root_image_path)
+    # set path information
+    input_image_path = f"{cfg['image_directory']}/{cfg['target_date']}/*.png"
+    output_directory = f"{cfg['output_directory']}/{cfg['target_date']}"
+    os.makedirs(output_directory, exist_ok=True)
+    os.makedirs("{0}/dens".format(output_directory), exist_ok=True)
+    os.makedirs("{0}/coord".format(output_directory), exist_ok=True)
+    display_data_info(input_image_path, output_directory, cfg)
 
-    for directory in image_directory_list:
-        # set path information
-        input_image_path = f"{root_image_path}/{directory}/*.png"
-        image_path_list = glob(input_image_path)
-        output_directory = f"{cfg['output_directory']}/{cfg['target_date']}"
-        os.makedirs(output_directory, exist_ok=True)
-        os.makedirs("{0}/dens".format(output_directory), exist_ok=True)
-        os.makedirs("{0}/coord".format(output_directory), exist_ok=True)
-        display_data_info(input_image_path, output_directory, cfg)
+    # predcit for each image
+    image_path_list = glob(input_image_path)
+    for path in tqdm(image_path_list, desc="predit image data"):
+        image = load_image(path, is_rgb=True, normalized=True)
+        # apply mask on input image
+        if cfg["mask_path"] is not None:
+            mask_image = load_mask_image(cfg["mask_path"], normalized=True)
+            image = apply_masking_on_image(image, mask_image)
+        frame_num = get_frame_number_from_path(path)
+        image_prediction(model, tf_session, image, frame_num, output_directory, cfg)
 
-        # predcit for each image
-        for path in image_path_list:
-            image = load_image(path, is_rgb=True, normalized=True)
-            # apply mask on input image
-            if cfg["mask_path"] is not None:
-                mask_image = load_mask_image(cfg["mask_path"], normalized=True)
-                image = apply_masking_on_image(image, mask_image)
-            frame_num = get_frame_number_from_path(path)
-            image_prediction(model, tf_session, image, frame_num, output_directory, cfg)
-
-        logger.info(
-            f"Predicted {len(image_path_list)} images (path='{input_image_path}')"
-        )
+    logger.info(f"Predicted {len(image_path_list)} images (path='{input_image_path}')")
 
 
 def video_prediction(
