@@ -27,7 +27,7 @@ local_image_size: 72
 # skip interval of frame at prediction [Need Rename]
 predict_interval: 30
 # skip width in horizontal direction [Need Rename]
-skip_width: 15
+skip_width: 10
 # batch size for each epoch
 predict_batch_size: 2048
 # save predicted density map (True or False)
@@ -35,4 +35,4 @@ is_saved_map: False
 # band width of Mean-Shift Clustering
 band_width: 10
 # threshold to be subjected to clustering
-cluster_thresh: 0.5
+cluster_thresh: 1.1
