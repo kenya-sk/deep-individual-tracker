@@ -8,8 +8,13 @@ from omegaconf import DictConfig, OmegaConf
 from scipy import optimize
 from tqdm import tqdm
 
-from utils import (eval_metrics, get_current_time_str, get_masked_index,
-                   load_mask_image, pretty_print)
+from utils import (
+    eval_metrics,
+    get_current_time_str,
+    get_masked_index,
+    load_mask_image,
+    pretty_print,
+)
 
 # logger setting
 current_time = get_current_time_str()
@@ -22,7 +27,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_ground_truth(ground_truth_path: str, mask_image: np.array, params_dict: dict) -> np.array:
+def get_ground_truth(
+    ground_truth_path: str, mask_image: np.array, params_dict: dict
+) -> np.array:
     """Plots the coordinates of answer label on the black image(all value 0)
     and creates a correct image for accuracy evaluation.
 
@@ -39,7 +46,9 @@ def get_ground_truth(ground_truth_path: str, mask_image: np.array, params_dict: 
     if mask_image is None:
         return ground_truth_array
     else:
-        valid_h, valid_w = get_masked_index(mask_image, params_dict, horizontal_flip=False)
+        valid_h, valid_w = get_masked_index(
+            mask_image, params_dict, horizontal_flip=False
+        )
         valid_ground_truth_list = []
         for i in range(ground_truth_array.shape[0]):
             index_w = np.where(valid_w == ground_truth_array[i][0])
@@ -117,7 +126,7 @@ def evaluate(
     ground_truth_dirctory: str,
     mask_image_path: str,
     detection_threshold: int,
-    params_dict: dict
+    params_dict: dict,
 ) -> None:
     """The evaluation indices of accuracy, precision, recall, and f measure are calculated for each image.
     Then, the average value is calculated and the overall evaluation is performed.
@@ -156,7 +165,7 @@ def evaluate(
             # exist detection point case
             mask_image = load_mask_image(mask_image_path)
             ground_truth_array = get_ground_truth(
-                "{ground_truth_dirctory}/{file_name}", mask_image, params_dict
+                f"{ground_truth_dirctory}/{file_name}", mask_image, params_dict
             )
             true_pos, false_pos, false_neg, sample_number = eval_detection(
                 predcit_centroid_array, ground_truth_array, detection_threshold
@@ -168,7 +177,7 @@ def evaluate(
 
             # calculate evaluation metrics
             accuracy, precision, recall, f_measure = eval_metrics(
-                true_pos, false_pos, false_neg, sample_number_list
+                true_pos, false_pos, false_neg, sample_number
             )
             logger.info(
                 f"""file_name: {file_name}, Accuracy: {accuracy},
@@ -187,11 +196,11 @@ def main(cfg: DictConfig) -> None:
 
     # evaluate predction results
     evaluate(
-        cfg["predict_dirctory"],
-        cfg["ground_truth_dirctory"],
+        cfg["predict_directory"],
+        cfg["ground_truth_directory"],
         cfg["mask_image_path"],
         cfg["detection_threshold"],
-        cfg
+        cfg,
     )
 
 

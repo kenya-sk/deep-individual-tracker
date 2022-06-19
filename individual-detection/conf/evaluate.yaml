@@ -1,4 +1,14 @@
-predict_dirctory: ""
-groud_truth_directory: ""
+predict_directory: ""
+ground_truth_directory: ""
 mask_image_path: ""
 detection_threshold: 15
+
+# raw image information
+image_height: 1080
+image_width: 1920
+image_channel: 3
+# Image analysis area
+analysis_image_height_min: 0
+analysis_image_height_max: 720
+analysis_image_width_min: 0
+analysis_image_width_max: 1920
