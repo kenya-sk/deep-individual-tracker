@@ -18,13 +18,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_sampled_frame_number(total_frame_number: int, sample_rate: int):
-    """
-    Sample frame numbers randomly according to the sample rate.
+def get_sampled_frame_number(total_frame_number: int, sample_rate: int) -> List:
+    """Sample frame numbers randomly according to the sample rate.
 
-    :param total_frame_number: total frame number of target video
-    :param sample_rate: sampling rate for frame
-    :return: list of sampled frame number
+    Args:
+        total_frame_number (int): total frame number of target video
+        sample_rate (int): sampling rate for frame
+
+    Returns:
+        List: list of random sampled frame number
     """
     frame_number_list = []
 
@@ -38,14 +40,39 @@ def get_sampled_frame_number(total_frame_number: int, sample_rate: int):
     return frame_number_list
 
 
-def frame_sampler(input_video_list: List, save_frame_dirc: str, sample_rate: int):
-    """
-    Load the video and save the sampled frames as image data.
+def get_frame_number_list(
+    total_frame_number: int, sampling_type: str, sample_rate: int
+) -> List:
+    """Get a list of frames with two sampling methods: "random" or "fixed".
 
-    :param input_video_list: list of input video path
-    :param save_frame_dirc: save sampled frame path
-    :param sample_rate: sampling rate for frame
-    :return: None
+    Args:
+        total_frame_number (int): total frame number of target video
+        sampling_type (str): sampling type "random" or "fixed"
+        sample_rate (int): sampling rate for frame
+
+    Returns:
+        List: list of sampled frame number
+    """
+    if sampling_type == "random":
+        frame_number_list = get_sampled_frame_number(total_frame_number, sample_rate)
+    elif sampling_type == "fixed":
+        frame_number_list = [i for i in range(total_frame_number) if i % sample_rate]
+    else:
+        logger.error(f"Error: sampling_type={sampling_type} is not defined.")
+
+    return frame_number_list
+
+
+def frame_sampler(
+    input_video_list: List, save_frame_dirc: str, sampling_type: str, sample_rate: int
+) -> None:
+    """Load the video and save the sampled frames as image data.
+
+    Args:
+        input_video_list (List): list of input video path
+        save_frame_dirc (str): save sampled frame path
+        sampling_type (str): sampling type "random" or "fixed"
+        sample_rate (int): sampling rate for frame
     """
     for video_path in input_video_list:
         file_name = os.path.splitext(os.path.basename(video_path))[0]
@@ -53,35 +80,34 @@ def frame_sampler(input_video_list: List, save_frame_dirc: str, sample_rate: int
         total_frame_number = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # get sample target frame number list
-        frame_number_list = get_sampled_frame_number(total_frame_number, sample_rate)
+        frame_number_list = get_frame_number_list(
+            total_frame_number, sampling_type, sample_rate
+        )
         for frame_number in tqdm(frame_number_list):
             video.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
-
             # load current frame
             ret, frame = video.read()
             if ret:
-                save_file_name = f"{save_frame_dirc}/{file_name}_{frame_number}.png"
+                save_file_name = f"{save_frame_dirc}/{file_name}/{frame_number}.png"
                 save_image(save_file_name, frame)
             else:
-                print(f"Error: cannot load {frame_number} frame")
+                logger.error(f"Error: cannot load {frame_number} frame")
 
 
 @hydra.main(config_path="../conf", config_name="frame_sampling")
 def run_sampler(cfg: DictConfig) -> None:
-    """
-    Run frame sampler according to the settings defined in the config file.
+    """Run frame sampler according to the settings defined in the config file.
 
-    :param cfg: config that loaded by @hydra.main()
-    :return: None
+    Args:
+        cfg (DictConfig): config that loaded by @hydra.main()
     """
     logger.info(f"Loaded config: {cfg}")
     original_cwd = get_original_cwd()
     input_video_list = get_full_path_list(original_cwd, cfg.path.input_video_list)
     save_frame_dirc = os.path.join(original_cwd, cfg.path.save_frame_dirc)
-    sample_rate = cfg.sample_rate
 
     # execute frame sampler
-    frame_sampler(input_video_list, save_frame_dirc, sample_rate)
+    frame_sampler(input_video_list, save_frame_dirc, cfg.sampling_type, cfg.sample_rate)
 
 
 if __name__ == "__main__":
