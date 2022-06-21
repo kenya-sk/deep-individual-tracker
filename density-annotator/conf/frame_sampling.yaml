@@ -1,4 +1,4 @@
-sample_type: "random"
+sampling_type: "random"
 sample_rate: 9000
 
 path:

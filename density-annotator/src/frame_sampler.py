@@ -79,16 +79,21 @@ def frame_sampler(
         video = load_video(video_path)
         total_frame_number = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
 
+        # create save frame directory
+        current_save_dirc = f"{save_frame_dirc}/{file_name}"
+        os.makedirs(current_save_dirc, exist_ok=True)
+
         # get sample target frame number list
         frame_number_list = get_frame_number_list(
             total_frame_number, sampling_type, sample_rate
         )
+
         for frame_number in tqdm(frame_number_list):
             video.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             # load current frame
             ret, frame = video.read()
             if ret:
-                save_file_name = f"{save_frame_dirc}/{file_name}/{frame_number}.png"
+                save_file_name = f"{current_save_dirc}/{frame_number}.png"
                 save_image(save_file_name, frame)
             else:
                 logger.error(f"Error: cannot load {frame_number} frame")
