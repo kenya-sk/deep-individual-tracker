@@ -56,7 +56,7 @@ def get_frame_number_list(
     if sampling_type == "random":
         frame_number_list = get_sampled_frame_number(total_frame_number, sample_rate)
     elif sampling_type == "fixed":
-        frame_number_list = [i for i in range(total_frame_number) if i % sample_rate]
+        frame_number_list = [i for i in range(total_frame_number) if i % sample_rate == 0]
     else:
         logger.error(f"Error: sampling_type={sampling_type} is not defined.")
 
