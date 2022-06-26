@@ -149,8 +149,8 @@ def batch_prediction(
     input_image_path = f"{cfg['image_directory']}/{cfg['target_date']}/*.png"
     output_directory = f"{cfg['output_directory']}/{cfg['target_date']}"
     os.makedirs(output_directory, exist_ok=True)
-    os.makedirs("{0}/dens".format(output_directory), exist_ok=True)
-    os.makedirs("{0}/coord".format(output_directory), exist_ok=True)
+    os.makedirs(f"{output_directory}/dens", exist_ok=True)
+    os.makedirs(f"{output_directory}/coord", exist_ok=True)
     display_data_info(input_image_path, output_directory, cfg)
 
     # predcit for each image
