@@ -1,6 +1,8 @@
 import logging
 import os
+import sys
 from glob import glob
+from typing import List
 
 import cv2
 import hydra
@@ -35,6 +37,48 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def extract_prediction_indices(
+    height_index_list: List,
+    width_index_list: List,
+    skip_pixel_interval: int,
+    index_extract_type: str = "grid",
+) -> List:
+    """Sets the interval at which individual detection is performed.
+    Extract the index list of targets to be detected according to the specified extraction method.
+
+    Args:
+        height_index_list (List): indices list of vertical axis
+        width_index_list (List): indices list of horizontal axis
+        skip_pixel_interval (int): pixel interval to be indexed
+        index_extract_type (str, optional): index extract type. Defaults to "grid".
+
+    Returns:
+        List: List of extracted indices for predictions
+    """
+    if skip_pixel_interval == 0:
+        return [i for i in range(len(height_index_list))]
+
+    if index_extract_type == "grid":
+        index_list = [
+            i
+            for i, (h, w) in enumerate(zip(height_index_list, width_index_list))
+            if (h % skip_pixel_interval == 0) or (w % skip_pixel_interval == 0)
+        ]
+    elif index_extract_type == "vertical":
+        index_list = [
+            i for i, w in enumerate(width_index_list) if w % skip_pixel_interval == 0
+        ]
+    elif index_extract_type == "horizontal":
+        index_list = [
+            i for i, h in enumerate(height_index_list) if h % skip_pixel_interval == 0
+        ]
+    else:
+        logger.error(f"Invalid 'index_extract_type': {index_extract_type}")
+        sys.exit(1)
+
+    return index_list
+
+
 def predict_density_map(
     model: DensityModel,
     tf_session: InteractiveSession,
@@ -46,18 +90,13 @@ def predict_density_map(
     X_local, _ = get_local_data(image, None, cfg, is_flip=False)
 
     # set horizontal index
-    if cfg["skip_width"] == 0:
-        index_lst = [i for i in range(len(cfg["index_h"]))]
-    else:
-        index_lst = [
-            i
-            for i, (h, w) in enumerate(zip(cfg["index_h"], cfg["index_w"]))
-            if (h % cfg["skip_width"] == 0) or (w % cfg["skip_width"] == 0)
-        ]
+    index_list = extract_prediction_indices(
+        cfg["index_h"], cfg["index_w"], cfg["skip_pixel_interval"], "grid"
+    )
 
     # set prediction parameters
     pred_batch_size = cfg["predict_batch_size"]
-    pred_n_batches = int(len(index_lst) / pred_batch_size)
+    pred_n_batches = int(len(index_list) / pred_batch_size)
     pred_dens_map = np.zeros((cfg["image_height"], cfg["image_width"]), dtype="float32")
 
     for batch in range(pred_n_batches):
@@ -71,7 +110,7 @@ def predict_density_map(
             )
         )
         for index_coord, index_local in enumerate(range(pred_batch_size)):
-            current_index = index_lst[batch * pred_batch_size + index_local]
+            current_index = index_list[batch * pred_batch_size + index_local]
             X_skip[index_coord] = X_local[current_index]
 
         # predict each local image
@@ -86,8 +125,8 @@ def predict_density_map(
         logger.debug(f"DONE: batch {batch+1}/{pred_n_batches}")
 
         for batch_idx in range(pred_batch_size):
-            h_pred = cfg["index_h"][index_lst[batch * pred_batch_size + batch_idx]]
-            w_pred = cfg["index_w"][index_lst[batch * pred_batch_size + batch_idx]]
+            h_pred = cfg["index_h"][index_list[batch * pred_batch_size + batch_idx]]
+            w_pred = cfg["index_w"][index_list[batch * pred_batch_size + batch_idx]]
             pred_dens_map[h_pred, w_pred] = pred_array[batch_idx]
 
     return pred_dens_map
@@ -165,6 +204,7 @@ def batch_prediction(
         image_prediction(model, tf_session, image, frame_num, output_directory, cfg)
 
     logger.info(f"Predicted {len(image_path_list)} images (path='{input_image_path}')")
+    tf_session.close()
 
 
 def video_prediction(
@@ -219,6 +259,7 @@ def video_prediction(
     # close all session
     cap.release()
     cv2.destoryAllWindows()
+    tf_session.close()
 
 
 @hydra.main(config_path="../conf", config_name="predict")
