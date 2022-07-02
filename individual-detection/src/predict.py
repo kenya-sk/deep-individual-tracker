@@ -64,6 +64,12 @@ def extract_prediction_indices(
             for i, (h, w) in enumerate(zip(height_index_list, width_index_list))
             if (h % skip_pixel_interval == 0) or (w % skip_pixel_interval == 0)
         ]
+    elif index_extract_type == "intersect":
+        index_list = [
+            i
+            for i, (h, w) in enumerate(zip(height_index_list, width_index_list))
+            if (h % skip_pixel_interval == 0) and (w % skip_pixel_interval == 0)
+        ]
     elif index_extract_type == "vertical":
         index_list = [
             i for i, w in enumerate(width_index_list) if w % skip_pixel_interval == 0
@@ -86,13 +92,16 @@ def predict_density_map(
     cfg: dict,
 ) -> np.array:
 
-    # load local images to be predicted
-    X_local, _ = get_local_data(image, None, cfg, is_flip=False)
-
     # set horizontal index
     index_list = extract_prediction_indices(
-        cfg["index_h"], cfg["index_w"], cfg["skip_pixel_interval"], "grid"
+        cfg["index_h"],
+        cfg["index_w"],
+        cfg["skip_pixel_interval"],
+        cfg["index_extract_type"],
     )
+
+    # load local images to be predicted
+    X_local, _ = get_local_data(image, None, cfg, False, index_list)
 
     # set prediction parameters
     pred_batch_size = cfg["predict_batch_size"]

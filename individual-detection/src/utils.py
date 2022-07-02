@@ -30,13 +30,13 @@ def display_data_info(input_path: str, output_dirctory: str, cfg: dict) -> None:
         None:
     """
     logger.info("*************************************************")
-    logger.info(f"Input path         : {input_path}")
-    logger.info(f"Output dirctory    : {output_dirctory}")
-    logger.info(f"Skip width         : {cfg['skip_width']}")
-    logger.info(f"Pred batch size    : {cfg['predict_batch_size']}")
-    logger.info(f"Band width         : {cfg['band_width']}")
-    logger.info(f"Cluster threshold  : {cfg['cluster_thresh']}")
-    logger.info(f"Save density map   : {cfg['is_saved_map']}")
+    logger.info(f"Input path          : {input_path}")
+    logger.info(f"Output dirctory     : {output_dirctory}")
+    logger.info(f"Skip pixel interval : {cfg['skip_pixel_interval']}")
+    logger.info(f"Pred batch size     : {cfg['predict_batch_size']}")
+    logger.info(f"Band width          : {cfg['band_width']}")
+    logger.info(f"Cluster threshold   : {cfg['cluster_thresh']}")
+    logger.info(f"Save density map    : {cfg['is_saved_map']}")
     logger.info("*************************************************\n")
 
 
@@ -309,7 +309,11 @@ def get_image_shape(image: np.array) -> Tuple:
 
 
 def get_local_data(
-    image: np.array, density_map: np.array, params_dict: dict, is_flip: bool
+    image: np.array,
+    density_map: np.array,
+    params_dict: dict,
+    is_flip: bool,
+    index_list: List = None,
 ) -> Tuple:
     """Get local image and density map from raw data
 
@@ -317,7 +321,8 @@ def get_local_data(
         image (np.array): raw image
         density_map (np.array): raw density map
         params_dict (dict): dictionary of parameters
-        is_flip (book): whether image is flip or not
+        is_flip (bool): whether image is flip or not
+        index_list (List): target index list of index_h and index_w
 
     Returns:
         Tuple: numpy array of local image and density map
@@ -360,8 +365,10 @@ def get_local_data(
         dtype="float32",
     )
 
+    if index_list is None:
+        index_list = [i for i in range(local_data_number)]
     local_density_array = np.zeros((local_data_number), dtype="float32")
-    for idx in range(local_data_number):
+    for idx in index_list:
         # raw image index convert to padding image index
         h = index_h[idx]
         w = index_w[idx]
