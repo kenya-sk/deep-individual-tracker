@@ -62,6 +62,8 @@ local_image_size: 72
 predict_batch_size: 2048
 # band width of Mean-Shift Clustering
 band_width: 10
+# interval at which local images are created and predictions are made
+index_extract_type: "intersect"
 # fixed threshold to be subjected to clustering
-fixed_cluster_thresh: 0.5
+fixed_cluster_thresh: 1.1
 detection_threshold: 10

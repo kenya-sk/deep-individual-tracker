@@ -308,14 +308,14 @@ def get_image_shape(image: np.array) -> Tuple:
     return (height, width, channel)
 
 
-def get_local_data(
+def extract_local_data(
     image: np.array,
     density_map: np.array,
     params_dict: dict,
     is_flip: bool,
     index_list: List = None,
 ) -> Tuple:
-    """Get local image and density map from raw data
+    """Extract local image and density map from raw data
 
     Args:
         image (np.array): raw image
@@ -354,29 +354,22 @@ def get_local_data(
     assert len(index_w) == len(
         index_h
     ), "The number of indexes differs for height and width. It is expected that they will be the same number."
-    local_data_number = len(index_w)
-    local_image_array = np.zeros(
-        (
-            local_data_number,
-            params_dict["local_image_size"],
-            params_dict["local_image_size"],
-            channel,
-        ),
-        dtype="float32",
-    )
 
+    local_data_number = len(index_w)
     if index_list is None:
         index_list = [i for i in range(local_data_number)]
-    local_density_array = np.zeros((local_data_number), dtype="float32")
+
+    local_image_list = []
+    local_density_list = []
     for idx in index_list:
         # raw image index convert to padding image index
         h = index_h[idx]
         w = index_w[idx]
-        local_image_array[idx] = pad_image[h : h + 2 * pad, w : w + 2 * pad]
+        local_image_list.append(pad_image[h : h + 2 * pad, w : w + 2 * pad])
         if density_map is not None:
-            local_density_array[idx] = density_map[h, w]
+            local_density_list.append(density_map[h, w])
 
-    return local_image_array, local_density_array
+    return local_image_list, local_density_list
 
 
 def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:

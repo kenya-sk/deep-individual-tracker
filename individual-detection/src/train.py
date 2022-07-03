@@ -11,17 +11,28 @@ import tensorflow as tf
 from omegaconf import DictConfig, OmegaConf
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
-from tensorflow.compat.v1 import (ConfigProto, GPUOptions, InteractiveSession,
-                                  global_variables_initializer)
+from tensorflow.compat.v1 import (
+    ConfigProto,
+    GPUOptions,
+    InteractiveSession,
+    global_variables_initializer,
+)
 from tensorflow.compat.v1.summary import FileWriter
 from tensorflow.compat.v1.train import Saver
 from tensorflow.python.framework.ops import Tensor as OpsTensor
 from tqdm import trange
 
 from model import DensityModel
-from utils import (get_current_time_str, get_elapsed_time_str, get_local_data,
-                   get_masked_index, load_mask_image, load_sample,
-                   save_dataset_path, set_tensorboard)
+from utils import (
+    extract_local_data,
+    get_current_time_str,
+    get_elapsed_time_str,
+    get_masked_index,
+    load_mask_image,
+    load_sample,
+    save_dataset_path,
+    set_tensorboard,
+)
 
 # logger setting
 current_time = get_current_time_str()
@@ -208,18 +219,18 @@ def get_local_samples(
 
     if (is_flip) and (np.random.rand() < params_dict["flip_prob"]):
         # image apply horizontal flip
-        X_train_local_array, y_train_local_array = get_local_data(
+        X_train_local_list, y_train_local_list = extract_local_data(
             X_image[:, ::-1, :],
             y_dens[:, ::-1],
             params_dict,
             is_flip=True,
         )
     else:
-        X_train_local_array, y_train_local_array = get_local_data(
+        X_train_local_list, y_train_local_list = extract_local_data(
             X_image, y_dens, params_dict, is_flip=False
         )
 
-    return X_train_local_array, y_train_local_array
+    return np.array(X_train_local_list), np.array(y_train_local_list)
 
 
 def train(
@@ -660,9 +671,7 @@ def model_training(
             logger.info(f"Elapsed time: {get_elapsed_time_str(start_time)}")
 
             # check early stopping
-            if (epoch > cfg["min_epochs"]) and (
-                mean_valid_loss > best_valid_loss
-            ):
+            if (epoch > cfg["min_epochs"]) and (mean_valid_loss > best_valid_loss):
                 not_improved_count += 1
             else:
                 # learning is going well

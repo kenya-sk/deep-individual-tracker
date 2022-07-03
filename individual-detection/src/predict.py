@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import sys
 from glob import glob
@@ -16,9 +17,9 @@ from model import DensityModel
 from utils import (
     apply_masking_on_image,
     display_data_info,
+    extract_local_data,
     get_current_time_str,
     get_frame_number_from_path,
-    get_local_data,
     get_masked_index,
     load_image,
     load_mask_image,
@@ -101,42 +102,33 @@ def predict_density_map(
     )
 
     # load local images to be predicted
-    X_local, _ = get_local_data(image, None, cfg, False, index_list)
+    X_local, _ = extract_local_data(image, None, cfg, False, index_list)
 
     # set prediction parameters
     pred_batch_size = cfg["predict_batch_size"]
-    pred_n_batches = int(len(index_list) / pred_batch_size)
+    pred_n_batches = math.ceil(len(index_list) / pred_batch_size)
     pred_dens_map = np.zeros((cfg["image_height"], cfg["image_width"]), dtype="float32")
 
     for batch in range(pred_n_batches):
-        # array of skipped local image
-        X_skip = np.zeros(
-            (
-                pred_batch_size,
-                cfg["local_image_size"],
-                cfg["local_image_size"],
-                cfg["image_channel"],
-            )
-        )
-        for index_coord, index_local in enumerate(range(pred_batch_size)):
-            current_index = index_list[batch * pred_batch_size + index_local]
-            X_skip[index_coord] = X_local[current_index]
+        # extract target indices
+        start_idx = batch * pred_batch_size
+        end_idx = batch * pred_batch_size + pred_batch_size
+        target_idx_list = index_list[start_idx:end_idx]
 
         # predict each local image
         pred_array = tf_session.run(
             model.y,
             feed_dict={
-                model.X: X_skip,
+                model.X: X_local[target_idx_list],
                 model.is_training: False,
                 model.dropout_rate: 0.0,
             },
-        ).reshape(pred_batch_size)
+        ).reshape(len(target_idx_list))
         logger.debug(f"DONE: batch {batch+1}/{pred_n_batches}")
 
-        for batch_idx in range(pred_batch_size):
-            h_pred = cfg["index_h"][index_list[batch * pred_batch_size + batch_idx]]
-            w_pred = cfg["index_w"][index_list[batch * pred_batch_size + batch_idx]]
-            pred_dens_map[h_pred, w_pred] = pred_array[batch_idx]
+        pred_dens_map[
+            cfg["index_h"][target_idx_list], cfg["index_w"][target_idx_list]
+        ] = pred_array
 
     return pred_dens_map
 

@@ -203,7 +203,7 @@ def search(
             elif search_param == "prediction_grid":
                 # create current parameter config
                 param_cfg = copy.deepcopy(cfg)
-                param_cfg["skip_width"] = param
+                param_cfg["skip_pixel_interval"] = param
                 # Predicts a density map with the specified grid size
                 image = load_image(dataset_path_df["input"][i], is_rgb=True)
                 if mask_image is not None:
