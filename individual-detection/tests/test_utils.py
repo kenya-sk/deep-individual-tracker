@@ -9,10 +9,10 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), "../src"))
 from utils import (
     apply_masking_on_image,
+    extract_local_data,
     get_directory_list,
-    get_frame_number_from_path,
+    get_file_name_from_path,
     get_image_shape,
-    get_local_data,
     get_masked_index,
     load_image,
     load_mask_image,
@@ -173,7 +173,7 @@ class TestImageInfo(unittest.TestCase):
 
 
 class TestLocalImage(unittest.TestCase):
-    def test_get_local_data(self):
+    def test_extract_local_data(self):
         params_dict = {
             "image_height": 108,
             "image_width": 192,
@@ -187,21 +187,21 @@ class TestLocalImage(unittest.TestCase):
         }
         image = load_image("./data/demo/demo_image.png")
         density_map = np.load("./data/demo/demo_label.npy")
-        local_image_array, local_density_array = get_local_data(
+        local_image_list, local_density_list = extract_local_data(
             image, density_map, params_dict, is_flip=False
         )
 
         expected_local_data_num = 3
-        self.assertEqual(expected_local_data_num, len(local_image_array))
-        self.assertEqual(expected_local_data_num, len(local_density_array))
+        self.assertEqual(expected_local_data_num, len(local_image_list))
+        self.assertEqual(expected_local_data_num, len(local_density_list))
 
         expected_local_image_shape = (
             params_dict["local_image_size"],
             params_dict["local_image_size"],
             3,
         )
-        self.assertEqual(expected_local_image_shape, local_image_array[0].shape)
-        self.assertEqual(local_density_array.dtype, "float32")
+        self.assertEqual(expected_local_image_shape, local_image_list[0].shape)
+        self.assertEqual("float32", local_image_list[0].dtype)
 
 
 class TestDirectoryList(unittest.TestCase):
@@ -241,11 +241,11 @@ class TestFileSaver(unittest.TestCase):
         self.assertTrue(os.path.isfile(save_path))
 
 
-class TestFrameNumber(unittest.TestCase):
+class TestFileName(unittest.TestCase):
     def test_get_frame_number_from_path(self):
-        path = "./demo/image/903321.png"
-        expected = 903321
-        self.assertEqual(expected, get_frame_number_from_path(path))
+        path = "./demo/image/20170416_903321.png"
+        expected = "20170416_903321"
+        self.assertEqual(expected, get_file_name_from_path(path))
 
 
 if __name__ == "__main__":

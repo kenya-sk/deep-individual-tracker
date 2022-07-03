@@ -7,7 +7,7 @@ mask_path: "/data/image/mask.png"
 # select prediction data type (image or video)
 predict_data_type: "image"
 # interval at which local images are created and predictions are made
-index_extract_type: "grid"
+index_extract_type: "intersect"
 skip_pixel_interval: 10
 # Start and end time of video data (in 1-hour units)
 start_hour: 9

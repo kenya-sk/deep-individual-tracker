@@ -12,6 +12,7 @@ class DensityModel(object):
     The model takes as input a 3-channel image and outputs the value of the density map corresponding to its center.
     The density map represents the likelihood that each individual is present at that location.
     """
+
     def __init__(self):
         # input image
         with tf.name_scope("input"):
@@ -255,7 +256,9 @@ class DensityModel(object):
         )
 
     @staticmethod
-    def __batch_norm(X: tf.Tensor, axes: List, shape: int, is_training: bool) -> tf.Tensor:
+    def __batch_norm(
+        X: tf.Tensor, axes: List, shape: int, is_training: bool
+    ) -> tf.Tensor:
         """Apply batch normalization on each output layer
 
         Args:

@@ -9,7 +9,7 @@ import glob
 import numpy as np
 from sklearn.cluster import MeanShift
 
-from utils import get_current_time_str, get_frame_number_from_path
+from utils import get_current_time_str, get_file_name_from_path
 
 # logger setting
 current_time = get_current_time_str()
@@ -82,7 +82,7 @@ def batch_clustering(
         )
 
         # save clustering result
-        frame_number = get_frame_number_from_path(path)
+        frame_number = get_file_name_from_path(path)
         save_path = f"{save_directory}/{frame_number}.csv"
         np.savetxt(
             save_path,

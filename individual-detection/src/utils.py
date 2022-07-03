@@ -519,19 +519,18 @@ def get_directory_list(root_path: str) -> List:
     return directory_list
 
 
-def get_frame_number_from_path(path: str) -> int:
-    """Get frame number from file path.
-    ex) path="./tmp/20111.png" -> frame_number=20111
+def get_file_name_from_path(path: str) -> int:
+    """Get file name from file path.
+    ex) path="./tmp/20170416_20111.png" -> file_name=20170416_20111
 
     Args:
         path (str): file path
 
     Returns:
-        int: extracted frame number
+        int: extracted file name
     """
     file_name = path.split("/")[-1]
-    frame_num = int(file_name.split(".")[0])
-    return frame_num
+    return file_name.split(".")[0]
 
 
 def save_dataset_path(X_path_list: List, y_path_list: List, save_path: str) -> None:

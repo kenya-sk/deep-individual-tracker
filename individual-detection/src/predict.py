@@ -19,7 +19,7 @@ from utils import (
     display_data_info,
     extract_local_data,
     get_current_time_str,
-    get_frame_number_from_path,
+    get_file_name_from_path,
     get_masked_index,
     load_image,
     load_mask_image,
@@ -119,7 +119,7 @@ def predict_density_map(
         pred_array = tf_session.run(
             model.y,
             feed_dict={
-                model.X: X_local[target_idx_list],
+                model.X: X_local[start_idx:end_idx],
                 model.is_training: False,
                 model.dropout_rate: 0.0,
             },
@@ -201,7 +201,7 @@ def batch_prediction(
         if cfg["mask_path"] is not None:
             mask_image = load_mask_image(cfg["mask_path"], normalized=True)
             image = apply_masking_on_image(image, mask_image)
-        frame_num = get_frame_number_from_path(path)
+        frame_num = get_file_name_from_path(path)
         image_prediction(model, tf_session, image, frame_num, output_directory, cfg)
 
     logger.info(f"Predicted {len(image_path_list)} images (path='{input_image_path}')")
