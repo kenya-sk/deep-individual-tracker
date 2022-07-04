@@ -1,8 +1,10 @@
 #include "utils.hpp"
+
 #include <ctype.h>
 #include <dirent.h>
 #include <math.h>
 #include <sys/types.h>
+
 #include <algorithm>
 #include <chrono>
 #include <deque>
@@ -289,4 +291,19 @@ int calc_angle(vector<int>& start_point, vector<int>& end_point) {
     degree += 360;
   }
   return (int)degree;
+}
+
+void display_progress_bar(int bar_width, float progress) {
+  cout << "[";
+  int pos = bar_width * progress;
+  for (int i = 0; i < bar_width; ++i) {
+    if (i < pos)
+      cout << "=";
+    else if (i == pos)
+      cout << ">";
+    else
+      cout << " ";
+  }
+  cout << "] " << int(progress * 100.0) << " %\r";
+  cout.flush();
 }

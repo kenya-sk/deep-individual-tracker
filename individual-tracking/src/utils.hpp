@@ -46,3 +46,6 @@ bool is_moved(vector<int>& start_point, vector<int>& end_point);
 
 // calculate the angle between two points.
 int calc_angle(vector<int>& start_point, vector<int>& end_point);
+
+// display progress bar of loop
+void display_progress_bar(int bar_width, float progress);

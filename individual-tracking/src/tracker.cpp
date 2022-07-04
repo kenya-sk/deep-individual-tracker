@@ -1,4 +1,5 @@
 #include "tracker.hpp"
+
 #include <cassert>
 #include <iostream>
 #include <map>
@@ -8,6 +9,7 @@
 #include <opencv2/videoio.hpp>
 #include <tuple>
 #include <vector>
+
 #include "tracking_config.hpp"
 #include "utils.hpp"
 
@@ -215,12 +217,17 @@ StatsResultTuple Tracker::tracking() {
   }
 
   // tracking
+  float progress = 0.0;
+  int bar_width = 50;
   cout << "\n*************** [Start]: Tracking ***************" << endl;
   while (true) {
     capture >> current_frame;
     if (current_frame.empty()) {
       break;
     }
+
+    progress = frame_num / total_frame;
+    display_progress_bar(bar_width, progress);
 
     frame_num++;
     frame_vec.push_back(frame_num);
