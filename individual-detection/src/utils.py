@@ -384,15 +384,15 @@ def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
         Tuple: loaded model and tensorflow session
     """
 
-    config = tf.ConfigProto(
-        gpu_options=tf.GPUOptions(
+    config = tf.compat.v1.ConfigProto(
+        gpu_options=tf.compat.v1.GPUOptions(
             visible_device_list=device_id, per_process_gpu_memory_fraction=memory_rate
         )
     )
     sess = InteractiveSession(config=config)
 
     model = DensityModel()
-    saver = tf.train.Saver()
+    saver = tf.compat.v1.train.Saver()
     ckpt = tf.train.get_checkpoint_state(model_path)
     if ckpt:
         last_model = ckpt.model_checkpoint_path
