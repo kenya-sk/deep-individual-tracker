@@ -226,7 +226,7 @@ StatsResultTuple Tracker::tracking() {
       break;
     }
 
-    progress = frame_num / total_frame;
+    progress = float(frame_num) / total_frame;
     display_progress_bar(bar_width, progress);
 
     frame_num++;

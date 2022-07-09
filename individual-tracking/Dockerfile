@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM nvidia/cuda:10.1-devel-ubuntu18.04
 
 WORKDIR /root
 
@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 # Clone, build and install OpenCV
 RUN git clone -b 3.4.0 https://github.com/opencv/opencv.git && \
     cd opencv && mkdir build && cd build && \
-    cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local .. && \
+    cmake -D CMAKE_BUILD_TYPE=Release -D WITH_CUDA=ON -D CMAKE_INSTALL_PREFIX=/usr/local .. && \
     make -j"$(nproc)" && \
     make install && \
     cd ../../ && \

@@ -7,10 +7,11 @@ The execution environment can be build using Docker. In this case, OpenCV versio
 
 ```
 # build docker image
-docker build -t individual-tracking:latest .
+$ docker build -t individual-tracking:latest .
 
-# launch contariner
-docker run -it individual-tracking:latest /bin/bash
+# launch containers in a GPU environment
+# If you need to mount a directory, add it to the command as appropriate.
+$ sudo bash scripts/run_container.sh
 ```
 
 ## Execute Tracking

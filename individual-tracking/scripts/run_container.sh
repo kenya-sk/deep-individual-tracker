@@ -1,0 +1,1 @@
+docker run -it --runtime=nvidia individual-tracking:latest  /bin/bash
