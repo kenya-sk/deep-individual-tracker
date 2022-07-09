@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.1-devel-ubuntu18.04
+FROM ubuntu:18.04
 
 WORKDIR /root
 
