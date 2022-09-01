@@ -44,11 +44,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+RANDOM_SEED = 42
+
 
 def load_dataset(
-    image_directory: str,
-    density_directory: str,
-) -> Tuple:
+    image_directory: str, density_directory: str, file_pattern: str = "*.png"
+) -> Tuple[List[str], List[str]]:
     """Load the file name of the data set.
 
     Args:
@@ -56,10 +57,10 @@ def load_dataset(
         density_directory (str): directory name of density map (label)
 
     Returns:
-        Tuple: tuple with image and label filename pairs
+        Tuple[List[str], List[str]]: tuple with image and label filename pairs
     """
     X_list, y_list = [], []
-    file_list = glob(f"{image_directory}/*.png")
+    file_list = glob(f"{image_directory}/{file_pattern}")
     if len(file_list) == 0:
         sys.stderr.write("Error: Not found input image file")
         sys.exit(1)
@@ -77,32 +78,100 @@ def load_dataset(
     return X_list, y_list
 
 
+def load_multi_date_datasets(
+    image_directory: str, density_directory: str, date_list: List[str]
+) -> Tuple[List[str], List[str]]:
+    """Load input and output pairs based on a list of dates
+
+    Args:
+        image_directory (str): directory name of image (input)
+        density_directory (str): directory name of density map (label)
+        date_list (List[str]): list of dates to be used for splitting
+
+    Returns:
+        Tuple[List[str], List[str]]: tuple with image and label filename pairs
+    """
+    X_multi_list, y_multi_list = [], []
+    for date in date_list:
+        file_pattern = f"{date}_*.png"
+        X_list, y_list = load_dataset(image_directory, density_directory, file_pattern)
+        X_multi_list.extend(X_list)
+        y_multi_list.extend(y_list)
+
+    return X_multi_list, y_multi_list
+
+
 def split_dataset(
     X_list: List,
     y_list: List,
     test_size: float,
-    ranodm_state: int = 42,
     save_path_directory: str = None,
-) -> Tuple:
+) -> Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]:
     """Randomly split the dataset into train, validation, and test.
 
     Args:
         X_list (List): input image path list
         y_list (List): label path list
         test_size (float): test data size (0.0 - 1.0)
-        ranodm_state (int, optional): random state of split dataset. Defaults to 42.
         save_path_directory (str, optional): directory name to save the file name of each dataset. Defaults to None.
 
     Returns:
-        Tuple: tuple containing the filenames of train, validation, and test
+        Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]:
+            tuple containing the filenames of train, validation, and test
     """
     # splite dataset into train and test
     X_train, X_test, y_train, y_test = train_test_split(
-        X_list, y_list, test_size=test_size, random_state=ranodm_state
+        X_list, y_list, test_size=test_size, random_state=RANDOM_SEED
     )
     # split dataset into validation and test
     X_valid, X_test, y_valid, y_test = train_test_split(
-        X_test, y_test, test_size=0.5, random_state=ranodm_state
+        X_test, y_test, test_size=0.5, random_state=RANDOM_SEED
+    )
+
+    if save_path_directory is not None:
+        save_dataset_path(
+            X_train, y_train, f"{save_path_directory}/train_dataset_{current_time}.csv"
+        )
+        save_dataset_path(
+            X_valid, y_valid, f"{save_path_directory}/valid_dataset_{current_time}.csv"
+        )
+        save_dataset_path(
+            X_test, y_test, f"{save_path_directory}/test_dataset_{current_time}.csv"
+        )
+
+    return X_train, X_valid, X_test, y_train, y_valid, y_test
+
+
+def split_dataset_by_date(
+    image_directory: str,
+    density_directory: str,
+    train_date_list: List[str],
+    valid_date_list: List[str],
+    test_date_list: List[str],
+    save_path_directory: str = None,
+) -> Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]:
+    """split the dataset by date into train, validation, and test.
+
+    Args:
+        image_directory (str): directory name of image (input)
+        density_directory (str): directory name of density map (label)
+        train_date_list (List[str]): date list of training data
+        valid_date_list (List[str]): date list of validation data
+        test_date_list (List[str]): date list of test data
+        save_path_directory (str, optional): directory name to save the file name of each dataset. Defaults to None.
+
+    Returns:
+        Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]:
+            tuple containing the filenames of train, validation, and test
+    """
+    X_train, y_train = load_multi_date_datasets(
+        image_directory, density_directory, train_date_list
+    )
+    X_valid, y_valid = load_multi_date_datasets(
+        image_directory, density_directory, valid_date_list
+    )
+    X_test, y_test = load_multi_date_datasets(
+        image_directory, density_directory, test_date_list
     )
 
     if save_path_directory is not None:
@@ -121,7 +190,7 @@ def split_dataset(
 
 def hard_negative_mining(
     X: np.array, y: np.array, loss_array: np.array, prams_dict: dict
-) -> Tuple:
+) -> Tuple[np.array, np.array]:
     """Hard negative mining is performed based on the error in each sample.
 
     Args:
@@ -131,7 +200,7 @@ def hard_negative_mining(
         prams_dict (dict): parameter dictionary
 
     Returns:
-        Tuple: tuple of hard negative image and label
+        Tuple[np.array, np.array]: tuple of hard negative image and label
     """
 
     # get index that error is greater than the threshold
@@ -165,7 +234,7 @@ def hard_negative_mining(
 
 def under_sampling(
     local_iamge_array: np.array, density_array: np.array, thresh: float
-) -> Tuple:
+) -> Tuple[np.array, np.array]:
     """Undersampling to avoid unbalanced labels in the data set.
     The ratio of positive to negative examples should be 1:1.
 
@@ -175,7 +244,7 @@ def under_sampling(
         thresh (float): threshold of positive sample
 
     Returns:
-        Tuple: sampled dataset
+        Tuple[np.array, np.array]: sampled dataset
     """
 
     def select(length: int, k: int) -> np.array:
@@ -204,7 +273,7 @@ def under_sampling(
 
 def get_local_samples(
     X_image: np.array, y_dens: np.array, is_flip: bool, params_dict: dict
-) -> Tuple:
+) -> Tuple[np.array, np.array]:
     """Get samples of local images to be input to the model from the image and label pairs.
 
     Args:
@@ -214,7 +283,7 @@ def get_local_samples(
         params_dict (dict): parameter dictionary
 
     Returns:
-        Tuple: local samples array
+        Tuple[np.array, np.array]: local samples array
     """
 
     if (is_flip) and (np.random.rand() < params_dict["flip_prob"]):
@@ -742,14 +811,28 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Loaded config: {cfg}")
 
     # loading train, validation and test dataset
-    X_list, y_list = load_dataset(cfg["image_directory"], cfg["density_directory"])
-    X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
-        X_list,
-        y_list,
-        cfg["test_size"],
-        ranodm_state=42,
-        save_path_directory=cfg["save_dataset_path_directory"],
-    )
+    if cfg["dataset_split_type"] == "random":
+        X_list, y_list = load_dataset(cfg["image_directory"], cfg["density_directory"])
+        X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
+            X_list,
+            y_list,
+            cfg["test_size"],
+            save_path_directory=cfg["save_dataset_path_directory"],
+        )
+    elif cfg["dataset_split_type"] == "timeseries":
+        X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset_by_date(
+            cfg["image_directory"],
+            cfg["density_directory"],
+            cfg["train_date_list"],
+            cfg["valid_date_list"],
+            cfg["test_date_list"],
+            save_path_directory=cfg["save_dataset_path_directory"],
+        )
+    else:
+        logger.error(
+            f"Invalid Dataset Type. (dataset_split_type={cfg['dataset_split_type']})"
+        )
+        sys.exit(1)
     logger.info(f"Training Dataset Size: {len(X_train)}")
     logger.info(f"Validation Dataset Size: {len(X_valid)}")
     logger.info(f"Test Dataset Size: {len(X_test)}")
