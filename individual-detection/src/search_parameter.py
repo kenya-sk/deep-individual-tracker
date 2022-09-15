@@ -189,7 +189,7 @@ def search(
 
             if search_param == "threshold":
                 # load predicted density map
-                predicted_density_map = np.loadtxt(dataset_path_df["predicted"][i], delimiter=",", dtype="int32")
+                predicted_density_map = np.load(dataset_path_df["predicted"][i])
                 # clustering by target threshold
                 predicted_centroid_array = apply_clustering_to_density_map(
                     predicted_density_map, cfg["band_width"], param
