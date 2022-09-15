@@ -14,14 +14,8 @@ from clustering import apply_clustering_to_density_map
 from evaluate import eval_detection, eval_metrics, get_ground_truth
 from model import DensityModel
 from predict import predict_density_map
-from utils import (
-    apply_masking_on_image,
-    get_current_time_str,
-    get_masked_index,
-    load_image,
-    load_mask_image,
-    load_model,
-)
+from utils import (apply_masking_on_image, get_current_time_str,
+                   get_masked_index, load_image, load_mask_image, load_model)
 
 # logger setting
 current_time = get_current_time_str()
@@ -195,7 +189,7 @@ def search(
 
             if search_param == "threshold":
                 # load predicted density map
-                predicted_density_map = np.load(dataset_path_df["predicted"][i])
+                predicted_density_map = np.loadtxt(dataset_path_df["predicted"][i], delimiter=",", dtype="int32")
                 # clustering by target threshold
                 predicted_centroid_array = apply_clustering_to_density_map(
                     predicted_density_map, cfg["band_width"], param

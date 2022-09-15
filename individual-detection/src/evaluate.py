@@ -146,7 +146,7 @@ def evaluate(
     predict_path_list = glob.glob(f"{predict_dirctory}/*.csv")
     for path in tqdm(predict_path_list):
         file_name = path.split("/")[-1]
-        predcit_centroid_array = np.load(path)
+        predcit_centroid_array = np.loadtxt(path, delimiter=",", dtype="int32")
         if predcit_centroid_array.shape[0] == 0:
             # "not" exist detection point case
             logger.info(
