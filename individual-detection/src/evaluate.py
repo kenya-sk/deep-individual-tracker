@@ -8,13 +8,8 @@ from omegaconf import DictConfig, OmegaConf
 from scipy import optimize
 from tqdm import tqdm
 
-from utils import (
-    eval_metrics,
-    get_current_time_str,
-    get_masked_index,
-    load_mask_image,
-    pretty_print,
-)
+from utils import (eval_metrics, get_current_time_str, get_masked_index,
+                   load_mask_image, pretty_print)
 
 # logger setting
 current_time = get_current_time_str()
@@ -151,7 +146,7 @@ def evaluate(
     predict_path_list = glob.glob(f"{predict_dirctory}/*.csv")
     for path in tqdm(predict_path_list):
         file_name = path.split("/")[-1]
-        predcit_centroid_array = np.loadtxt(path, delimiter=",", dtype="int32")
+        predcit_centroid_array = np.load(path)
         if predcit_centroid_array.shape[0] == 0:
             # "not" exist detection point case
             logger.info(
