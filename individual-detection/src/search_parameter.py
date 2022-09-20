@@ -14,8 +14,14 @@ from clustering import apply_clustering_to_density_map
 from evaluate import eval_detection, eval_metrics, get_ground_truth
 from model import DensityModel
 from predict import predict_density_map
-from utils import (apply_masking_on_image, get_current_time_str,
-                   get_masked_index, load_image, load_mask_image, load_model)
+from utils import (
+    apply_masking_on_image,
+    get_current_time_str,
+    get_masked_index,
+    load_image,
+    load_mask_image,
+    load_model,
+)
 
 # logger setting
 current_time = get_current_time_str()
