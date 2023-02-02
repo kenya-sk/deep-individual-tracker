@@ -8,8 +8,12 @@ from omegaconf import DictConfig, OmegaConf
 from scipy import optimize
 from tqdm import tqdm
 
-from utils import (eval_metrics, get_current_time_str, get_masked_index,
-                   load_mask_image, pretty_print)
+from evaluation_metrics import eval_metrics, output_evaluation_report
+from utils import (
+    get_current_time_str,
+    get_masked_index,
+    load_mask_image,
+)
 
 # logger setting
 current_time = get_current_time_str()
@@ -171,15 +175,14 @@ def evaluate(
             sample_number_list.append(sample_number)
 
             # calculate evaluation metrics
-            accuracy, precision, recall, f_measure = eval_metrics(
-                true_pos, false_pos, false_neg, sample_number
-            )
+            basic_metrics = eval_metrics(true_pos, false_pos, false_neg, sample_number)
             logger.info(
-                f"""file_name: {file_name}, Accuracy: {accuracy},
-                Precision: {precision}, Recall: {recall}, F-Measure: {f_measure}"""
+                f"""file_name: {file_name},Accuracy: {basic_metrics.accuracy:.2f},
+                Precision: {basic_metrics.precision:.2f},Recall: {basic_metrics.recall:.2f},
+                F-Measure: {basic_metrics.f_measure:.2f}"""
             )
 
-    pretty_print(
+    output_evaluation_report(
         true_positive_list, false_positive_list, false_negative_list, sample_number_list
     )
 
