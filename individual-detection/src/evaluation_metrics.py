@@ -1,8 +1,8 @@
 import logging
 import sys
+from dataclasses import dataclass
 from typing import List
 
-from dataclasses import dataclass
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -144,18 +144,18 @@ def eval_metrics(
 
 
 def batch_evaluation(
-    true_positive_list: List[float],
-    false_positive_list: List[float],
-    false_negative_list: List[float],
-    sample_num_list: List[float],
+    true_positive_list: List[int],
+    false_positive_list: List[int],
+    false_negative_list: List[int],
+    sample_num_list: List[int],
 ) -> List[BasicMetrics]:
     """Takes a value list containing multiple sample values and calculate a metric for each
 
     Args:
-        true_positive_list (List[float]): true positive number of each sample
-        false_positive_list (List[float]): false positive number of each sample
-        false_negative_list (List[float]): false negative number of each sample
-        sample_num_list (List[float]): sample number of each sample
+        true_positive_list (List[int]): true positive number of each sample
+        false_positive_list (List[int]): false positive number of each sample
+        false_negative_list (List[int]): false negative number of each sample
+        sample_num_list (List[int]): sample number of each sample
 
     Returns:
         List[BasicMetrics]: metrics of each sample
@@ -184,18 +184,18 @@ def calculate_metrics_summury(metrics_list: List[BasicMetrics]) -> MetricsSummur
 
 
 def output_evaluation_report(
-    true_positive_list: List[float],
-    false_positive_list: List[float],
-    false_negative_list: List[float],
-    sample_num_list: List[float],
+    true_positive_list: List[int],
+    false_positive_list: List[int],
+    false_negative_list: List[int],
+    sample_num_list: List[int],
 ) -> None:
     """Outputs a formatted summary of evaluation results to the log.
 
     Args:
-        true_positive_list (List): list containing the number of true-positive in each frame
-        false_positive_list (List): list containing the number of false-positive in each frame
-        false_negative_list (List): list containing the number of false-negative in each frame
-        sample_num_list (List): list containing the number of sample in each frame
+        true_positive_list (List[int]): list containing the number of true-positive in each frame
+        false_positive_list (List[int]): list containing the number of false-positive in each frame
+        false_negative_list (List[int]): list containing the number of false-negative in each frame
+        sample_num_list (List[int]): list containing the number of sample in each frame
     """
     assert (
         len(true_positive_list)
