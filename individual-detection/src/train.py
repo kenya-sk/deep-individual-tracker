@@ -2,7 +2,6 @@ import gc
 import logging
 import sys
 import time
-from glob import glob
 from typing import List, Tuple
 
 import hydra
@@ -21,18 +20,17 @@ from tensorflow.compat.v1.train import Saver
 from tensorflow.python.framework.ops import Tensor as OpsTensor
 from tqdm import trange
 
-from load_dataset import load_dataset, split_dataset, split_dataset_by_date
 from model import DensityModel
-from utils import (
+from process_dataset import (
     extract_local_data,
-    get_current_time_str,
-    get_elapsed_time_str,
     get_masked_index,
+    load_dataset,
     load_mask_image,
     load_sample,
-    save_dataset_path,
-    set_tensorboard,
+    split_dataset,
+    split_dataset_by_date,
 )
+from utils import get_current_time_str, get_elapsed_time_str, set_tensorboard
 
 # logger setting
 current_time = get_current_time_str()

@@ -13,17 +13,18 @@ from tensorflow.compat.v1 import InteractiveSession
 from tqdm import tqdm
 
 from clustering import apply_clustering_to_density_map
-from model import DensityModel
-from utils import (
+from model import DensityModel, load_model
+from process_dataset import (
     apply_masking_on_image,
-    display_data_info,
     extract_local_data,
-    get_current_time_str,
-    get_file_name_from_path,
     get_masked_index,
     load_image,
     load_mask_image,
-    load_model,
+)
+from utils import (
+    display_data_info,
+    get_current_time_str,
+    get_file_name_from_path,
     set_capture,
 )
 
@@ -92,7 +93,6 @@ def predict_density_map(
     image: np.array,
     cfg: dict,
 ) -> np.array:
-
     # set horizontal index
     index_list = extract_prediction_indices(
         cfg["index_h"],

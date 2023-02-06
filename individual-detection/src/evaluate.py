@@ -9,11 +9,8 @@ from scipy import optimize
 from tqdm import tqdm
 
 from evaluation_metrics import eval_metrics, output_evaluation_report
-from utils import (
-    get_current_time_str,
-    get_masked_index,
-    load_mask_image,
-)
+from process_dataset import get_masked_index, load_mask_image
+from utils import get_current_time_str
 
 # logger setting
 current_time = get_current_time_str()

@@ -1,10 +1,13 @@
+import logging
 import math
 import sys
 from typing import List, Tuple
 
 import tensorflow as tf
-from tensorflow.compat.v1 import placeholder, summary
+from tensorflow.compat.v1 import InteractiveSession, placeholder, summary
 from tensorflow.compat.v1.train import AdamOptimizer
+
+logger = logging.getLogger(__name__)
 
 
 class DensityModel(object):
@@ -295,3 +298,37 @@ class DensityModel(object):
             summary.scalar("stddev", stddev)
             summary.scalar("max", tf.reduce_max(var))
             summary.scalar("min", tf.reduce_min(var))
+
+
+def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
+    """Load trained Convolutional Neural Network model that defined by TensorFlow
+
+    Args:
+        model_path (str): path of trained model
+        device_id (str): GPU divice ID
+        memory_rate (float): use rate of GPU memory (0.0-1.0)
+
+    Returns:
+        Tuple: loaded model and tensorflow session
+    """
+
+    config = tf.compat.v1.ConfigProto(
+        gpu_options=tf.compat.v1.GPUOptions(
+            visible_device_list=device_id, per_process_gpu_memory_fraction=memory_rate
+        )
+    )
+    sess = InteractiveSession(config=config)
+
+    model = DensityModel()
+    saver = tf.compat.v1.train.Saver()
+    ckpt = tf.train.get_checkpoint_state(model_path)
+    if ckpt:
+        last_model = ckpt.model_checkpoint_path
+        logger.info("Load model: {}".format(last_model))
+        saver.restore(sess, last_model)
+    else:
+        logger.error("Eroor: Not exist model!")
+        logger.error(f"Please check model_path (model_path={model_path})")
+        sys.exit(1)
+
+    return model, sess
