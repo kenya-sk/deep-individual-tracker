@@ -4,7 +4,8 @@ WORKDIR /root
 
 # create requirements.txt from poetry
 RUN pip install poetry
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml ./
+RUN poetry install
 RUN poetry export -f requirements.txt > requirements.txt
 
 FROM python:3.8.5-slim
@@ -32,4 +33,6 @@ RUN pip install -r requirements.txt
 COPY . .
 
 
-CMD echo 'now ronning...'
+RUN apt-get autoremove -y
+
+CMD ["/bin/bash"]

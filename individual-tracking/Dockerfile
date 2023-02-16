@@ -23,6 +23,8 @@ RUN git clone -b 3.4.0 https://github.com/opencv/opencv.git && \
 
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
 
-ADD . .
+COPY . .
 
-CMD echo "now running..."
+RUN apt-get autoremove -y
+
+CMD ["/bin/bash"]

@@ -16,5 +16,7 @@ COPY --from=builder /workspace/requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-#CMD python src/run_annotator.py
-CMD ["echo", "container running..."]
+
+RUN apt-get autoremove -y
+
+CMD ["/bin/bash"]

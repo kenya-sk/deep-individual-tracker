@@ -1,1 +1,0 @@
-docker run -it individual-tracking:latest  /bin/bash

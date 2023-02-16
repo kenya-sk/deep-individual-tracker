@@ -1,0 +1,30 @@
+version: '3.3'
+services:
+  detection:
+    build: ./individual-detection
+    runtime: nvidia
+    container_name: deep-detection
+    volumes:
+      - /data
+    tty: true
+
+  tracker:
+    build: ./individual-tracking
+    container_name: deep-tracker
+    volumes:
+      - /data
+    tty: true
+
+  monitoring:
+    build: ./stats-monitoring
+    container_name: deep-monitoring
+    volumes:
+      - /data
+    tty: true
+  #
+  # annotator:
+  #   build: ./density-annotator
+  #   container_name: deep-annotator
+  #   volumes:
+  #     - /data
+  #   tty: true
