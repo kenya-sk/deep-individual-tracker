@@ -8,15 +8,12 @@ This model consists of three convolution layers (conv1-conv3), two max-pooling l
 <img src="./data/document/model_architecture.png" alt="model" height= 400 vspace="25" hspace="70">
 
 ## Getting Started
-### Build Environment
-Build a GPU-enabled environment with Docker.
-``` bash
-# build docker image
-$ docker build -t individual-detection:latest .
+### Execution Environment
+Build a GPU-enabled environment with Docker Compose. The directory of `/data` was mounted by docker-compose.
 
+``` bash
 # launch containers in a GPU environment
-# If you need to mount a directory, add it to the command as appropriate.
-$ sudo bash scripts/run_container.sh
+$ docker-compose exec detection /bin/bash
 ``` 
 
 The following python code can be used to check if a GPU is available.

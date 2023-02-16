@@ -19,3 +19,10 @@ The system provides a monitoring environment with the following statistical info
 - Time series plot of average cruising speed
 - Time-series plot of the cumulative number of sudden accelerations
 - Time series plot of the number of individuals detected by the machine learning model
+
+## Build Environment
+``` bash
+# Create an execution environment for each module using docker-compose.
+$ docker-compose build
+$ docker-compose up -d
+```

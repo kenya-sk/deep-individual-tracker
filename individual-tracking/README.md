@@ -2,16 +2,12 @@
 ## Introduction
 Tracking is performed based on the location of the individual detected by 'indevidual-detection'. When tracking, template matching is performed for the neighborhood of the detection point and correspondence is made between frames.
 
-## Build Environment
-The execution environment can be build using Docker. In this case, OpenCV version 3.4.0 is used for execution.
+## Execution Environment
+The execution environment can be build using Docker Comopse. In this case, OpenCV version 3.4.0 is used for execution. The directory of `/data` was mounted by docker-compose.
 
-```
-# build docker image
-$ docker build -t individual-tracking:latest .
-
+``` bash
 # launch countainer
-# If you need to mount a directory, add it to the command as appropriate.
-$ sudo bash scripts/run_container.sh
+$ docker-compose exec tracker /bin/bash
 ```
 
 ## Execute Tracking
