@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+
 #include "timer.hpp"
 #include "tracker.hpp"
 #include "tracking_config.hpp"
@@ -16,7 +17,7 @@ typedef tuple<vector<int>, vector<float>, vector<float>, vector<float>,
 
 int main(int argc, char** argv) {
   TrackingConfig trackingConfig;
-  string config_path = "../conf/tracking_config.cfg";
+  string config_path = "../config/tracking_config.cfg";
   map<string, string> cfg = trackingConfig.config_parser(config_path);
 
   // set timer
