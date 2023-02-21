@@ -1,9 +1,0 @@
-path:
-  image_directory: ""
-  point_coord_directory: ""
-  movie_save_path: ""
-
-movie_format:
-  height:
-  width:
-  fps: 30

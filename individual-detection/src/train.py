@@ -9,27 +9,20 @@ import numpy as np
 import tensorflow as tf
 from omegaconf import DictConfig, OmegaConf
 from sklearn.utils import shuffle
-from tensorflow.compat.v1 import (
-    ConfigProto,
-    GPUOptions,
-    InteractiveSession,
-    global_variables_initializer,
-)
+from tensorflow.compat.v1 import (ConfigProto, GPUOptions, InteractiveSession,
+                                  global_variables_initializer)
 from tensorflow.compat.v1.summary import FileWriter
 from tensorflow.compat.v1.train import Saver
 from tensorflow.python.framework.ops import Tensor as OpsTensor
 from tqdm import trange
 
+from constatns import (CONFIG_DIR, DATA_DIR, FRAME_CHANNEL, FRAME_HEIGHT,
+                       FRAME_WIDTH, GPU_DEVICE_ID, GPU_MEMORY_RATE,
+                       LOCAL_IMAGE_SIZE, TRAIN_CONFIG_NAME)
 from model import DensityModel
-from process_dataset import (
-    extract_local_data,
-    get_masked_index,
-    load_dataset,
-    load_mask_image,
-    load_sample,
-    split_dataset,
-    split_dataset_by_date,
-)
+from process_dataset import (extract_local_data, get_masked_index,
+                             load_dataset, load_mask_image, load_sample,
+                             split_dataset, split_dataset_by_date)
 from utils import get_current_time_str, get_elapsed_time_str, set_tensorboard
 
 # logger setting
@@ -44,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 def hard_negative_mining(
-    X: np.array, y: np.array, loss_array: np.array, prams_dict: dict
+    X: np.array, y: np.array, loss_array: np.array
 ) -> Tuple[np.array, np.array]:
     """Hard negative mining is performed based on the error in each sample.
 
@@ -52,7 +45,6 @@ def hard_negative_mining(
         X (np.array): array of local image
         y (np.array): array of density map
         loss_array (np.array): array of each sample loss
-        prams_dict (dict): parameter dictionary
 
     Returns:
         Tuple[np.array, np.array]: tuple of hard negative image and label
@@ -76,7 +68,7 @@ def hard_negative_mining(
     thresh = np.mean(loss_array) * 3
     index = hard_negative_index(loss_array, thresh)
     hard_negative_image_array = np.zeros(
-        (len(index), prams_dict["local_image_size"], prams_dict["local_image_size"], 3),
+        (len(index), LOCAL_IMAGE_SIZE, LOCAL_IMAGE_SIZE, FRAME_CHANNEL),
         dtype="uint8",
     )
     hard_negative_label_array = np.zeros((len(index)), dtype="float32")
@@ -188,16 +180,16 @@ def train(
     # initialization of training
     train_loss = 0.0
     input_image_shape = (
-        params_dict["image_height"],
-        params_dict["image_width"],
-        params_dict["image_channel"],
+        FRAME_HEIGHT,
+        FRAME_WIDTH,
+        FRAME_CHANNEL,
     )
     hard_negative_image_array = np.zeros(
         (
             1,
-            params_dict["local_image_size"],
-            params_dict["local_image_size"],
-            params_dict["image_channel"],
+            LOCAL_IMAGE_SIZE,
+            LOCAL_IMAGE_SIZE,
+            FRAME_CHANNEL,
         ),
         dtype="uint8",
     )
@@ -241,9 +233,9 @@ def train(
         hard_negative_image_array = np.zeros(
             (
                 1,
-                params_dict["local_image_size"],
-                params_dict["local_image_size"],
-                params_dict["image_channel"],
+                LOCAL_IMAGE_SIZE,
+                LOCAL_IMAGE_SIZE,
+                FRAME_CHANNEL,
             ),
             dtype="uint8",
         )
@@ -259,9 +251,9 @@ def train(
                 feed_dict={
                     model.X: X_train_local[train_start_index:train_end_index].reshape(
                         -1,
-                        params_dict["local_image_size"],
-                        params_dict["local_image_size"],
-                        params_dict["image_channel"],
+                        LOCAL_IMAGE_SIZE,
+                        LOCAL_IMAGE_SIZE,
+                        FRAME_CHANNEL,
                     ),
                     model.y_: y_train_local[train_start_index:train_end_index].reshape(
                         -1, 1
@@ -282,7 +274,6 @@ def train(
                 X_train_local[train_start_index:train_end_index],
                 y_train_local[train_start_index:train_end_index],
                 train_diff,
-                params_dict,
             )
             # if exist hard negative sample in current batch, append in management array
             if (
@@ -339,9 +330,9 @@ def validation(
 
     valid_loss = 0.0
     input_image_shape = (
-        params_dict["image_height"],
-        params_dict["image_width"],
-        params_dict["image_channel"],
+        FRAME_HEIGHT,
+        FRAME_WIDTH,
+        LOCAL_IMAGE_SIZE,
     )
     sample_number = len(X_valid)
     for valid_idx in trange(sample_number, desc=f"Model Validation [epoch={epoch+1}]"):
@@ -377,9 +368,9 @@ def validation(
                 feed_dict={
                     model.X: X_valid_local[valid_start_index:valid_end_index].reshape(
                         -1,
-                        params_dict["local_image_size"],
-                        params_dict["local_image_size"],
-                        params_dict["image_channel"],
+                        LOCAL_IMAGE_SIZE,
+                        LOCAL_IMAGE_SIZE,
+                        FRAME_CHANNEL,
                     ),
                     model.y_: y_valid_local[valid_start_index:valid_end_index].reshape(
                         -1, 1
@@ -432,9 +423,9 @@ def test(
 
     test_loss = 0.0
     input_image_shape = (
-        params_dict["image_height"],
-        params_dict["image_width"],
-        params_dict["image_channel"],
+        FRAME_HEIGHT,
+        FRAME_WIDTH,
+        FRAME_CHANNEL,
     )
     sample_number = len(X_test)
     for test_idx in trange(sample_number, desc="Test Trained Model"):
@@ -465,9 +456,9 @@ def test(
                 feed_dict={
                     model.X: X_test_local[test_start_index:test_end_index].reshape(
                         -1,
-                        params_dict["local_image_size"],
-                        params_dict["local_image_size"],
-                        params_dict["image_channel"],
+                        LOCAL_IMAGE_SIZE,
+                        LOCAL_IMAGE_SIZE,
+                        FRAME_CHANNEL,
                     ),
                     model.y_: y_test_local[test_start_index:test_end_index].reshape(
                         -1, 1
@@ -516,8 +507,8 @@ def model_training(
     # start TensorFlow session
     tf_config = ConfigProto(
         gpu_options=GPUOptions(
-            visible_device_list=cfg["use_gpu_device"],
-            per_process_gpu_memory_fraction=cfg["use_memory_rate"],
+            visible_device_list=GPU_DEVICE_ID,
+            per_process_gpu_memory_fraction=GPU_MEMORY_RATE,
         )
     )
     tf_session = InteractiveSession(config=tf_config)
@@ -527,7 +518,7 @@ def model_training(
 
     # Tensor Board setting
     summuray_merged, train_writer, valid_writer, test_writer = set_tensorboard(
-        cfg["tensorboard_directory"], current_time, tf_session
+        DATA_DIR / cfg["tensorboard_directory"], current_time, tf_session
     )
 
     # get mask index
@@ -553,7 +544,9 @@ def model_training(
         global_variables_initializer().run()
 
     # training model
-    save_model_path = f"{cfg['save_trained_model_directory']}/{current_time}/model.ckpt"
+    save_model_path = (
+        f"{DATA_DIR}/{cfg['save_trained_model_directory']}/{current_time}/model.ckpt"
+    )
     start_time = time.time()
     best_valid_loss = sys.float_info.max
     not_improved_count = 0
@@ -650,7 +643,7 @@ def model_training(
         logger.info("stop training and  save model")
         saver.save(
             tf_session,
-            f"{cfg['save_trained_model_directory']}/{current_time}/model.ckpt",
+            f"{DATA_DIR}/{cfg['save_trained_model_directory']}/{current_time}/model.ckpt",
         )
 
     # close all writer and session
@@ -660,16 +653,20 @@ def model_training(
     tf_session.close()
 
 
-@hydra.main(config_path="../conf", config_name="train")
+@hydra.main(config_path=CONFIG_DIR, config_name=TRAIN_CONFIG_NAME)
 def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
 
     # loading train, validation and test dataset
     logger.info("Loading Dataset...")
-    save_dataset_path_directory = f"cfg['save_dataset_path_directory']/{current_time}"
+    save_dataset_path_directory = (
+        f"{DATA_DIR}/cfg['save_dataset_path_directory']/{current_time}"
+    )
     if cfg["dataset_split_type"] == "random":
-        X_list, y_list = load_dataset(cfg["image_directory"], cfg["density_directory"])
+        X_list, y_list = load_dataset(
+            DATA_DIR / cfg["image_directory"], DATA_DIR / cfg["density_directory"]
+        )
         X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
             X_list,
             y_list,
@@ -678,8 +675,8 @@ def main(cfg: DictConfig) -> None:
         )
     elif cfg["dataset_split_type"] == "timeseries":
         X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset_by_date(
-            cfg["image_directory"],
-            cfg["density_directory"],
+            DATA_DIR / cfg["image_directory"],
+            DATA_DIR / cfg["density_directory"],
             cfg["train_date_list"],
             cfg["valid_date_list"],
             cfg["test_date_list"],

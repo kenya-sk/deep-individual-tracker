@@ -11,15 +11,13 @@ from tensorflow.compat.v1 import InteractiveSession
 from tqdm import tqdm
 
 from clustering import apply_clustering_to_density_map
+from constatns import (CONFIG_DIR, DATA_DIR, GPU_DEVICE_ID, GPU_MEMORY_RATE,
+                       SEARCH_PARAMETER_CONFIG_NAME)
 from evaluate import eval_detection, eval_metrics, get_ground_truth
 from model import DensityModel, load_model
 from predict import predict_density_map
-from process_dataset import (
-    apply_masking_on_image,
-    get_masked_index,
-    load_image,
-    load_mask_image,
-)
+from process_dataset import (apply_masking_on_image, get_masked_index,
+                             load_image, load_mask_image)
 from utils import get_current_time_str
 
 # logger setting
@@ -249,7 +247,7 @@ def search(
         params_store.store_percentile_results()
 
     # save search result
-    save_path = f"{cfg['save_directory']}/search_result_{search_param}.csv"
+    save_path = f"{DATA_DIR}/{cfg['save_directory']}/search_result_{search_param}.csv"
     params_store.save_results(save_path)
 
 
@@ -281,7 +279,7 @@ def search_parameter(
         logger.info(f"Completed: {param}")
 
 
-@hydra.main(config_path="../conf", config_name="search_parameter")
+@hydra.main(config_path=CONFIG_DIR, config_name=SEARCH_PARAMETER_CONFIG_NAME)
 def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
@@ -305,9 +303,9 @@ def main(cfg: DictConfig) -> None:
     # load trained model
     if "prediction_grid" in cfg["search_params"].keys():
         model, tf_session = load_model(
-            cfg["trained_model_directory"],
-            cfg["use_gpu_device"],
-            cfg["use_memory_rate"],
+            DATA_DIR / cfg["trained_model_directory"],
+            GPU_DEVICE_ID,
+            GPU_MEMORY_RATE,
         )
     else:
         model, tf_session = None, None

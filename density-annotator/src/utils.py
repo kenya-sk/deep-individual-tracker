@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from glob import glob
+from pathlib import Path
 from typing import List
 
 import cv2
@@ -14,16 +15,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_path_list(path: str, working_directory: str = "") -> List:
+def get_path_list(working_directory: Path, path: str) -> List:
     """
     Takes a file or directory path and creates a list of full paths.
 
-    :param path: input path that file or directory
     :param working_directory: current working directory.
         if input path provided full path, set an empty string.
+    :param path: input path that file or directory
     :return: full path list
     """
-    full_path = os.path.join(working_directory, path)
+    full_path = working_directory / path
     if os.path.isfile(full_path):
         path_list = [full_path]
     elif os.path.isdir(full_path):
@@ -35,7 +36,7 @@ def get_path_list(path: str, working_directory: str = "") -> List:
     return path_list
 
 
-def get_full_path_list(current_working_dirc: str, relative_path_list: List):
+def get_full_path_list(current_working_dirc: Path, relative_path_list: List):
     """
     Join the current working directory name and relative path to get a list of full paths.
 
@@ -43,9 +44,7 @@ def get_full_path_list(current_working_dirc: str, relative_path_list: List):
     :param relative_path_list: list of relative paths to be converted
     :return: List of converted full path
     """
-    full_path_list = [
-        os.path.join(current_working_dirc, path) for path in relative_path_list
-    ]
+    full_path_list = [current_working_dirc / path for path in relative_path_list]
     return full_path_list
 
 

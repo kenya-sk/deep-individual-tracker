@@ -7,6 +7,8 @@ import tensorflow as tf
 from tensorflow.compat.v1 import InteractiveSession, placeholder, summary
 from tensorflow.compat.v1.train import AdamOptimizer
 
+from constatns import GPU_DEVICE_ID, GPU_MEMORY_RATE
+
 logger = logging.getLogger(__name__)
 
 
@@ -300,13 +302,11 @@ class DensityModel(object):
             summary.scalar("min", tf.reduce_min(var))
 
 
-def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
+def load_model(model_path: str) -> Tuple:
     """Load trained Convolutional Neural Network model that defined by TensorFlow
 
     Args:
         model_path (str): path of trained model
-        device_id (str): GPU divice ID
-        memory_rate (float): use rate of GPU memory (0.0-1.0)
 
     Returns:
         Tuple: loaded model and tensorflow session
@@ -314,7 +314,8 @@ def load_model(model_path: str, device_id: str, memory_rate: float) -> Tuple:
 
     config = tf.compat.v1.ConfigProto(
         gpu_options=tf.compat.v1.GPUOptions(
-            visible_device_list=device_id, per_process_gpu_memory_fraction=memory_rate
+            visible_device_list=GPU_DEVICE_ID,
+            per_process_gpu_memory_fraction=GPU_MEMORY_RATE,
         )
     )
     sess = InteractiveSession(config=config)

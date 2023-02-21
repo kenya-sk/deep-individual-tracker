@@ -7,6 +7,8 @@ import pandas as pd
 import seaborn as sns
 from omegaconf import DictConfig
 
+from constants import DATA_DIR, FRAME_HEIGHT, FRAME_WIDTH
+
 
 def load_one_hour_density(coord_dirc: str, end_frame_num: int) -> pd.DataFrame:
     """Load the density over the past 1 hour
@@ -50,7 +52,7 @@ def set_frame(
         one_hour_density_df (pd.DataFrame): DataFrame containing past 1 hour coordinates
         ax (plt.axis): matplotlib figure axis of frame
     """
-    frame_path = os.path.join(cfg["path"]["frame_directory"], f"{frame_num}.png")
+    frame_path = DATA_DIR / f"cfg['path']['frame_directory']/{frame_num}.png"
     if os.path.isfile(frame_path):
         frame = cv2.imread(frame_path)
     else:
@@ -88,6 +90,6 @@ def set_frame(
         )
 
     # set frame config
-    ax.set_xlim(0, cfg["frame"]["width"])
-    ax.set_ylim(cfg["frame"]["height"], 0)
+    ax.set_xlim(0, FRAME_WIDTH)
+    ax.set_ylim(FRAME_HEIGHT, 0)
     ax.axis("off")

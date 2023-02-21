@@ -1,11 +1,11 @@
-import cv2
-import numpy as np
 import unittest
 
+import cv2
+import numpy as np
 from utils import (
-    get_path_list,
     get_full_path_list,
     get_input_data_type,
+    get_path_list,
     load_image,
     load_video,
 )
@@ -16,14 +16,14 @@ class TestPathList(unittest.TestCase):
         exist_file_name = "demo.png"
         working_directory = "../data/demo/inputs"
         expected = ["../data/demo/inputs/demo.png"]
-        actual = get_path_list(exist_file_name, working_directory)
+        actual = get_path_list(working_directory, exist_file_name)
         self.assertEqual(expected, actual, "It is not a list of expected files.")
 
     def test_get_path_list_directory_case(self):
         exist_directory_name = "inputs"
         working_directory = "../data/demo"
         expected = ["../data/demo/inputs/demo.png", "../data/demo/inputs/demo2.jpg"]
-        actual = get_path_list(exist_directory_name, working_directory)
+        actual = get_path_list(working_directory, exist_directory_name)
         # Change the order of elements to ensure a match
         expected = expected.sort()
         actual = actual.sort()
@@ -33,7 +33,7 @@ class TestPathList(unittest.TestCase):
         not_exist_file_name = "not_exist_file.png"
         working_directory = "../data/demo/inputs"
         with self.assertRaises(SystemExit):
-            get_path_list(not_exist_file_name, working_directory)
+            get_path_list(working_directory, not_exist_file_name)
 
     def test_full_path_list(self):
         current_working_dirc = "/home/ubuntu/demo"

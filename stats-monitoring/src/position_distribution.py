@@ -1,6 +1,5 @@
 import os
 import sys
-
 # [FIXME] support displot or kdeplot
 import warnings
 from glob import glob
@@ -10,6 +9,9 @@ import pandas as pd
 import seaborn as sns
 from omegaconf import DictConfig
 from tqdm import tqdm
+
+from constants import (DATA_DIR, FIGURE_HEIGHT, FIGURE_WIDTH, FRAME_HEIGHT,
+                       FRAME_WIDTH)
 
 warnings.resetwarnings()
 warnings.simplefilter("ignore", FutureWarning)
@@ -26,9 +28,7 @@ def load_current_coordinate(cfg: DictConfig, frame_num: int) -> pd.DataFrame:
         pd.DataFrame: DataFrame of current frame distribution
     """
     # Each coordinate is defined by the column names "x" and "y"
-    coordinate_path = os.path.join(
-        cfg["path"]["coordinate_directory"], f"{frame_num}.csv"
-    )
+    coordinate_path = DATA_DIR / f"cfg['path']['coordinate_directory']/{frame_num}.csv"
     if os.path.isfile(coordinate_path):
         coordinate_df = pd.read_csv(coordinate_path)
         coordinate_df.columns = ["x", "y"]
@@ -48,12 +48,11 @@ def load_past_coordinate(cfg: DictConfig) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame of past distribution
     """
-    if os.path.isdir(cfg["path"]["past_coordinate_directory"]):
-        coordinate_path_lst = glob(f'{cfg["path"]["past_coordinate_directory"]}/*.csv')
+    past_dir = DATA_DIR / cfg["path"]["past_coordinate_directory"]
+    if os.path.isdir(past_dir):
+        coordinate_path_lst = glob(f"{past_dir}/*.csv")
     else:
-        print(
-            f'[ERROR] Not Exist Directory: {cfg["path"]["past_coordinate_directory"]}'
-        )
+        print(f"[ERROR] Not Exist Directory: {past_dir}")
         sys.exit(1)
 
     past_coordinate_dctlst = {"x": [], "y": []}
@@ -83,7 +82,7 @@ def set_histogram(
     """
     # plot X-axis histogram
     # set X-axis histogram bin number
-    x_bins = int(cfg["figure"]["width"] / cfg["histogram"]["x_bin_granularity"])
+    x_bins = int(FIGURE_WIDTH / cfg["histogram"]["x_bin_granularity"])
 
     # past 1 hour distribution
     sns.distplot(
@@ -112,7 +111,7 @@ def set_histogram(
     )
 
     # set X-axis histogram parameters
-    x_ax.set_xlim(0, cfg["frame"]["width"])
+    x_ax.set_xlim(0, FRAME_WIDTH)
     x_ax.tick_params(
         labelbottom=False,
         labelleft=False,
@@ -126,7 +125,7 @@ def set_histogram(
 
     # plot Y-axis histogram
     # set Y-axis histogram bin number
-    y_bins = int(cfg["figure"]["height"] / cfg["histogram"]["y_bin_granularity"])
+    y_bins = int(FIGURE_HEIGHT / cfg["histogram"]["y_bin_granularity"])
 
     # past 1 hour distribution
     sns.distplot(
@@ -158,7 +157,7 @@ def set_histogram(
 
     # set Y-axis histogram parameters
     y_ax.legend(bbox_to_anchor=(0.5, 1.3), loc="upper center")
-    y_ax.set_ylim(0, cfg["frame"]["height"])
+    y_ax.set_ylim(0, FRAME_HEIGHT)
     y_ax.invert_xaxis()
     y_ax.invert_yaxis()
     y_ax.tick_params(
