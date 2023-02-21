@@ -13,20 +13,13 @@ from tensorflow.compat.v1 import InteractiveSession
 from tqdm import tqdm
 
 from clustering import apply_clustering_to_density_map
+from constatns import (CONFIG_DIR, DATA_DIR, FRAME_HEIGHT, FRAME_WIDTH,
+                       GPU_DEVICE_ID, GPU_MEMORY_RATE, PREDICT_CONFIG_NAME)
 from model import DensityModel, load_model
-from process_dataset import (
-    apply_masking_on_image,
-    extract_local_data,
-    get_masked_index,
-    load_image,
-    load_mask_image,
-)
-from utils import (
-    display_data_info,
-    get_current_time_str,
-    get_file_name_from_path,
-    set_capture,
-)
+from process_dataset import (apply_masking_on_image, extract_local_data,
+                             get_masked_index, load_image, load_mask_image)
+from utils import (display_data_info, get_current_time_str,
+                   get_file_name_from_path, set_capture)
 
 # logger setting
 current_time = get_current_time_str()
@@ -107,7 +100,7 @@ def predict_density_map(
     # set prediction parameters
     pred_batch_size = cfg["predict_batch_size"]
     pred_n_batches = math.ceil(len(index_list) / pred_batch_size)
-    pred_dens_map = np.zeros((cfg["image_height"], cfg["image_width"]), dtype="float32")
+    pred_dens_map = np.zeros((FRAME_HEIGHT, FRAME_WIDTH), dtype="float32")
 
     for batch in range(pred_n_batches):
         # extract target indices
@@ -263,20 +256,21 @@ def video_prediction(
     tf_session.close()
 
 
-@hydra.main(config_path="../conf", config_name="predict")
+@hydra.main(config_path=CONFIG_DIR, config_name=PREDICT_CONFIG_NAME)
 def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
 
     # set valid image index information
-    mask_image = load_mask_image(cfg["mask_path"], normalized=True)
+    mask_image = load_mask_image(DATA_DIR / cfg["mask_path"], normalized=True)
     index_h, index_w = get_masked_index(mask_image, cfg, horizontal_flip=False)
+    # [TODO] create another config dictionary
     cfg["index_h"] = index_h
     cfg["index_w"] = index_w
 
     # load trained model
     model, tf_session = load_model(
-        cfg["trained_model_directory"], cfg["use_gpu_device"], cfg["use_memory_rate"]
+        DATA_DIR / cfg["trained_model_directory"], GPU_DEVICE_ID, GPU_MEMORY_RATE
     )
 
     predict_data_type = cfg["predict_data_type"]

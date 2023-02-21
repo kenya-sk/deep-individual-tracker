@@ -7,15 +7,9 @@ import numpy as np
 from constants import DATA_DIR, IMAGE_EXTENTION
 from omegaconf import DictConfig
 from tqdm import tqdm
-from utils import (
-    get_input_data_type,
-    get_path_list,
-    load_image,
-    load_video,
-    save_coordinate,
-    save_density_map,
-    save_image,
-)
+
+from utils import (get_input_data_type, get_path_list, load_image, load_video,
+                   save_coordinate, save_density_map, save_image)
 
 # logging setting
 logging.basicConfig(
@@ -63,8 +57,8 @@ class DensityAnnotator:
         # set file path
         self.input_file_path = None
         self.input_file_path_list = get_path_list(DATA_DIR, cfg.path.input_file_path)
-        self.save_raw_image_dir = os.path.join(DATA_DIR, cfg.path.save_raw_image_dir)
-        self.save_annotated_dir = os.path.join(DATA_DIR, cfg.path.save_annotated_dir)
+        self.save_raw_image_dir = DATA_DIR / cfg.path.save_raw_image_dir
+        self.save_annotated_dir = DATA_DIR / cfg.path.save_annotated_dir
         self.save_image_extension = IMAGE_EXTENTION
         self.save_annotated_image_dir = f"{self.save_annotated_dir}/image"
         self.save_annotated_coord_dir = f"{self.save_annotated_dir}/coord"

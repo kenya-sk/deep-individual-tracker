@@ -9,8 +9,10 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-RANDOM_SEED = 42
-
+from constatns import (ANALYSIS_HEIGHT_MAX, ANALYSIS_HEIGHT_MIN,
+                       ANALYSIS_WIDTH_MAX, ANALYSIS_WIDTH_MIN, FRAME_CHANNEL,
+                       FRAME_HEIGHT, FRAME_WIDTH, IMAGE_EXTENTION,
+                       LOCAL_IMAGE_SIZE, RANDOM_SEED)
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ def load_dataset(
 
     for path in file_list:
         # get label path from input image path
-        density_file_name = path.replace(".png", ".npy").split("/")[-1]
+        density_file_name = path.replace(IMAGE_EXTENTION, ".npy").split("/")[-1]
         density_path = f"{density_directory}/{density_file_name}"
 
         # store input and label path
@@ -60,7 +62,7 @@ def load_multi_date_datasets(
     """
     X_multi_list, y_multi_list = [], []
     for date in date_list:
-        file_pattern = f"{date}_*.png"
+        file_pattern = f"{date}_*{IMAGE_EXTENTION}"
         X_list, y_list = load_dataset(image_directory, density_directory, file_pattern)
         X_multi_list.extend(X_list)
         y_multi_list.extend(y_list)
@@ -220,7 +222,7 @@ def load_sample(
     image={X_image.shape[:2]}, density map={y_dens.shape}"
 
     if mask_image is not None:
-        X_image = apply_masking_on_image(X_image, mask_image, channel=3)
+        X_image = apply_masking_on_image(X_image, mask_image, channel=FRAME_CHANNEL)
         y_dens = apply_masking_on_image(y_dens, mask_image, channel=1)
 
     return X_image, y_dens
@@ -274,34 +276,27 @@ def apply_masking_on_image(
     return masked_image
 
 
-def get_masked_index(
-    mask: np.array, params_dict: dict, horizontal_flip: bool = False
-) -> Tuple:
+def get_masked_index(mask: np.array, horizontal_flip: bool = False) -> Tuple:
     """Masking an image to get valid index
 
     Args:
         mask (np.array): binay mask image
-        params_dict (dict): dictionary of parameters
         horizontal_flip (bool, optional): Whether to perform data augumentation. Defaults to False.
 
     Returns:
         Tuple: valid index list (heiht and width)
     """
     if mask is None:
-        mask = np.ones((params_dict["image_height"], params_dict["image_width"]))
+        mask = np.ones((FRAME_HEIGHT, FRAME_WIDTH))
 
     # convert gray scale image
-    if (len(mask.shape) == 3) and (mask.shape[2] == 3):
+    if (len(mask.shape) == 3) and (mask.shape[2] > 1):
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
     # crop the image to the analysis area
     mask = mask[
-        params_dict["analysis_image_height_min"] : params_dict[
-            "analysis_image_height_max"
-        ],
-        params_dict["analysis_image_width_min"] : params_dict[
-            "analysis_image_width_max"
-        ],
+        ANALYSIS_HEIGHT_MIN:ANALYSIS_HEIGHT_MAX,
+        ANALYSIS_WIDTH_MIN:ANALYSIS_WIDTH_MAX,
     ]
 
     # index of data augumentation
@@ -356,16 +351,12 @@ def extract_local_data(
     """
     # triming original image
     image = image[
-        params_dict["analysis_image_height_min"] : params_dict[
-            "analysis_image_height_max"
-        ],
-        params_dict["analysis_image_width_min"] : params_dict[
-            "analysis_image_width_max"
-        ],
+        ANALYSIS_HEIGHT_MIN:ANALYSIS_HEIGHT_MAX,
+        ANALYSIS_WIDTH_MIN:ANALYSIS_WIDTH_MAX,
     ]
     height, width, channel = get_image_shape(image)
 
-    pad = math.floor(params_dict["local_image_size"] / 2)
+    pad = math.floor(LOCAL_IMAGE_SIZE / 2)
     pad_image = np.zeros((height + pad * 2, width + pad * 2, channel), dtype="float32")
     pad_image[pad : pad + height, pad : pad + width] = image
 

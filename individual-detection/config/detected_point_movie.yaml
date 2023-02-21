@@ -1,0 +1,4 @@
+# relative path from data directory
+image_directory: "images"
+point_coord_directory: "coord"
+movie_save_path: "movie/detected_sample.mp4"

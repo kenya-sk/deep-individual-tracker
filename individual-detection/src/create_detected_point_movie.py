@@ -10,6 +10,9 @@ import pandas as pd
 from omegaconf import DictConfig
 from tqdm import tqdm
 
+from constatns import (CONFIG_DIR, DATA_DIR, DETECTED_MOVIE_CONFIG_NAME,
+                       FRAME_HEIGHT, FRAME_WIDTH, IMAGE_EXTENTION, MOVIE_FPS)
+
 # logging setting
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
@@ -58,7 +61,6 @@ def create_detected_point_movie(
     image_directory: str,
     point_coord_directory: str,
     movie_save_path: str,
-    format_dict: dict,
 ) -> None:
     """Image data and coordinate data of detection points are load in pairs.
     The detection points are then plotted on the image,
@@ -68,22 +70,21 @@ def create_detected_point_movie(
         image_directory (str): directory that the raw image are stored
         point_coord_directory (str): directory that the detected point coordinate are stored
         movie_save_path (str): path to save output movie
-        format_dict (dict): dictionary of output movie format
     """
 
     output_movie = cv2.VideoWriter(
         movie_save_path,
         cv2.VideoWriter_fourcc("m", "p", "4", "v"),
-        format_dict["fps"],
-        (int(format_dict["width"]), int(format_dict["height"])),
+        MOVIE_FPS,
+        (FRAME_WIDTH, FRAME_HEIGHT),
     )
 
-    image_path_list = glob(f"{image_directory}/*.png")
+    image_path_list = glob(f"{image_directory}/*{IMAGE_EXTENTION}")
     sorted_image_path_list = sort_by_frame_number(image_path_list)
     for path in tqdm(sorted_image_path_list, desc="Create Movie Data"):
         image = cv2.imread(path)
         # The file names of the image and the coordinate data must be the same
-        cood_file_name = path.split("/")[-1].replace(".png", ".csv")
+        cood_file_name = path.split("/")[-1].replace(IMAGE_EXTENTION, ".csv")
         detected_coord = np.loadtxt(
             f"{point_coord_directory}/{cood_file_name}", delimiter=","
         )
@@ -101,7 +102,7 @@ def create_detected_point_movie(
     logger.info("Saved Movie Data in '{movie_save_path}'")
 
 
-@hydra.main(config_path="../conf", config_name="detected_point_movie")
+@hydra.main(config_path=CONFIG_DIR, config_name=DETECTED_MOVIE_CONFIG_NAME)
 def main(cfg: DictConfig) -> None:
     """Create movie data based on the raw image data and
     the series of detected points data
@@ -113,16 +114,11 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Loaded config: {cfg}")
 
     # get path from config file
-    image_directory = cfg.path.image_directory
-    point_coord_directory = cfg.path.point_coord_directory
-    movie_save_path = cfg.path.movie_save_path
+    image_directory = DATA_DIR / cfg.image_directory
+    point_coord_directory = DATA_DIR / cfg.point_coord_directory
+    movie_save_path = DATA_DIR / cfg.movie_save_path
 
-    # get movie format from config file
-    format_dict = cfg.movie_format
-
-    create_detected_point_movie(
-        image_directory, point_coord_directory, movie_save_path, format_dict
-    )
+    create_detected_point_movie(image_directory, point_coord_directory, movie_save_path)
 
 
 if __name__ == "__main__":

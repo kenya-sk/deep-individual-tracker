@@ -5,9 +5,11 @@ from typing import List
 
 import cv2
 import hydra
-from constants import CONFIG_DIR, DATA_DIR, IMAGE_EXTENTION, SAMPLER_CONFIG_NAME
+from constants import (CONFIG_DIR, DATA_DIR, IMAGE_EXTENTION,
+                       SAMPLER_CONFIG_NAME)
 from omegaconf import DictConfig
 from tqdm import tqdm
+
 from utils import get_full_path_list, load_video, save_image
 
 # logging setting
@@ -109,7 +111,7 @@ def run_sampler(cfg: DictConfig) -> None:
     """
     logger.info(f"Loaded config: {cfg}")
     input_video_list = get_full_path_list(DATA_DIR, cfg.path.input_video_list)
-    save_frame_dirc = os.path.join(DATA_DIR, cfg.path.save_frame_dirc)
+    save_frame_dirc = DATA_DIR / cfg.path.save_frame_dirc
 
     # execute frame sampler
     frame_sampler(input_video_list, save_frame_dirc, cfg.sampling_type, cfg.sample_rate)
