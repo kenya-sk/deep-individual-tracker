@@ -4,7 +4,7 @@ import sys
 
 import cv2
 import numpy as np
-from constants import DATA_DIR, IMAGE_EXTENTION
+from constants import DATA_DIR, IMAGE_EXTENTION, Q_KEY, P_KEY, D_KEY, S_KEY
 from omegaconf import DictConfig
 from tqdm import tqdm
 
@@ -16,12 +16,6 @@ logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
 )
 logger = logging.getLogger(__name__)
-
-# define control key
-Q_KEY = 0x71  # q key (end)
-P_KEY = 0x70  # p key (pause)
-D_KEY = 0x64  # d key (delete)
-S_KEY = 0x73  # s key (save data and restart)
 
 
 class DensityAnnotator:
