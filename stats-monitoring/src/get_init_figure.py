@@ -1,92 +1,79 @@
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
-from omegaconf import DictConfig, open_dict
+from omegaconf import open_dict
+
+from constants import (FIGURE_HEIGHT, FIGURE_WIDTH, FRAME_HEIGHT, FRAME_WIDTH,
+                       GRAPH_FONT_SIZE, GRAPH_HEIGHT, GRAPH_MARGIN, GRAPH_NUM,
+                       GRAPH_WIDTH)
 
 
-def get_init_figure(cfg: DictConfig) -> Tuple[plt.figure, List]:
+def get_init_figure() -> Tuple[plt.figure, List]:
     """Get the figure and the position of each graph
-    used in the monitoring environment based on the config.
-
-    Args:
-        cfg (DictConfig): hydra config for monitoring environment
+    used in the monitoring environment based on the constant values.
 
     Returns:
         Tuple[plt.figure, List]: matplotlib figure, list of each graph axis
     """
-    # load config
-    frame_width = cfg["frame"]["width"]
-    frame_height = cfg["frame"]["height"]
-    x_axis_height = cfg["graph"]["x_axis_height"]
-    y_axis_height = cfg["graph"]["y_axis_height"]
-    stats_graph_num = cfg["graph"]["stats_graph_num"]
-    margin = cfg["graph"]["margin"]
 
     # set figure config
-    plt.rcParams["font.size"] = cfg["graph"]["font_size"]
-    figure_width = frame_width + y_axis_height + 5 * margin
-    figure_height = (
-        frame_height + (x_axis_height + margin) * (stats_graph_num + 1) + 4 * margin
-    )
-    with open_dict(cfg):
-        cfg["figure"]["width"] = figure_width
-        cfg["figure"]["height"] = figure_height
-    fig = plt.figure(figsize=(figure_width / 100, figure_height / 100))
+    plt.rcParams["font.size"] = GRAPH_FONT_SIZE
+    fig = plt.figure(figsize=(FIGURE_WIDTH / 100, FIGURE_HEIGHT / 100))
 
     # set each graph position
     # each axes set [left, bottom, width, height]
     frame_ax = plt.axes(
         [
-            (y_axis_height + 3 * margin) / figure_width,
-            (stats_graph_num * y_axis_height + 5 * margin) / figure_height,
-            frame_width / figure_width,
-            frame_height / figure_height,
+            (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
+            (GRAPH_NUM * GRAPH_WIDTH + 5 * GRAPH_MARGIN) / FIGURE_HEIGHT,
+            FRAME_WIDTH / FIGURE_WIDTH,
+            FRAME_HEIGHT / FIGURE_HEIGHT,
         ]
     )
 
     x_hist_ax = plt.axes(
         [
-            (y_axis_height + 3 * margin) / figure_width,
-            (stats_graph_num * x_axis_height + 6 * margin + frame_height)
-            / figure_height,
-            frame_width / figure_width,
-            x_axis_height / figure_height,
+            (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
+            (GRAPH_NUM * GRAPH_HEIGHT + 6 * GRAPH_MARGIN + FRAME_HEIGHT)
+            / FIGURE_HEIGHT,
+            FRAME_WIDTH / FIGURE_WIDTH,
+            GRAPH_HEIGHT / FIGURE_HEIGHT,
         ]
     )
 
     y_hist_ax = plt.axes(
         [
-            2 * margin / figure_width,
-            (stats_graph_num * y_axis_height + 5 * margin) / figure_height,
-            y_axis_height / figure_width,
-            frame_height / figure_height,
+            2 * GRAPH_MARGIN / FIGURE_WIDTH,
+            (GRAPH_NUM * GRAPH_WIDTH + 5 * GRAPH_MARGIN) / FIGURE_HEIGHT,
+            GRAPH_WIDTH / FIGURE_WIDTH,
+            FRAME_HEIGHT / FIGURE_HEIGHT,
         ]
     )
 
     mean_graph_ax = plt.axes(
         [
-            (y_axis_height + 3 * margin) / figure_width,
-            (2 * y_axis_height + 4 * margin) / figure_height,
-            frame_width / figure_width,
-            x_axis_height / figure_height,
+            (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
+            (2 * GRAPH_WIDTH + 4 * GRAPH_MARGIN) / FIGURE_HEIGHT,
+            FRAME_WIDTH / FIGURE_WIDTH,
+            GRAPH_HEIGHT / FIGURE_HEIGHT,
         ]
     )
 
     acc_graph_ax = plt.axes(
         [
-            (y_axis_height + 3 * margin) / figure_width,
-            (y_axis_height + 3 * margin) / figure_height,
-            frame_width / figure_width,
-            x_axis_height / figure_height,
+            (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
+            (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_HEIGHT,
+            FRAME_WIDTH / FIGURE_WIDTH,
+            GRAPH_HEIGHT / FIGURE_HEIGHT,
         ]
     )
 
     cnt_graph_ax = plt.axes(
         [
-            (y_axis_height + 3 * margin) / figure_width,
-            2 * margin / figure_height,
-            frame_width / figure_width,
-            x_axis_height / figure_height,
+            (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
+            2 * GRAPH_MARGIN / FIGURE_HEIGHT,
+            FRAME_WIDTH / FIGURE_WIDTH,
+            GRAPH_HEIGHT / FIGURE_HEIGHT,
         ]
     )
 

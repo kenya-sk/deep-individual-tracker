@@ -6,29 +6,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from omegaconf import DictConfig
 
+from constants import DATA_DIR, TIME_LABELS
+
 # if frame interval is 1000 milli second
 # LABEL_IDX = [i for i in range(0, 28801, 1800)]
 # if frame interval is 33 milli second (30FPS)
 LABEL_IDX = [i for i in range(0, 864001, 54000)]
-LABELS = [
-    "9:00",
-    "9:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "13:00",
-    "13:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-]
 
 
 def load_statistics(cfg: DictConfig) -> dict:
@@ -57,12 +40,14 @@ def load_statistics(cfg: DictConfig) -> dict:
             sys.exit(1)
 
     stats_dict = {
-        "mean": load_value(cfg["path"]["mean_speed_path"]),
-        "past_mean": load_value(cfg["path"]["past_mean_speed_path"]),
-        "count": load_value(cfg["path"]["individual_count_path"]),
-        "past_count": load_value(cfg["path"]["past_individual_count_path"]),
-        "acceleration": load_value(cfg["path"]["acceleration_count_path"]),
-        "past_acceleration": load_value(cfg["path"]["past_acceleration_count_path"]),
+        "mean": load_value(DATA_DIR / cfg["path"]["mean_speed_path"]),
+        "past_mean": load_value(DATA_DIR / cfg["path"]["past_mean_speed_path"]),
+        "count": load_value(DATA_DIR / cfg["path"]["individual_count_path"]),
+        "past_count": load_value(DATA_DIR / cfg["path"]["past_individual_count_path"]),
+        "acceleration": load_value(DATA_DIR / cfg["path"]["acceleration_count_path"]),
+        "past_acceleration": load_value(
+            DATA_DIR / cfg["path"]["past_acceleration_count_path"]
+        ),
     }
 
     return stats_dict
@@ -146,4 +131,4 @@ def set_stats_metrics(
 
     # set ticks only last graph
     cnt_ax.set_xticks(LABEL_IDX)
-    cnt_ax.set_xticklabels(LABELS, fontsize=int(cfg["graph"]["font_size"]) - 2)
+    cnt_ax.set_xticklabels(TIME_LABELS, fontsize=int(cfg["graph"]["font_size"]) - 2)
