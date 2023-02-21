@@ -1,0 +1,8 @@
+sigma_pow: 25
+mouse_event_interval: 1
+
+# relative path from data directory
+path:
+  input_file_path: "sampling_images/20181102/tmp/"
+  save_raw_image_dir: "sampling_images/20181103/raw_image"
+  save_annotated_dir: "sampling_images/20181103/annotated"

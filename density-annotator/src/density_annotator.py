@@ -4,11 +4,18 @@ import sys
 
 import cv2
 import numpy as np
+from constants import DATA_DIR, IMAGE_EXTENTION
 from omegaconf import DictConfig
 from tqdm import tqdm
-
-from utils import (get_input_data_type, get_path_list, load_image, load_video,
-                   save_coordinate, save_density_map, save_image)
+from utils import (
+    get_input_data_type,
+    get_path_list,
+    load_image,
+    load_video,
+    save_coordinate,
+    save_density_map,
+    save_image,
+)
 
 # logging setting
 logging.basicConfig(
@@ -31,12 +38,11 @@ class DensityAnnotator:
     and the density map for each target frame.
     """
 
-    def __init__(self, cfg: DictConfig, original_cwd: str) -> None:
+    def __init__(self, cfg: DictConfig) -> None:
         """
         Initialize DensityAnnotator class by hydra config.
 
         :param cfg: config of DensityAnnotator class
-        :param original_cwd: current working directory path
         """
         logger.info(f"Loaded config: {cfg}")
         cv2.namedWindow("click annotation points")
@@ -56,16 +62,10 @@ class DensityAnnotator:
 
         # set file path
         self.input_file_path = None
-        self.input_file_path_list = get_path_list(
-            cfg.path.input_file_path, original_cwd
-        )
-        self.save_raw_image_dir = os.path.join(
-            original_cwd, cfg.path.save_raw_image_dir
-        )
-        self.save_annotated_dir = os.path.join(
-            original_cwd, cfg.path.save_annotated_dir
-        )
-        self.save_image_extension = cfg.path.save_image_extension
+        self.input_file_path_list = get_path_list(DATA_DIR, cfg.path.input_file_path)
+        self.save_raw_image_dir = os.path.join(DATA_DIR, cfg.path.save_raw_image_dir)
+        self.save_annotated_dir = os.path.join(DATA_DIR, cfg.path.save_annotated_dir)
+        self.save_image_extension = IMAGE_EXTENTION
         self.save_annotated_image_dir = f"{self.save_annotated_dir}/image"
         self.save_annotated_coord_dir = f"{self.save_annotated_dir}/coord"
         self.save_annotated_density_dir = f"{self.save_annotated_dir}/dens"

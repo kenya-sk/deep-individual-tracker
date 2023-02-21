@@ -1,8 +1,0 @@
-sigma_pow: 25
-mouse_event_interval: 1
-
-path:
-  input_file_path: "./data/sampling_images/20181102/tmp/"
-  save_raw_image_dir: "./data/sampling_images/20181103/raw_image"
-  save_annotated_dir: "./data/sampling_images/20181103/annotated"
-  save_image_extension: ".png"

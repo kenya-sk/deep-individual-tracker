@@ -1,12 +1,10 @@
 import hydra
-from omegaconf import DictConfig
-from hydra.utils import get_original_cwd
-
-
+from constants import ANNOTATOR_CONFIG_NAME, CONFIG_DIR
 from density_annotator import DensityAnnotator
+from omegaconf import DictConfig
 
 
-@hydra.main(config_path="../conf", config_name="annotator")
+@hydra.main(config_path=CONFIG_DIR, config_name=ANNOTATOR_CONFIG_NAME)
 def run_annotator(cfg: DictConfig) -> None:
     """
     Run DensityAnnotator according to the settings defined in the config file.
@@ -14,8 +12,7 @@ def run_annotator(cfg: DictConfig) -> None:
     :param cfg: config that loaded by @hydra.main()
     :return: None
     """
-    original_cwd = get_original_cwd()
-    annotator = DensityAnnotator(cfg, original_cwd)
+    annotator = DensityAnnotator(cfg)
     annotator.run()
 
 

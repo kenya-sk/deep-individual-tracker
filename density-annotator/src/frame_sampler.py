@@ -5,10 +5,9 @@ from typing import List
 
 import cv2
 import hydra
-from hydra.utils import get_original_cwd
+from constants import CONFIG_DIR, DATA_DIR, IMAGE_EXTENTION, SAMPLER_CONFIG_NAME
 from omegaconf import DictConfig
 from tqdm import tqdm
-
 from utils import get_full_path_list, load_video, save_image
 
 # logging setting
@@ -56,7 +55,9 @@ def get_frame_number_list(
     if sampling_type == "random":
         frame_number_list = get_sampled_frame_number(total_frame_number, sample_rate)
     elif sampling_type == "fixed":
-        frame_number_list = [i for i in range(total_frame_number) if i % sample_rate == 0]
+        frame_number_list = [
+            i for i in range(total_frame_number) if i % sample_rate == 0
+        ]
     else:
         logger.error(f"Error: sampling_type={sampling_type} is not defined.")
 
@@ -93,13 +94,13 @@ def frame_sampler(
             # load current frame
             ret, frame = video.read()
             if ret:
-                save_file_name = f"{current_save_dirc}/{frame_number}.png"
+                save_file_name = f"{current_save_dirc}/{frame_number}{IMAGE_EXTENTION}"
                 save_image(save_file_name, frame)
             else:
                 logger.error(f"Error: cannot load {frame_number} frame")
 
 
-@hydra.main(config_path="../conf", config_name="frame_sampling")
+@hydra.main(config_path=CONFIG_DIR, config_name=SAMPLER_CONFIG_NAME)
 def run_sampler(cfg: DictConfig) -> None:
     """Run frame sampler according to the settings defined in the config file.
 
@@ -107,9 +108,8 @@ def run_sampler(cfg: DictConfig) -> None:
         cfg (DictConfig): config that loaded by @hydra.main()
     """
     logger.info(f"Loaded config: {cfg}")
-    original_cwd = get_original_cwd()
-    input_video_list = get_full_path_list(original_cwd, cfg.path.input_video_list)
-    save_frame_dirc = os.path.join(original_cwd, cfg.path.save_frame_dirc)
+    input_video_list = get_full_path_list(DATA_DIR, cfg.path.input_video_list)
+    save_frame_dirc = os.path.join(DATA_DIR, cfg.path.save_frame_dirc)
 
     # execute frame sampler
     frame_sampler(input_video_list, save_frame_dirc, cfg.sampling_type, cfg.sample_rate)

@@ -14,13 +14,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_path_list(path: str, working_directory: str = "") -> List:
+def get_path_list(working_directory: str, path: str) -> List:
     """
     Takes a file or directory path and creates a list of full paths.
 
-    :param path: input path that file or directory
     :param working_directory: current working directory.
         if input path provided full path, set an empty string.
+    :param path: input path that file or directory
     :return: full path list
     """
     full_path = os.path.join(working_directory, path)
