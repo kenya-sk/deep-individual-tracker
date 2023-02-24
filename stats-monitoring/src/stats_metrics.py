@@ -4,9 +4,9 @@ from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
-from omegaconf import DictConfig
-
 from constants import DATA_DIR, TIME_LABELS
+from logger import logger
+from omegaconf import DictConfig
 
 # if frame interval is 1000 milli second
 # LABEL_IDX = [i for i in range(0, 28801, 1800)]
@@ -36,17 +36,21 @@ def load_statistics(cfg: DictConfig) -> dict:
         if os.path.isfile(path):
             return np.loadtxt(path, delimiter=",")
         else:
-            print(f"[ERROR] Not Exist File: {path}")
+            logger.error(f"Not Exist File: {path}")
             sys.exit(1)
 
     stats_dict = {
-        "mean": load_value(DATA_DIR / cfg["path"]["mean_speed_path"]),
-        "past_mean": load_value(DATA_DIR / cfg["path"]["past_mean_speed_path"]),
-        "count": load_value(DATA_DIR / cfg["path"]["individual_count_path"]),
-        "past_count": load_value(DATA_DIR / cfg["path"]["past_individual_count_path"]),
-        "acceleration": load_value(DATA_DIR / cfg["path"]["acceleration_count_path"]),
+        "mean": load_value(str(DATA_DIR / cfg["path"]["mean_speed_path"])),
+        "past_mean": load_value(str(DATA_DIR / cfg["path"]["past_mean_speed_path"])),
+        "count": load_value(str(DATA_DIR / cfg["path"]["individual_count_path"])),
+        "past_count": load_value(
+            str(DATA_DIR / cfg["path"]["past_individual_count_path"])
+        ),
+        "acceleration": load_value(
+            str(DATA_DIR / cfg["path"]["acceleration_count_path"])
+        ),
         "past_acceleration": load_value(
-            DATA_DIR / cfg["path"]["past_acceleration_count_path"]
+            str(DATA_DIR / cfg["path"]["past_acceleration_count_path"])
         ),
     }
 
@@ -66,7 +70,7 @@ def load_array(stats_dict: Dict, key: str) -> np.array:
     if key in stats_dict.keys():
         return stats_dict[key]
     else:
-        print(f"[ERROR] Not Exist Key: {key}")
+        logger.error(f"Not Exist Key: {key}")
         sys.exit(1)
 
 

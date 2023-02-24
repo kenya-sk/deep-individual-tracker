@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from typing import List
 
@@ -7,6 +8,9 @@ MODUEL_SRC: Path = Path(__file__).resolve().parents[0]
 CONFIG_DIR: Path = MODULE_HOME / "config"
 LOG_DIR: Path = MODULE_HOME / "logs"
 DATA_DIR: Path = MODULE_HOME / "data"
+
+TODAY: str = datetime.today().strftime("%Y%m%d")
+LOGGER_NAME = "stats-monitoring"
 
 MONITORING_CONFIG_NAME: str = "monitoring"
 

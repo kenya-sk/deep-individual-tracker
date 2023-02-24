@@ -5,9 +5,9 @@ import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from omegaconf import DictConfig
-
 from constants import DATA_DIR, FRAME_HEIGHT, FRAME_WIDTH
+from logger import logger
+from omegaconf import DictConfig
 
 
 def load_one_hour_density(coord_dirc: str, end_frame_num: int) -> pd.DataFrame:
@@ -31,7 +31,7 @@ def load_one_hour_density(coord_dirc: str, end_frame_num: int) -> pd.DataFrame:
             past_density_dctlst["x"].extend(cord_df[0].values)
             past_density_dctlst["y"].extend(cord_df[1].values)
         else:
-            print(f"[WARNING] Not Exist Path: {path}")
+            logger.warning(f"Not Exist Path: {path}")
 
         return pd.DataFrame(past_density_dctlst)
 
@@ -56,7 +56,7 @@ def set_frame(
     if os.path.isfile(frame_path):
         frame = cv2.imread(frame_path)
     else:
-        print(f"[ERROR] Not Exist Path: {frame_path}")
+        logger.error(f"Not Exist Path: {frame_path}")
         sys.exit(1)
 
     # set current frame
