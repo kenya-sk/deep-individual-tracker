@@ -7,14 +7,20 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import pandas as pd
+from constants import (
+    ANALYSIS_HEIGHT_MAX,
+    ANALYSIS_HEIGHT_MIN,
+    ANALYSIS_WIDTH_MAX,
+    ANALYSIS_WIDTH_MIN,
+    FRAME_CHANNEL,
+    FRAME_HEIGHT,
+    FRAME_WIDTH,
+    IMAGE_EXTENTION,
+    LOCAL_IMAGE_SIZE,
+    RANDOM_SEED,
+)
+from logger import logger
 from sklearn.model_selection import train_test_split
-
-from constatns import (ANALYSIS_HEIGHT_MAX, ANALYSIS_HEIGHT_MIN,
-                       ANALYSIS_WIDTH_MAX, ANALYSIS_WIDTH_MIN, FRAME_CHANNEL,
-                       FRAME_HEIGHT, FRAME_WIDTH, IMAGE_EXTENTION,
-                       LOCAL_IMAGE_SIZE, RANDOM_SEED)
-
-logger = logging.getLogger(__name__)
 
 
 def load_dataset(

@@ -1,34 +1,31 @@
 import copy
-import logging
 import time
 from typing import List
 
 import hydra
 import numpy as np
 import pandas as pd
+from clustering import apply_clustering_to_density_map
+from constants import (
+    CONFIG_DIR,
+    DATA_DIR,
+    GPU_DEVICE_ID,
+    GPU_MEMORY_RATE,
+    SEARCH_PARAMETER_CONFIG_NAME,
+)
+from evaluate import eval_detection, eval_metrics, get_ground_truth
+from logger import logger
+from model import DensityModel, load_model
 from omegaconf import DictConfig, OmegaConf
+from predict import predict_density_map
+from process_dataset import (
+    apply_masking_on_image,
+    get_masked_index,
+    load_image,
+    load_mask_image,
+)
 from tensorflow.compat.v1 import InteractiveSession
 from tqdm import tqdm
-
-from clustering import apply_clustering_to_density_map
-from constatns import (CONFIG_DIR, DATA_DIR, GPU_DEVICE_ID, GPU_MEMORY_RATE,
-                       SEARCH_PARAMETER_CONFIG_NAME)
-from evaluate import eval_detection, eval_metrics, get_ground_truth
-from model import DensityModel, load_model
-from predict import predict_density_map
-from process_dataset import (apply_masking_on_image, get_masked_index,
-                             load_image, load_mask_image)
-from utils import get_current_time_str
-
-# logger setting
-current_time = get_current_time_str()
-log_path = f"./logs/search_parameter_{current_time}.log"
-logging.basicConfig(
-    filename=log_path,
-    level=logging.DEBUG,
-    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
-)
-logger = logging.getLogger(__name__)
 
 
 class ParameterStore:
@@ -247,7 +244,9 @@ def search(
         params_store.store_percentile_results()
 
     # save search result
-    save_path = f"{DATA_DIR}/{cfg['save_directory']}/search_result_{search_param}.csv"
+    save_path = (
+        f"{str(DATA_DIR)}/{cfg['save_directory']}/search_result_{search_param}.csv"
+    )
     params_store.save_results(save_path)
 
 
@@ -279,7 +278,11 @@ def search_parameter(
         logger.info(f"Completed: {param}")
 
 
-@hydra.main(config_path=CONFIG_DIR, config_name=SEARCH_PARAMETER_CONFIG_NAME)
+@hydra.main(
+    config_path=str(CONFIG_DIR),
+    config_name=SEARCH_PARAMETER_CONFIG_NAME,
+    version_base="1.1",
+)
 def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
@@ -303,7 +306,7 @@ def main(cfg: DictConfig) -> None:
     # load trained model
     if "prediction_grid" in cfg["search_params"].keys():
         model, tf_session = load_model(
-            DATA_DIR / cfg["trained_model_directory"],
+            str(DATA_DIR / cfg["trained_model_directory"]),
             GPU_DEVICE_ID,
             GPU_MEMORY_RATE,
         )

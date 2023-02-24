@@ -7,16 +7,10 @@ import cv2
 import hydra
 from constants import (CONFIG_DIR, DATA_DIR, IMAGE_EXTENTION,
                        SAMPLER_CONFIG_NAME)
+from logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
-
 from utils import get_full_path_list, load_video, save_image
-
-# logging setting
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-)
-logger = logging.getLogger(__name__)
 
 
 def get_sampled_frame_number(total_frame_number: int, sample_rate: int) -> List:
@@ -102,7 +96,7 @@ def frame_sampler(
                 logger.error(f"Error: cannot load {frame_number} frame")
 
 
-@hydra.main(config_path=CONFIG_DIR, config_name=SAMPLER_CONFIG_NAME)
+@hydra.main(config_path=str(CONFIG_DIR), config_name=SAMPLER_CONFIG_NAME)
 def run_sampler(cfg: DictConfig) -> None:
     """Run frame sampler according to the settings defined in the config file.
 

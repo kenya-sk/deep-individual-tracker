@@ -1,5 +1,6 @@
 import os
 import sys
+
 # [FIXME] support displot or kdeplot
 import warnings
 from glob import glob
@@ -7,11 +8,10 @@ from glob import glob
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from constants import DATA_DIR, FIGURE_HEIGHT, FIGURE_WIDTH, FRAME_HEIGHT, FRAME_WIDTH
+from logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
-
-from constants import (DATA_DIR, FIGURE_HEIGHT, FIGURE_WIDTH, FRAME_HEIGHT,
-                       FRAME_WIDTH)
 
 warnings.resetwarnings()
 warnings.simplefilter("ignore", FutureWarning)
@@ -28,12 +28,14 @@ def load_current_coordinate(cfg: DictConfig, frame_num: int) -> pd.DataFrame:
         pd.DataFrame: DataFrame of current frame distribution
     """
     # Each coordinate is defined by the column names "x" and "y"
-    coordinate_path = DATA_DIR / f"cfg['path']['coordinate_directory']/{frame_num}.csv"
+    coordinate_path = str(
+        DATA_DIR / f"cfg['path']['coordinate_directory']/{frame_num}.csv"
+    )
     if os.path.isfile(coordinate_path):
         coordinate_df = pd.read_csv(coordinate_path)
         coordinate_df.columns = ["x", "y"]
     else:
-        print(f"[ERROR] Not Exist Path: {coordinate_path}")
+        logger.error(f"Not Exist Path: {coordinate_path}")
         sys.exit(1)
 
     return coordinate_df
@@ -48,11 +50,11 @@ def load_past_coordinate(cfg: DictConfig) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame of past distribution
     """
-    past_dir = DATA_DIR / cfg["path"]["past_coordinate_directory"]
+    past_dir = str(DATA_DIR / cfg["path"]["past_coordinate_directory"])
     if os.path.isdir(past_dir):
         coordinate_path_lst = glob(f"{past_dir}/*.csv")
     else:
-        print(f"[ERROR] Not Exist Directory: {past_dir}")
+        logger.error(f"Not Exist Directory: {past_dir}")
         sys.exit(1)
 
     past_coordinate_dctlst = {"x": [], "y": []}

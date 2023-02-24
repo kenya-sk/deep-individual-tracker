@@ -1,4 +1,3 @@
-import logging
 import os
 from glob import glob
 from typing import List
@@ -7,17 +6,18 @@ import cv2
 import hydra
 import numpy as np
 import pandas as pd
+from constants import (
+    CONFIG_DIR,
+    DATA_DIR,
+    DETECTED_MOVIE_CONFIG_NAME,
+    FRAME_HEIGHT,
+    FRAME_WIDTH,
+    IMAGE_EXTENTION,
+    MOVIE_FPS,
+)
+from logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
-
-from constatns import (CONFIG_DIR, DATA_DIR, DETECTED_MOVIE_CONFIG_NAME,
-                       FRAME_HEIGHT, FRAME_WIDTH, IMAGE_EXTENTION, MOVIE_FPS)
-
-# logging setting
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-)
-logger = logging.getLogger(__name__)
 
 
 def sort_by_frame_number(path_list: List) -> List:
@@ -102,7 +102,11 @@ def create_detected_point_movie(
     logger.info("Saved Movie Data in '{movie_save_path}'")
 
 
-@hydra.main(config_path=CONFIG_DIR, config_name=DETECTED_MOVIE_CONFIG_NAME)
+@hydra.main(
+    config_path=str(CONFIG_DIR),
+    config_name=DETECTED_MOVIE_CONFIG_NAME,
+    version_base="1.1",
+)
 def main(cfg: DictConfig) -> None:
     """Create movie data based on the raw image data and
     the series of detected points data
@@ -113,12 +117,11 @@ def main(cfg: DictConfig) -> None:
 
     logger.info(f"Loaded config: {cfg}")
 
-    # get path from config file
-    image_directory = DATA_DIR / cfg.image_directory
-    point_coord_directory = DATA_DIR / cfg.point_coord_directory
-    movie_save_path = DATA_DIR / cfg.movie_save_path
-
-    create_detected_point_movie(image_directory, point_coord_directory, movie_save_path)
+    create_detected_point_movie(
+        str(DATA_DIR / cfg.image_directory),
+        str(DATA_DIR / cfg.point_coord_directory),
+        str(DATA_DIR / cfg.movie_save_path),
+    )
 
 
 if __name__ == "__main__":

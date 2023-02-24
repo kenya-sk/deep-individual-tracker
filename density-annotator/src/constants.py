@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 MODULE_HOME: Path = Path(__file__).resolve().parents[1]
@@ -7,9 +8,12 @@ CONFIG_DIR: Path = MODULE_HOME / "config"
 LOG_DIR: Path = MODULE_HOME / "logs"
 DATA_DIR: Path = MODULE_HOME / "data"
 
+TODAY: str = datetime.today().strftime("%Y%m%d")
+LOGGER_NAME = "density-annotator"
+
 IMAGE_EXTENTION: str = ".png"
 
-SAMPLER_CONFIG_NAME: str = "frame_sampler"
+SAMPLER_CONFIG_NAME: str = "frame_sampling"
 ANNOTATOR_CONFIG_NAME: str = "annotator"
 
 # define GUI control key

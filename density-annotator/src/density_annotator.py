@@ -4,18 +4,19 @@ import sys
 
 import cv2
 import numpy as np
-from constants import DATA_DIR, IMAGE_EXTENTION, Q_KEY, P_KEY, D_KEY, S_KEY
+from constants import D_KEY, DATA_DIR, IMAGE_EXTENTION, P_KEY, Q_KEY, S_KEY
+from logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
-
-from utils import (get_input_data_type, get_path_list, load_image, load_video,
-                   save_coordinate, save_density_map, save_image)
-
-# logging setting
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+from utils import (
+    get_input_data_type,
+    get_path_list,
+    load_image,
+    load_video,
+    save_coordinate,
+    save_density_map,
+    save_image,
 )
-logger = logging.getLogger(__name__)
 
 
 class DensityAnnotator:

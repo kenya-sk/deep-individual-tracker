@@ -3,17 +3,18 @@ from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib.animation import FuncAnimation
-from omegaconf import DictConfig
-from tqdm import trange
-
 from constants import DATA_DIR
 from frame import load_one_hour_density, set_frame
-from position_distribution import (load_current_coordinate,
-                                   load_past_coordinate, set_histogram)
+from logger import logger
+from matplotlib.animation import FuncAnimation
+from omegaconf import DictConfig
+from position_distribution import (
+    load_current_coordinate,
+    load_past_coordinate,
+    set_histogram,
+)
 from stats_metrics import load_statistics, set_stats_metrics
-
-logger = logging.getLogger(__name__)
+from tqdm import trange
 
 
 def update(
@@ -81,7 +82,7 @@ def generate_animation(cfg: DictConfig, fig: plt.figure, axs: List) -> None:
         interval=cfg["animation"]["interval"],
         fargs=(cfg, axs, past_coordinate_df, stats_dict),
     )
-    save_movie_path = DATA_DIR / cfg["path"]["save_movie_path"]
+    save_movie_path = str(DATA_DIR / cfg["path"]["save_movie_path"])
     anim.save(save_movie_path, writer=cfg["animation"]["format"])
     plt.close()
 

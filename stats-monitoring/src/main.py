@@ -2,23 +2,16 @@ import logging
 import time
 
 import hydra
-from omegaconf import DictConfig, OmegaConf
-
 from constants import CONFIG_DIR, MONITORING_CONFIG_NAME
 from generate_animation import generate_animation
 from get_init_figure import get_init_figure
+from logger import logger
+from omegaconf import DictConfig, OmegaConf
 
-# logger setting
-log_path = f"./logs/stats_monitoring_{time.time()}.log"
-logging.basicConfig(
-    filename=log_path,
-    level=logging.DEBUG,
-    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+
+@hydra.main(
+    config_path=str(CONFIG_DIR), config_name=MONITORING_CONFIG_NAME, version_base="1.1"
 )
-logger = logging.getLogger(__name__)
-
-
-@hydra.main(config_path=CONFIG_DIR, config_name=MONITORING_CONFIG_NAME)
 def main(cfg: DictConfig) -> None:
     # load parameter from hydra
     cfg = OmegaConf.to_container(cfg)
