@@ -1,5 +1,4 @@
 import gc
-import logging
 import sys
 import time
 from typing import List, Tuple
@@ -7,33 +6,42 @@ from typing import List, Tuple
 import hydra
 import numpy as np
 import tensorflow as tf
+from constants import (
+    CONFIG_DIR,
+    DATA_DIR,
+    EXECUTION_TIME,
+    FRAME_CHANNEL,
+    FRAME_HEIGHT,
+    FRAME_WIDTH,
+    GPU_DEVICE_ID,
+    GPU_MEMORY_RATE,
+    LOCAL_IMAGE_SIZE,
+    TRAIN_CONFIG_NAME,
+)
+from logger import logger
+from model import DensityModel
 from omegaconf import DictConfig, OmegaConf
+from process_dataset import (
+    extract_local_data,
+    get_masked_index,
+    load_dataset,
+    load_mask_image,
+    load_sample,
+    split_dataset,
+    split_dataset_by_date,
+)
 from sklearn.utils import shuffle
-from tensorflow.compat.v1 import (ConfigProto, GPUOptions, InteractiveSession,
-                                  global_variables_initializer)
+from tensorflow.compat.v1 import (
+    ConfigProto,
+    GPUOptions,
+    InteractiveSession,
+    global_variables_initializer,
+)
 from tensorflow.compat.v1.summary import FileWriter
 from tensorflow.compat.v1.train import Saver
 from tensorflow.python.framework.ops import Tensor as OpsTensor
 from tqdm import trange
-
-from constatns import (CONFIG_DIR, DATA_DIR, FRAME_CHANNEL, FRAME_HEIGHT,
-                       FRAME_WIDTH, GPU_DEVICE_ID, GPU_MEMORY_RATE,
-                       LOCAL_IMAGE_SIZE, TRAIN_CONFIG_NAME)
-from model import DensityModel
-from process_dataset import (extract_local_data, get_masked_index,
-                             load_dataset, load_mask_image, load_sample,
-                             split_dataset, split_dataset_by_date)
-from utils import get_current_time_str, get_elapsed_time_str, set_tensorboard
-
-# logger setting
-current_time = get_current_time_str()
-log_path = f"./logs/train_{current_time}.log"
-logging.basicConfig(
-    filename=log_path,
-    level=logging.DEBUG,
-    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
-)
-logger = logging.getLogger(__name__)
+from utils import get_elapsed_time_str, set_tensorboard
 
 
 def hard_negative_mining(
@@ -518,7 +526,7 @@ def model_training(
 
     # Tensor Board setting
     summuray_merged, train_writer, valid_writer, test_writer = set_tensorboard(
-        DATA_DIR / cfg["tensorboard_directory"], current_time, tf_session
+        str(DATA_DIR / cfg["tensorboard_directory"]), EXECUTION_TIME, tf_session
     )
 
     # get mask index
@@ -544,9 +552,7 @@ def model_training(
         global_variables_initializer().run()
 
     # training model
-    save_model_path = (
-        f"{DATA_DIR}/{cfg['save_trained_model_directory']}/{current_time}/model.ckpt"
-    )
+    save_model_path = f"{str(DATA_DIR)}/{cfg['save_trained_model_directory']}/{EXECUTION_TIME}/model.ckpt"
     start_time = time.time()
     best_valid_loss = sys.float_info.max
     not_improved_count = 0
@@ -643,7 +649,7 @@ def model_training(
         logger.info("stop training and  save model")
         saver.save(
             tf_session,
-            f"{DATA_DIR}/{cfg['save_trained_model_directory']}/{current_time}/model.ckpt",
+            f"{str(DATA_DIR)}/{cfg['save_trained_model_directory']}/{EXECUTION_TIME}/model.ckpt",
         )
 
     # close all writer and session
@@ -653,7 +659,9 @@ def model_training(
     tf_session.close()
 
 
-@hydra.main(config_path=CONFIG_DIR, config_name=TRAIN_CONFIG_NAME)
+@hydra.main(
+    config_path=str(CONFIG_DIR), config_name=TRAIN_CONFIG_NAME, version_base="1.1"
+)
 def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
@@ -661,11 +669,12 @@ def main(cfg: DictConfig) -> None:
     # loading train, validation and test dataset
     logger.info("Loading Dataset...")
     save_dataset_path_directory = (
-        f"{DATA_DIR}/cfg['save_dataset_path_directory']/{current_time}"
+        f"{DATA_DIR}/cfg['save_dataset_path_directory']/{EXECUTION_TIME}"
     )
     if cfg["dataset_split_type"] == "random":
         X_list, y_list = load_dataset(
-            DATA_DIR / cfg["image_directory"], DATA_DIR / cfg["density_directory"]
+            str(DATA_DIR / cfg["image_directory"]),
+            str(DATA_DIR / cfg["density_directory"]),
         )
         X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
             X_list,
@@ -675,8 +684,8 @@ def main(cfg: DictConfig) -> None:
         )
     elif cfg["dataset_split_type"] == "timeseries":
         X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset_by_date(
-            DATA_DIR / cfg["image_directory"],
-            DATA_DIR / cfg["density_directory"],
+            str(DATA_DIR / cfg["image_directory"]),
+            str(DATA_DIR / cfg["density_directory"]),
             cfg["train_date_list"],
             cfg["valid_date_list"],
             cfg["test_date_list"],

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 MODULE_HOME: Path = Path(__file__).resolve().parents[1]
@@ -6,6 +7,11 @@ MODUEL_SRC: Path = Path(__file__).resolve().parents[0]
 CONFIG_DIR: Path = MODULE_HOME / "config"
 LOG_DIR: Path = MODULE_HOME / "logs"
 DATA_DIR: Path = MODULE_HOME / "data"
+
+TODAY: str = datetime.today().strftime("%Y%m%d")
+JST = timezone(timedelta(hours=+9), "JST")
+EXECUTION_TIME: str = datetime.now(JST).strftime("%Y%m%d_%H%M%S")
+LOGGER_NAME = "stats-monitoring"
 
 TRAIN_CONFIG_NAME: str = "train"
 PREDICT_CONFIG_NAME: str = "predict"

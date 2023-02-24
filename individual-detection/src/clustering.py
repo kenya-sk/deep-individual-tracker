@@ -1,5 +1,3 @@
-import logging
-
 import cv2
 import matplotlib
 
@@ -7,19 +5,9 @@ matplotlib.use("Agg")
 import glob
 
 import numpy as np
+from logger import logger
 from sklearn.cluster import MeanShift
-
 from utils import get_current_time_str, get_file_name_from_path
-
-# logger setting
-current_time = get_current_time_str()
-log_path = f"./logs/clustering_{current_time}.log"
-logging.basicConfig(
-    filename=log_path,
-    level=logging.DEBUG,
-    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
-)
-logger = logging.getLogger(__name__)
 
 
 def apply_clustering_to_density_map(

@@ -1,11 +1,9 @@
-import logging
 import sys
 from dataclasses import dataclass
 from typing import List
 
 import numpy as np
-
-logger = logging.getLogger(__name__)
+from logger import logger
 
 
 @dataclass(frozen=True)

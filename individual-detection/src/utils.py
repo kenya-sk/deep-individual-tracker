@@ -67,24 +67,6 @@ def set_capture(video_path: str) -> Tuple:
     return cap, fourcc, fps, height, width, total_frame
 
 
-def get_current_time_str(
-    time_difference: int = 9, time_format: str = "%Y%m%d_%H%M%S"
-) -> str:
-    """Get the current time and convert formatted string.
-
-    Args:
-        time_difference (int, optional): time difference from UTC time. Defaults to 9.
-        time_format (str, optional): string format. Defaults to "%Y%m%d%H%M%S".
-
-    Returns:
-        str: formatted current time string
-    """
-    current_time = datetime.now(timezone(timedelta(hours=time_difference)))
-    str_current_time = current_time.strftime(time_format)
-
-    return str_current_time
-
-
 def get_elapsed_time_str(start_time: float) -> str:
     """Format to display elapsed time from a specific time
 

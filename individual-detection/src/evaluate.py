@@ -1,27 +1,15 @@
 import glob
-import logging
 from typing import Tuple
 
 import hydra
 import numpy as np
+from constants import CONFIG_DIR, DATA_DIR, EVALUATE_CONFIG_NAME
+from evaluation_metrics import eval_metrics, output_evaluation_report
+from logger import logger
 from omegaconf import DictConfig, OmegaConf
+from process_dataset import get_masked_index, load_mask_image
 from scipy import optimize
 from tqdm import tqdm
-
-from constatns import CONFIG_DIR, DATA_DIR, EVALUATE_CONFIG_NAME
-from evaluation_metrics import eval_metrics, output_evaluation_report
-from process_dataset import get_masked_index, load_mask_image
-from utils import get_current_time_str
-
-# logger setting
-current_time = get_current_time_str()
-log_path = f"./logs/evaluation_{current_time}.log"
-logging.basicConfig(
-    filename=log_path,
-    level=logging.DEBUG,
-    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
-)
-logger = logging.getLogger(__name__)
 
 
 def get_ground_truth(ground_truth_path: str, mask_image: np.array) -> np.array:
@@ -178,16 +166,18 @@ def evaluate(
     )
 
 
-@hydra.main(config_path=CONFIG_DIR, config_name=EVALUATE_CONFIG_NAME)
+@hydra.main(
+    config_path=str(CONFIG_DIR), config_name=EVALUATE_CONFIG_NAME, version_base="1.1"
+)
 def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
 
     # evaluate predction results
     evaluate(
-        DATA_DIR / cfg["predict_directory"],
-        DATA_DIR / cfg["ground_truth_directory"],
-        DATA_DIR / cfg["mask_image_path"],
+        str(DATA_DIR / cfg["predict_directory"]),
+        str(DATA_DIR / cfg["ground_truth_directory"]),
+        str(DATA_DIR / cfg["mask_image_path"]),
         cfg["detection_threshold"],
     )
 

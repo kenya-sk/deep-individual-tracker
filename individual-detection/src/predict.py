@@ -8,28 +8,34 @@ from typing import List
 import cv2
 import hydra
 import numpy as np
+from clustering import apply_clustering_to_density_map
+from constants import (
+    CONFIG_DIR,
+    DATA_DIR,
+    FRAME_HEIGHT,
+    FRAME_WIDTH,
+    GPU_DEVICE_ID,
+    GPU_MEMORY_RATE,
+    PREDICT_CONFIG_NAME,
+)
+from logger import logger
+from model import DensityModel, load_model
 from omegaconf import DictConfig, OmegaConf
+from process_dataset import (
+    apply_masking_on_image,
+    extract_local_data,
+    get_masked_index,
+    load_image,
+    load_mask_image,
+)
 from tensorflow.compat.v1 import InteractiveSession
 from tqdm import tqdm
-
-from clustering import apply_clustering_to_density_map
-from constatns import (CONFIG_DIR, DATA_DIR, FRAME_HEIGHT, FRAME_WIDTH,
-                       GPU_DEVICE_ID, GPU_MEMORY_RATE, PREDICT_CONFIG_NAME)
-from model import DensityModel, load_model
-from process_dataset import (apply_masking_on_image, extract_local_data,
-                             get_masked_index, load_image, load_mask_image)
-from utils import (display_data_info, get_current_time_str,
-                   get_file_name_from_path, set_capture)
-
-# logger setting
-current_time = get_current_time_str()
-log_path = f"./logs/predict_{current_time}.log"
-logging.basicConfig(
-    filename=log_path,
-    level=logging.DEBUG,
-    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+from utils import (
+    display_data_info,
+    get_current_time_str,
+    get_file_name_from_path,
+    set_capture,
 )
-logger = logging.getLogger(__name__)
 
 
 def extract_prediction_indices(
@@ -256,13 +262,15 @@ def video_prediction(
     tf_session.close()
 
 
-@hydra.main(config_path=CONFIG_DIR, config_name=PREDICT_CONFIG_NAME)
+@hydra.main(
+    config_path=str(CONFIG_DIR), config_name=PREDICT_CONFIG_NAME, version_base="1.1"
+)
 def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
     logger.info(f"Loaded config: {cfg}")
 
     # set valid image index information
-    mask_image = load_mask_image(DATA_DIR / cfg["mask_path"], normalized=True)
+    mask_image = load_mask_image(str(DATA_DIR / cfg["mask_path"]), normalized=True)
     index_h, index_w = get_masked_index(mask_image, cfg, horizontal_flip=False)
     # [TODO] create another config dictionary
     cfg["index_h"] = index_h
@@ -270,7 +278,7 @@ def main(cfg: DictConfig) -> None:
 
     # load trained model
     model, tf_session = load_model(
-        DATA_DIR / cfg["trained_model_directory"], GPU_DEVICE_ID, GPU_MEMORY_RATE
+        str(DATA_DIR / cfg["trained_model_directory"]), GPU_DEVICE_ID, GPU_MEMORY_RATE
     )
 
     predict_data_type = cfg["predict_data_type"]

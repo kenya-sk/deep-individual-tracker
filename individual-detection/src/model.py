@@ -1,15 +1,12 @@
-import logging
 import math
 import sys
 from typing import List, Tuple
 
 import tensorflow as tf
+from constants import GPU_DEVICE_ID, GPU_MEMORY_RATE
+from logger import logger
 from tensorflow.compat.v1 import InteractiveSession, placeholder, summary
 from tensorflow.compat.v1.train import AdamOptimizer
-
-from constatns import GPU_DEVICE_ID, GPU_MEMORY_RATE
-
-logger = logging.getLogger(__name__)
 
 
 class DensityModel(object):
