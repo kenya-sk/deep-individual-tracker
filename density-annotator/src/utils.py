@@ -7,12 +7,7 @@ from typing import List
 
 import cv2
 import numpy as np
-
-# logging setting
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-)
-logger = logging.getLogger(__name__)
+from logger import logger
 
 
 def get_path_list(working_directory: Path, path: str) -> List:
@@ -44,7 +39,7 @@ def get_full_path_list(current_working_dirc: Path, relative_path_list: List):
     :param relative_path_list: list of relative paths to be converted
     :return: List of converted full path
     """
-    full_path_list = [current_working_dirc / path for path in relative_path_list]
+    full_path_list = [str(current_working_dirc / path) for path in relative_path_list]
     return full_path_list
 
 

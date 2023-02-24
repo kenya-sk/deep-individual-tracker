@@ -4,7 +4,9 @@ from density_annotator import DensityAnnotator
 from omegaconf import DictConfig
 
 
-@hydra.main(config_path=CONFIG_DIR, config_name=ANNOTATOR_CONFIG_NAME)
+@hydra.main(
+    config_path=str(CONFIG_DIR), config_name=ANNOTATOR_CONFIG_NAME, version_base="1.1"
+)
 def run_annotator(cfg: DictConfig) -> None:
     """
     Run DensityAnnotator according to the settings defined in the config file.
