@@ -1,9 +1,9 @@
 import math
-import sys
 from typing import List, Tuple
 
 import tensorflow as tf
 from constants import GPU_DEVICE_ID, GPU_MEMORY_RATE
+from exceptions import LoadModelError, TensorShapeError
 from logger import logger
 from tensorflow.compat.v1 import InteractiveSession, placeholder, summary
 from tensorflow.compat.v1.train import AdamOptimizer
@@ -201,8 +201,10 @@ class DensityModel(object):
             # fully connected layer
             n = shape[0]
         else:
-            sys.stderr.write("Error: shape is not correct !")
-            sys.exit(1)
+            message = "Tensor shape must be rank 2 or 4"
+            logger.error(message)
+            raise TensorShapeError(message)
+
         stddev = math.sqrt(2 / n)
         initial = tf.random.normal(shape, stddev=stddev, dtype=tf.float32)
         if name is None:
@@ -325,8 +327,8 @@ def load_model(model_path: str) -> Tuple:
         logger.info("Load model: {}".format(last_model))
         saver.restore(sess, last_model)
     else:
-        logger.error("Eroor: Not exist model!")
-        logger.error(f"Please check model_path (model_path={model_path})")
-        sys.exit(1)
+        message = f'model_path="{model_path}" is not exist.'
+        logger.error(message)
+        raise LoadModelError(message)
 
     return model, sess

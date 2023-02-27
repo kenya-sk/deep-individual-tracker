@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-import sys
 from glob import glob
 from typing import List
 
@@ -18,6 +17,7 @@ from constants import (
     GPU_MEMORY_RATE,
     PREDICT_CONFIG_NAME,
 )
+from exceptions import IndexExtrationError, PredictionTypeError
 from logger import logger
 from model import DensityModel, load_model
 from omegaconf import DictConfig, OmegaConf
@@ -30,12 +30,7 @@ from process_dataset import (
 )
 from tensorflow.compat.v1 import InteractiveSession
 from tqdm import tqdm
-from utils import (
-    display_data_info,
-    get_current_time_str,
-    get_file_name_from_path,
-    set_capture,
-)
+from utils import display_data_info, get_file_name_from_path, set_capture
 
 
 def extract_prediction_indices(
@@ -80,8 +75,9 @@ def extract_prediction_indices(
             i for i, h in enumerate(height_index_list) if h % skip_pixel_interval == 0
         ]
     else:
-        logger.error(f"Invalid 'index_extract_type': {index_extract_type}")
-        sys.exit(1)
+        message = f'index_extract_type="{index_extract_type}" is not supported.'
+        logger.error(message)
+        raise IndexExtrationError(message)
 
     return index_list
 
@@ -289,8 +285,13 @@ def main(cfg: DictConfig) -> None:
         # predict from video data
         video_prediction(model, tf_session, cfg)
     else:
-        logger.error(f"Error: not supported data type (={predict_data_type})")
+        message = f'predict_data_type="{predict_data_type}" is not supported.'
+        logger.error(message)
+        raise PredictionTypeError(message)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.exception(e)

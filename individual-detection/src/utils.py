@@ -1,17 +1,13 @@
-import logging
 import os
-import sys
 import time
-from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
 import cv2
-import numpy as np
 import tensorflow as tf
+from exceptions import LoadVideoError
+from logger import logger
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.compat.v1.summary import FileWriter, merge_all
-
-logger = logging.getLogger(__name__)
 
 
 def display_data_info(input_path: str, output_dirctory: str, cfg: dict) -> None:
@@ -47,9 +43,10 @@ def set_capture(video_path: str) -> Tuple:
     """
     cap = cv2.VideoCapture(video_path)
     if cap is None:
-        logger.error("ERROR: Not exsit video")
-        logger.error("Please check video path: {0}".format(video_path))
-        sys.exit(1)
+        message = f'video_path="{video_path}" cannot load.'
+        logger.error(message)
+        raise LoadVideoError(message)
+
     fourcc = int(cv2.VideoWriter_fourcc(*"avc1"))
     fps = cap.get(cv2.CAP_PROP_FPS)
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
