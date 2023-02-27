@@ -10,7 +10,19 @@ class SamplingTypeError(Exception):
         super().__init__(self.message)
 
 
-class LoadFrameError(Exception):
+class LoadImageError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+class LoadVideoError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+class LoadVideoFrameError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
