@@ -1,12 +1,11 @@
-import logging
 import os
-import sys
 from glob import glob
 from pathlib import Path
 from typing import List
 
 import cv2
 import numpy as np
+from exceptions import LoadImageError, LoadVideoError, PathExistError
 from logger import logger
 
 
@@ -25,8 +24,9 @@ def get_path_list(working_directory: Path, path: str) -> List:
     elif os.path.isdir(full_path):
         path_list = [current_path for current_path in glob(f"{full_path}/*")]
     else:
-        logger.error(f"Error: Invalid Path Name: {full_path}")
-        sys.exit(1)
+        message = f'path="{full_path}" is not exist.'
+        logger.error(message)
+        raise PathExistError(message)
 
     return path_list
 
@@ -73,10 +73,9 @@ def load_image(path: str) -> np.array:
     """
     image = cv2.imread(path)
     if image is None:
-        logger.error(
-            f"Error: Can not read image file. Please check input file path. {path}"
-        )
-        sys.exit(1)
+        message = f'path="{path}" cannot read image file.'
+        logger.error(message)
+        raise LoadImageError(message)
     logger.info(f"Loaded Image: {path}")
 
     return image
@@ -91,10 +90,9 @@ def load_video(path: str) -> cv2.VideoCapture:
     """
     video = cv2.VideoCapture(path)
     if not (video.isOpened()):
-        logger.error(
-            f"Error: Can not read video file. Please check input file path. {path}"
-        )
-        sys.exit(1)
+        message = f'path="{path}" cannot read video file.'
+        logger.error(message)
+        raise LoadVideoError(message)
     logger.info(f"Loaded Video: {path}")
 
     return video

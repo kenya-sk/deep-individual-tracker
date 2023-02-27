@@ -1,10 +1,9 @@
-import logging
 import os
-import sys
 
 import cv2
 import numpy as np
 from constants import D_KEY, DATA_DIR, IMAGE_EXTENTION, P_KEY, Q_KEY, S_KEY
+from exceptions import InputFileTypeError
 from logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
@@ -84,8 +83,9 @@ class DensityAnnotator:
             elif data_type == "video":
                 self.video_annotation()
             else:
-                logger.error("Data type is invalid. Please check input file.")
-                sys.exit(1)
+                message = f"data_type={data_type} is not defined."
+                logger.error(message)
+                raise InputFileTypeError(message)
 
         # end processing
         cv2.destroyAllWindows()
