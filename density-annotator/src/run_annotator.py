@@ -1,13 +1,14 @@
 import hydra
 from constants import ANNOTATOR_CONFIG_NAME, CONFIG_DIR
 from density_annotator import DensityAnnotator
+from logger import logger
 from omegaconf import DictConfig
 
 
 @hydra.main(
     config_path=str(CONFIG_DIR), config_name=ANNOTATOR_CONFIG_NAME, version_base="1.1"
 )
-def run_annotator(cfg: DictConfig) -> None:
+def main(cfg: DictConfig) -> None:
     """
     Run DensityAnnotator according to the settings defined in the config file.
 
@@ -19,4 +20,7 @@ def run_annotator(cfg: DictConfig) -> None:
 
 
 if __name__ == "__main__":
-    run_annotator()
+    try:
+        main()
+    except Exception as e:
+        logger.exception(e)

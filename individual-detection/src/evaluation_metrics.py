@@ -1,8 +1,8 @@
-import sys
 from dataclasses import dataclass
 from typing import List
 
 import numpy as np
+from exceptions import DetectionSampleNumberError
 from logger import logger
 
 
@@ -116,9 +116,10 @@ def eval_metrics(
     Returns:
         BasicMetrics: value object of each metrics
     """
-    if sample_num <= 0:
-        logger.error("Sample is not existed. At least one sample is required.")
-        sys.exit(1)
+    if sample_num == 0:
+        message = "Detected sample number is 0. At least one sample is required."
+        logger.error(message)
+        raise DetectionSampleNumberError(message)
 
     # avoid zero division error
     accuracy = true_positive / sample_num

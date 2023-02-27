@@ -7,7 +7,7 @@ import glob
 import numpy as np
 from logger import logger
 from sklearn.cluster import MeanShift
-from utils import get_current_time_str, get_file_name_from_path
+from utils import get_file_name_from_path
 
 
 def apply_clustering_to_density_map(

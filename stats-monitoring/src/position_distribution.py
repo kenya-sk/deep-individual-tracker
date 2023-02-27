@@ -1,5 +1,4 @@
 import os
-import sys
 
 # [FIXME] support displot or kdeplot
 import warnings
@@ -9,6 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from constants import DATA_DIR, FIGURE_HEIGHT, FIGURE_WIDTH, FRAME_HEIGHT, FRAME_WIDTH
+from exceptions import PathExistError
 from logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
@@ -35,8 +35,9 @@ def load_current_coordinate(cfg: DictConfig, frame_num: int) -> pd.DataFrame:
         coordinate_df = pd.read_csv(coordinate_path)
         coordinate_df.columns = ["x", "y"]
     else:
-        logger.error(f"Not Exist Path: {coordinate_path}")
-        sys.exit(1)
+        message = f'coordinate_path="{coordinate_path}" is not exist.'
+        logger.error(message)
+        raise PathExistError(message)
 
     return coordinate_df
 
@@ -54,8 +55,9 @@ def load_past_coordinate(cfg: DictConfig) -> pd.DataFrame:
     if os.path.isdir(past_dir):
         coordinate_path_lst = glob(f"{past_dir}/*.csv")
     else:
-        logger.error(f"Not Exist Directory: {past_dir}")
-        sys.exit(1)
+        message = f'past_dir="{past_dir}" is not exist.'
+        logger.error(message)
+        raise PathExistError(message)
 
     past_coordinate_dctlst = {"x": [], "y": []}
     for path in tqdm(coordinate_path_lst):

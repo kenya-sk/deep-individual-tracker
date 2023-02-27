@@ -1,5 +1,4 @@
 import gc
-import sys
 import time
 from typing import List, Tuple
 
@@ -10,6 +9,7 @@ from constants import (
     CONFIG_DIR,
     DATA_DIR,
     EXECUTION_TIME,
+    FLOAT_MAX,
     FRAME_CHANNEL,
     FRAME_HEIGHT,
     FRAME_WIDTH,
@@ -18,6 +18,7 @@ from constants import (
     LOCAL_IMAGE_SIZE,
     TRAIN_CONFIG_NAME,
 )
+from exceptions import DatasetSplitTypeError
 from logger import logger
 from model import DensityModel
 from omegaconf import DictConfig, OmegaConf
@@ -554,7 +555,7 @@ def model_training(
     # training model
     save_model_path = f"{str(DATA_DIR)}/{cfg['save_trained_model_directory']}/{EXECUTION_TIME}/model.ckpt"
     start_time = time.time()
-    best_valid_loss = sys.float_info.max
+    best_valid_loss = FLOAT_MAX
     not_improved_count = 0
     try:
         for epoch in range(cfg["n_epochs"]):
@@ -692,10 +693,10 @@ def main(cfg: DictConfig) -> None:
             save_path_directory=save_dataset_path_directory,
         )
     else:
-        logger.error(
-            f"Invalid Dataset Type. (dataset_split_type={cfg['dataset_split_type']})"
-        )
-        sys.exit(1)
+        message = f'dataset_split_type="{cfg["dataset_split_type"]}" is note defined.'
+        logger.error(message)
+        raise DatasetSplitTypeError(message)
+
     logger.info(f"Training Dataset Size: {len(X_train)}")
     logger.info(f"Validation Dataset Size: {len(X_valid)}")
     logger.info(f"Test Dataset Size: {len(X_test)}")
@@ -705,4 +706,7 @@ def main(cfg: DictConfig) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.exception(e)

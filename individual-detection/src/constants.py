@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -40,3 +41,4 @@ GPU_DEVICE_ID: str = "0,1,2"
 GPU_MEMORY_RATE: float = 0.9
 
 RANDOM_SEED: int = 42
+FLOAT_MAX: float = sys.float_info.max

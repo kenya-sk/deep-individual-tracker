@@ -1,6 +1,4 @@
-import logging
 import math
-import sys
 from glob import glob
 from typing import List, Tuple
 
@@ -19,6 +17,7 @@ from constants import (
     LOCAL_IMAGE_SIZE,
     RANDOM_SEED,
 )
+from exceptions import DatasetEmptyError, LoadImageError
 from logger import logger
 from sklearn.model_selection import train_test_split
 
@@ -38,8 +37,9 @@ def load_dataset(
     X_list, y_list = [], []
     file_list = glob(f"{image_directory}/{file_pattern}")
     if len(file_list) == 0:
-        sys.stderr.write("Error: Not found input image file")
-        sys.exit(1)
+        message = f'dateset="{image_directory}/{file_pattern}"" is empty.'
+        logger.error(message)
+        raise DatasetEmptyError(message)
 
     for path in file_list:
         # get label path from input image path
@@ -177,10 +177,9 @@ def load_image(path: str, is_rgb: bool = True, normalized: bool = False) -> np.a
     """
     image = cv2.imread(path)
     if image is None:
-        logger.error(
-            f"Error: Can not read image file. Please check input file path. {path}"
-        )
-        sys.exit(1)
+        message = f'image path="{path}" cannot be loaded.'
+        logger.error(message)
+        raise LoadImageError(message)
     logger.info(f"Loaded Image: {path}")
 
     # convert image BGR to RGB

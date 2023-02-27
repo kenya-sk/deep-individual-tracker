@@ -1,12 +1,11 @@
-import logging
 import os
 import random
 from typing import List
 
 import cv2
 import hydra
-from constants import (CONFIG_DIR, DATA_DIR, IMAGE_EXTENTION,
-                       SAMPLER_CONFIG_NAME)
+from constants import CONFIG_DIR, DATA_DIR, IMAGE_EXTENTION, SAMPLER_CONFIG_NAME
+from exceptions import LoadVideoFrameError, SamplingTypeError
 from logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
@@ -55,7 +54,9 @@ def get_frame_number_list(
             i for i in range(total_frame_number) if i % sample_rate == 0
         ]
     else:
-        logger.error(f"Error: sampling_type={sampling_type} is not defined.")
+        message = f'sampling_type="{sampling_type}" is not defined.'
+        logger.error(message)
+        raise SamplingTypeError(message)
 
     return frame_number_list
 
@@ -93,11 +94,13 @@ def frame_sampler(
                 save_file_name = f"{current_save_dirc}/{frame_number}{IMAGE_EXTENTION}"
                 save_image(save_file_name, frame)
             else:
-                logger.error(f"Error: cannot load {frame_number} frame")
+                message = f"Frame number={frame_number} cannot load."
+                logger.error(message)
+                raise LoadVideoFrameError(message)
 
 
 @hydra.main(config_path=str(CONFIG_DIR), config_name=SAMPLER_CONFIG_NAME)
-def run_sampler(cfg: DictConfig) -> None:
+def main(cfg: DictConfig) -> None:
     """Run frame sampler according to the settings defined in the config file.
 
     Args:
@@ -112,4 +115,7 @@ def run_sampler(cfg: DictConfig) -> None:
 
 
 if __name__ == "__main__":
-    run_sampler()
+    try:
+        main()
+    except Exception as e:
+        logger.exception(e)
