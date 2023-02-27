@@ -5,7 +5,7 @@ from typing import List
 
 import cv2
 import numpy as np
-from exceptions import LoadImageError, LoadVideoError, PathExistError
+from exceptions import LoadImageError, LoadVideoError, PathNotExistError
 from logger import logger
 
 
@@ -26,7 +26,7 @@ def get_path_list(working_directory: Path, path: str) -> List:
     else:
         message = f'path="{full_path}" is not exist.'
         logger.error(message)
-        raise PathExistError(message)
+        raise PathNotExistError(message)
 
     return path_list
 

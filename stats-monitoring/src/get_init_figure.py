@@ -1,11 +1,17 @@
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
-from omegaconf import open_dict
-
-from constants import (FIGURE_HEIGHT, FIGURE_WIDTH, FRAME_HEIGHT, FRAME_WIDTH,
-                       GRAPH_FONT_SIZE, GRAPH_HEIGHT, GRAPH_MARGIN, GRAPH_NUM,
-                       GRAPH_WIDTH)
+from constants import (
+    FIGURE_HEIGHT,
+    FIGURE_WIDTH,
+    FRAME_HEIGHT,
+    FRAME_WIDTH,
+    GRAPH_FONT_SIZE,
+    GRAPH_HEIGHT,
+    GRAPH_MARGIN,
+    GRAPH_NUM,
+    GRAPH_WIDTH,
+)
 
 
 def get_init_figure() -> Tuple[plt.figure, List]:

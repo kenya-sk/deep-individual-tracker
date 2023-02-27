@@ -1,11 +1,11 @@
 import os
-import sys
 
 import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from constants import DATA_DIR, FRAME_HEIGHT, FRAME_WIDTH
+from exceptions import PathNotExistError
 from logger import logger
 from omegaconf import DictConfig
 
@@ -56,8 +56,9 @@ def set_frame(
     if os.path.isfile(frame_path):
         frame = cv2.imread(frame_path)
     else:
-        logger.error(f"Not Exist Path: {frame_path}")
-        sys.exit(1)
+        message = f'frame_path="{frame_path}" is not exist.'
+        logger.error(message)
+        raise PathNotExistError(message)
 
     # set current frame
     ax.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))

@@ -5,6 +5,7 @@ from typing import Dict
 import matplotlib.pyplot as plt
 import numpy as np
 from constants import DATA_DIR, TIME_LABELS
+from exceptions import PathNotExistError, StatsKeyNotExistError
 from logger import logger
 from omegaconf import DictConfig
 
@@ -36,8 +37,9 @@ def load_statistics(cfg: DictConfig) -> dict:
         if os.path.isfile(path):
             return np.loadtxt(path, delimiter=",")
         else:
-            logger.error(f"Not Exist File: {path}")
-            sys.exit(1)
+            message = f'path="{path}" is not exist.'
+            logger.error(message)
+            raise PathNotExistError(message)
 
     stats_dict = {
         "mean": load_value(str(DATA_DIR / cfg["path"]["mean_speed_path"])),
@@ -70,8 +72,9 @@ def load_array(stats_dict: Dict, key: str) -> np.array:
     if key in stats_dict.keys():
         return stats_dict[key]
     else:
-        logger.error(f"Not Exist Key: {key}")
-        sys.exit(1)
+        message = f'key="{key}" is not exist in stats_dict.'
+        logger.error(message)
+        raise StatsKeyNotExistError(message)
 
 
 def set_stats_metrics(
