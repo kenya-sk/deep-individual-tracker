@@ -31,9 +31,8 @@ def get_sampled_frame_number(total_frame_number: int, sample_rate: int) -> List:
     frame_number_list = []
 
     # sample target frame number
-    start_idx = 0
     for start_idx in range(1, total_frame_number, sample_rate):
-        end_idx = start_idx + sample_rate
+        end_idx = start_idx + sample_rate - 1
         sampled_frame_number = random.randint(start_idx, end_idx)
         frame_number_list.append(sampled_frame_number)
 
