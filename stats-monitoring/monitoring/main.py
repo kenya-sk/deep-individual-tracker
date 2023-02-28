@@ -1,11 +1,8 @@
-import logging
-import time
-
 import hydra
-from constants import CONFIG_DIR, MONITORING_CONFIG_NAME
-from generate_animation import generate_animation
-from get_init_figure import get_init_figure
-from logger import logger
+from monitoring.constants import CONFIG_DIR, MONITORING_CONFIG_NAME
+from monitoring.generate_animation import generate_animation
+from monitoring.get_init_figure import get_init_figure
+from monitoring.logger import logger
 from omegaconf import DictConfig, OmegaConf
 
 

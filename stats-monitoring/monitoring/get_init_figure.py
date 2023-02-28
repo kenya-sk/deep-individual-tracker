@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
-from constants import (
+from monitoring.constants import (
     FIGURE_HEIGHT,
     FIGURE_WIDTH,
     FRAME_HEIGHT,

@@ -1,6 +1,6 @@
 import logging
 
-from constants import LOG_DIR, LOGGER_NAME, TODAY
+from monitoring.constants import LOG_DIR, LOGGER_NAME, TODAY
 
 
 class ColoredStreamHandler(logging.StreamHandler):
