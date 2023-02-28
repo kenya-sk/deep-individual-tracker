@@ -38,8 +38,7 @@ def get_ground_truth(ground_truth_path: str, mask_image: np.array) -> np.array:
                 valid_ground_truth_list.append(
                     [valid_w[intersect[0]], valid_h[intersect[0]]]
                 )
-
-        return np.array(valid_ground_truth_list)
+        return np.array(valid_ground_truth_list, dtype="int32")
 
 
 def eval_detection(

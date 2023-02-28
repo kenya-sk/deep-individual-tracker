@@ -8,6 +8,7 @@ MODUEL_SRC: Path = Path(__file__).resolve().parents[0]
 CONFIG_DIR: Path = MODULE_HOME / "config"
 LOG_DIR: Path = MODULE_HOME / "logs"
 DATA_DIR: Path = MODULE_HOME / "data"
+TEST_DATA_DIR: Path = DATA_DIR / "test"
 
 TODAY: str = datetime.today().strftime("%Y%m%d")
 JST = timezone(timedelta(hours=+9), "JST")
