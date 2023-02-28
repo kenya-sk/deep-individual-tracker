@@ -2,17 +2,17 @@ from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from constants import DATA_DIR
-from frame import load_one_hour_density, set_frame
-from logger import logger
 from matplotlib.animation import FuncAnimation
-from omegaconf import DictConfig
-from position_distribution import (
+from monitoring.constants import DATA_DIR
+from monitoring.frame import load_one_hour_density, set_frame
+from monitoring.logger import logger
+from monitoring.position_distribution import (
     load_current_coordinate,
     load_past_coordinate,
     set_histogram,
 )
-from stats_metrics import load_statistics, set_stats_metrics
+from monitoring.stats_metrics import load_statistics, set_stats_metrics
+from omegaconf import DictConfig
 from tqdm import trange
 
 

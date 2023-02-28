@@ -4,9 +4,9 @@ import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from constants import DATA_DIR, FRAME_HEIGHT, FRAME_WIDTH
-from exceptions import PathNotExistError
-from logger import logger
+from monitoring.constants import DATA_DIR, FRAME_HEIGHT, FRAME_WIDTH
+from monitoring.exceptions import PathNotExistError
+from monitoring.logger import logger
 from omegaconf import DictConfig
 
 

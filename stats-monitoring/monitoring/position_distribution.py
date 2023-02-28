@@ -7,9 +7,15 @@ from glob import glob
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from constants import DATA_DIR, FIGURE_HEIGHT, FIGURE_WIDTH, FRAME_HEIGHT, FRAME_WIDTH
-from exceptions import PathExistError
-from logger import logger
+from monitoring.constants import (
+    DATA_DIR,
+    FIGURE_HEIGHT,
+    FIGURE_WIDTH,
+    FRAME_HEIGHT,
+    FRAME_WIDTH,
+)
+from monitoring.exceptions import PathNotExistError
+from monitoring.logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
 
@@ -37,7 +43,7 @@ def load_current_coordinate(cfg: DictConfig, frame_num: int) -> pd.DataFrame:
     else:
         message = f'coordinate_path="{coordinate_path}" is not exist.'
         logger.error(message)
-        raise PathExistError(message)
+        raise PathNotExistError(message)
 
     return coordinate_df
 
@@ -57,7 +63,7 @@ def load_past_coordinate(cfg: DictConfig) -> pd.DataFrame:
     else:
         message = f'past_dir="{past_dir}" is not exist.'
         logger.error(message)
-        raise PathExistError(message)
+        raise PathNotExistError(message)
 
     past_coordinate_dctlst = {"x": [], "y": []}
     for path in tqdm(coordinate_path_lst):
