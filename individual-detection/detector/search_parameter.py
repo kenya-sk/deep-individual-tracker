@@ -5,25 +5,25 @@ from typing import List
 import hydra
 import numpy as np
 import pandas as pd
-from clustering import apply_clustering_to_density_map
-from constants import (
+from detector.clustering import apply_clustering_to_density_map
+from detector.constants import (
     CONFIG_DIR,
     DATA_DIR,
     GPU_DEVICE_ID,
     GPU_MEMORY_RATE,
     SEARCH_PARAMETER_CONFIG_NAME,
 )
-from evaluate import eval_detection, eval_metrics, get_ground_truth
-from logger import logger
-from model import DensityModel, load_model
-from omegaconf import DictConfig, OmegaConf
-from predict import predict_density_map
-from process_dataset import (
+from detector.evaluate import eval_detection, eval_metrics, get_ground_truth
+from detector.logger import logger
+from detector.model import DensityModel, load_model
+from detector.predict import predict_density_map
+from detector.process_dataset import (
     apply_masking_on_image,
     get_masked_index,
     load_image,
     load_mask_image,
 )
+from omegaconf import DictConfig, OmegaConf
 from tensorflow.compat.v1 import InteractiveSession
 from tqdm import tqdm
 

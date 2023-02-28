@@ -5,7 +5,9 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import pandas as pd
-from constants import (
+from sklearn.model_selection import train_test_split
+
+from detector.constants import (
     ANALYSIS_HEIGHT_MAX,
     ANALYSIS_HEIGHT_MIN,
     ANALYSIS_WIDTH_MAX,
@@ -17,9 +19,8 @@ from constants import (
     LOCAL_IMAGE_SIZE,
     RANDOM_SEED,
 )
-from exceptions import DatasetEmptyError, LoadImageError
-from logger import logger
-from sklearn.model_selection import train_test_split
+from detector.exceptions import DatasetEmptyError, LoadImageError
+from detector.logger import logger
 
 
 def load_dataset(
