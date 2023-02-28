@@ -1,8 +1,9 @@
 import hydra
-from constants import ANNOTATOR_CONFIG_NAME, CONFIG_DIR
-from density_annotator import DensityAnnotator
-from logger import logger
 from omegaconf import DictConfig
+
+from annotator.constants import ANNOTATOR_CONFIG_NAME, CONFIG_DIR
+from annotator.density_annotator import DensityAnnotator
+from annotator.logger import logger
 
 
 @hydra.main(

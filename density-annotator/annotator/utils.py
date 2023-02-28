@@ -5,8 +5,9 @@ from typing import List
 
 import cv2
 import numpy as np
-from exceptions import LoadImageError, LoadVideoError, PathNotExistError
-from logger import logger
+
+from annotator.exceptions import LoadImageError, LoadVideoError, PathNotExistError
+from annotator.logger import logger
 
 
 def get_path_list(working_directory: Path, path: str) -> List:

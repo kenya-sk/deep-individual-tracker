@@ -1,6 +1,6 @@
 import pytest
-from src.exceptions import PathNotExistError
-from src.utils import get_path_list
+from annotator.exceptions import PathNotExistError
+from annotator.utils import get_path_list
 
 
 def test_get_path_list(tmp_path):

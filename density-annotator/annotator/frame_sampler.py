@@ -4,12 +4,18 @@ from typing import List
 
 import cv2
 import hydra
-from constants import CONFIG_DIR, DATA_DIR, IMAGE_EXTENTION, SAMPLER_CONFIG_NAME
-from exceptions import LoadVideoFrameError, SamplingTypeError
-from logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
-from utils import get_full_path_list, load_video, save_image
+
+from annotator.constants import (
+    CONFIG_DIR,
+    DATA_DIR,
+    IMAGE_EXTENTION,
+    SAMPLER_CONFIG_NAME,
+)
+from annotator.exceptions import LoadVideoFrameError, SamplingTypeError
+from annotator.logger import logger
+from annotator.utils import get_full_path_list, load_video, save_image
 
 
 def get_sampled_frame_number(total_frame_number: int, sample_rate: int) -> List:

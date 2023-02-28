@@ -2,12 +2,10 @@ import os
 
 import cv2
 import numpy as np
-from constants import D_KEY, DATA_DIR, IMAGE_EXTENTION, P_KEY, Q_KEY, S_KEY
-from exceptions import InputFileTypeError
-from logger import logger
-from omegaconf import DictConfig
-from tqdm import tqdm
-from utils import (
+from annotator.constants import D_KEY, DATA_DIR, IMAGE_EXTENTION, P_KEY, Q_KEY, S_KEY
+from annotator.exceptions import InputFileTypeError
+from annotator.logger import logger
+from annotator.utils import (
     get_input_data_type,
     get_path_list,
     load_image,
@@ -16,6 +14,8 @@ from utils import (
     save_density_map,
     save_image,
 )
+from omegaconf import DictConfig
+from tqdm import tqdm
 
 
 class DensityAnnotator:
