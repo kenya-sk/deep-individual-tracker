@@ -17,7 +17,7 @@ from detector.constants import (
     GPU_MEMORY_RATE,
     PREDICT_CONFIG_NAME,
 )
-from detector.exceptions import IndexExtrationError, PredictionTypeError
+from detector.exceptions import IndexExtractionError, PredictionTypeError
 from detector.logger import logger
 from detector.model import DensityModel, load_model
 from detector.process_dataset import (
@@ -77,7 +77,7 @@ def extract_prediction_indices(
     else:
         message = f'index_extract_type="{index_extract_type}" is not supported.'
         logger.error(message)
-        raise IndexExtrationError(message)
+        raise IndexExtractionError(message)
 
     return index_list
 

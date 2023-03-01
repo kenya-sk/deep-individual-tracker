@@ -1,11 +1,14 @@
 import numpy as np
-from detector.constants import TEST_DATA_DIR
 from detector.evaluate import eval_detection, get_ground_truth
 
 
-def test_get_ground_truth():
+def test_get_ground_truth(tmp_path):
+    # create dummy ground truth data
+    ground_truth_path = str(tmp_path / "ground_truth.csv")
+    ground_truth_array = np.array([[10, 50], [200, 450], [500, 120], [130, 125]])
+    np.savetxt(ground_truth_path, ground_truth_array, delimiter=",", fmt="%d")
+
     # mask_image is None case
-    ground_truth_path = str(TEST_DATA_DIR / "ground_truth.csv")
     ground_truth_array = get_ground_truth(ground_truth_path, None)
     assert ground_truth_array.shape == (4, 2)
     assert ground_truth_array.dtype == np.int32
