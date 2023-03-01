@@ -46,7 +46,7 @@ from tqdm import trange
 
 
 def hard_negative_mining(
-    X: np.array, y: np.array, loss_array: np.array
+    X: np.array, y: np.array, loss_array: np.array, weight: float
 ) -> Tuple[np.array, np.array]:
     """Hard negative mining is performed based on the error in each sample.
 
@@ -54,6 +54,7 @@ def hard_negative_mining(
         X (np.array): array of local image
         y (np.array): array of density map
         loss_array (np.array): array of each sample loss
+        weight (float): weight of hard negative (thresh = weight * mean loss)
 
     Returns:
         Tuple[np.array, np.array]: tuple of hard negative image and label
@@ -74,7 +75,7 @@ def hard_negative_mining(
         return index
 
     # the threshold is three times the average
-    thresh = np.mean(loss_array) * 3
+    thresh = np.mean(loss_array) * weight
     index = hard_negative_index(loss_array, thresh)
     hard_negative_image_array = np.zeros(
         (len(index), LOCAL_IMAGE_SIZE, LOCAL_IMAGE_SIZE, FRAME_CHANNEL),
@@ -283,6 +284,7 @@ def train(
                 X_train_local[train_start_index:train_end_index],
                 y_train_local[train_start_index:train_end_index],
                 train_diff,
+                params_dict["hard_negative_weight"],
             )
             # if exist hard negative sample in current batch, append in management array
             if (
