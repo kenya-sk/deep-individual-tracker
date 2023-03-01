@@ -5,9 +5,9 @@ matplotlib.use("Agg")
 import glob
 
 import numpy as np
-from logger import logger
+from detector.logger import logger
+from detector.utils import get_file_name_from_path
 from sklearn.cluster import MeanShift
-from utils import get_file_name_from_path
 
 
 def apply_clustering_to_density_map(

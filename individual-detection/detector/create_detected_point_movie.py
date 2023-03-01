@@ -6,7 +6,7 @@ import cv2
 import hydra
 import numpy as np
 import pandas as pd
-from constants import (
+from detector.constants import (
     CONFIG_DIR,
     DATA_DIR,
     DETECTED_MOVIE_CONFIG_NAME,
@@ -15,7 +15,7 @@ from constants import (
     IMAGE_EXTENTION,
     MOVIE_FPS,
 )
-from logger import logger
+from detector.logger import logger
 from omegaconf import DictConfig
 from tqdm import tqdm
 

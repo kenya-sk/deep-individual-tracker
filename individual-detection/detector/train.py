@@ -5,7 +5,7 @@ from typing import List, Tuple
 import hydra
 import numpy as np
 import tensorflow as tf
-from constants import (
+from detector.constants import (
     CONFIG_DIR,
     DATA_DIR,
     EXECUTION_TIME,
@@ -18,11 +18,10 @@ from constants import (
     LOCAL_IMAGE_SIZE,
     TRAIN_CONFIG_NAME,
 )
-from exceptions import DatasetSplitTypeError
-from logger import logger
-from model import DensityModel
-from omegaconf import DictConfig, OmegaConf
-from process_dataset import (
+from detector.exceptions import DatasetSplitTypeError
+from detector.logger import logger
+from detector.model import DensityModel
+from detector.process_dataset import (
     extract_local_data,
     get_masked_index,
     load_dataset,
@@ -31,6 +30,8 @@ from process_dataset import (
     split_dataset,
     split_dataset_by_date,
 )
+from detector.utils import get_elapsed_time_str, set_tensorboard
+from omegaconf import DictConfig, OmegaConf
 from sklearn.utils import shuffle
 from tensorflow.compat.v1 import (
     ConfigProto,
@@ -42,11 +43,10 @@ from tensorflow.compat.v1.summary import FileWriter
 from tensorflow.compat.v1.train import Saver
 from tensorflow.python.framework.ops import Tensor as OpsTensor
 from tqdm import trange
-from utils import get_elapsed_time_str, set_tensorboard
 
 
 def hard_negative_mining(
-    X: np.array, y: np.array, loss_array: np.array
+    X: np.array, y: np.array, loss_array: np.array, weight: float
 ) -> Tuple[np.array, np.array]:
     """Hard negative mining is performed based on the error in each sample.
 
@@ -54,6 +54,7 @@ def hard_negative_mining(
         X (np.array): array of local image
         y (np.array): array of density map
         loss_array (np.array): array of each sample loss
+        weight (float): weight of hard negative (thresh = weight * mean loss)
 
     Returns:
         Tuple[np.array, np.array]: tuple of hard negative image and label
@@ -74,7 +75,7 @@ def hard_negative_mining(
         return index
 
     # the threshold is three times the average
-    thresh = np.mean(loss_array) * 3
+    thresh = np.mean(loss_array) * weight
     index = hard_negative_index(loss_array, thresh)
     hard_negative_image_array = np.zeros(
         (len(index), LOCAL_IMAGE_SIZE, LOCAL_IMAGE_SIZE, FRAME_CHANNEL),
@@ -283,6 +284,7 @@ def train(
                 X_train_local[train_start_index:train_end_index],
                 y_train_local[train_start_index:train_end_index],
                 train_diff,
+                params_dict["hard_negative_weight"],
             )
             # if exist hard negative sample in current batch, append in management array
             if (

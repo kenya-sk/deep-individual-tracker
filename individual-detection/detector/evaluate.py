@@ -3,11 +3,11 @@ from typing import Tuple
 
 import hydra
 import numpy as np
-from constants import CONFIG_DIR, DATA_DIR, EVALUATE_CONFIG_NAME
-from evaluation_metrics import eval_metrics, output_evaluation_report
-from logger import logger
+from detector.constants import CONFIG_DIR, DATA_DIR, EVALUATE_CONFIG_NAME
+from detector.evaluation_metrics import eval_metrics, output_evaluation_report
+from detector.logger import logger
+from detector.process_dataset import get_masked_index, load_mask_image
 from omegaconf import DictConfig, OmegaConf
-from process_dataset import get_masked_index, load_mask_image
 from scipy import optimize
 from tqdm import tqdm
 
@@ -38,8 +38,7 @@ def get_ground_truth(ground_truth_path: str, mask_image: np.array) -> np.array:
                 valid_ground_truth_list.append(
                     [valid_w[intersect[0]], valid_h[intersect[0]]]
                 )
-
-        return np.array(valid_ground_truth_list)
+        return np.array(valid_ground_truth_list, dtype="int32")
 
 
 def eval_detection(

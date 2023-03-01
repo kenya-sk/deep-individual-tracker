@@ -4,10 +4,11 @@ from typing import List, Tuple
 
 import cv2
 import tensorflow as tf
-from exceptions import LoadVideoError
-from logger import logger
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.compat.v1.summary import FileWriter, merge_all
+
+from detector.exceptions import LoadVideoError
+from detector.logger import logger
 
 
 def display_data_info(input_path: str, output_dirctory: str, cfg: dict) -> None:
@@ -73,10 +74,10 @@ def get_elapsed_time_str(start_time: float) -> str:
     Returns:
         str: string representing elapsed time
     """
-    total_elpased_second = time.time() - start_time
-    elapsed_hour = int(total_elpased_second / 3600)
-    elapsed_minute = int(total_elpased_second % 3600 / 60)
-    elapsed_second = int(total_elpased_second % 60)
+    total_elapsed_second = time.time() - start_time
+    elapsed_hour = int(total_elapsed_second / 3600)
+    elapsed_minute = int(total_elapsed_second % 3600 / 60)
+    elapsed_second = int(total_elapsed_second % 60)
 
     return f"{elapsed_hour}[hour] {elapsed_minute}[min] {elapsed_second}[sec]"
 

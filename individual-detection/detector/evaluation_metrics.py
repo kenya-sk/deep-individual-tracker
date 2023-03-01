@@ -2,8 +2,9 @@ from dataclasses import dataclass
 from typing import List
 
 import numpy as np
-from exceptions import DetectionSampleNumberError
-from logger import logger
+
+from detector.exceptions import DetectionSampleNumberError
+from detector.logger import logger
 
 
 @dataclass(frozen=True)

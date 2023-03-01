@@ -41,3 +41,4 @@ under_sampling_thresh: 0.2
 # dropout rate  for each layer at training process
 # 0.0: not apply dropout, 1.0: drop full units
 dropout_rate: 0.5
+hard_negative_wieght: 3.0
