@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - add-actions # for test
     paths:
       - 'density-annotator/**'
   pull_request:
@@ -10,12 +11,25 @@ on:
       - 'density-annotator/**'
 
 jobs:
-  build:
+  pytest:
+    name: pytest for density-annotator
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./density-annotator
     steps:
-      - uses: actions/checkout@v2
-      - name: Build Image
-        run: docker build .
+      - name: Check out
+        uses: actions/checkout@v2
+      - name: Setup Python 3.8 environment
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install Poetry
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+      - name: Add path for Poetry
+        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+      - name: Install dependencies
+        run: poetry install --no-interaction
+      - name: Run PyTest
+        run: poetry run pytest tests -v
