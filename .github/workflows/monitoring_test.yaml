@@ -4,18 +4,18 @@ on:
     branches:
       - main
     paths:
-      - 'stas-monitoring/**'
+      - 'stats-monitoring/**'
   pull_request:
     paths:
-      - 'stas-monitoring/**'
+      - 'stats-monitoring/**'
 
 jobs:
   pytest:
-    name: pytest for stas-monitoring
+    name: pytest for stats-monitoring
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./stas-monitoring
+        working-directory: ./stats-monitoring
     steps:
       - name: Check out
         uses: actions/checkout@v2
