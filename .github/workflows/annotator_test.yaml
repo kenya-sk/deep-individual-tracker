@@ -1,0 +1,21 @@
+name: annotator-test
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'density-annotator/**'
+  pull_request:
+    paths:
+      - 'density-annotator/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./density-annotator
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build .
