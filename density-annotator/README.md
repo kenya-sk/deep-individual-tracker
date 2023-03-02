@@ -1,5 +1,5 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
-[![build-docker-container](https://github.com/kenya-sk/density-annotator/actions/workflows/build_container.yaml/badge.svg?branch=main)](https://github.com/kenya-sk/density-annotator/actions/workflows/build_container.yaml)
+[![annotator-test](https://github.com/kenya-sk/deep-individual-tracker/actions/workflows/annotator_test.yaml/badge.svg)](https://github.com/kenya-sk/deep-individual-tracker/actions/workflows/annotator_test.yaml)
 
 # Deep Individual Tracker / Density Annotator
 DensityAnnotator is a GUI-based annotation tool that creates a density map for an image.
