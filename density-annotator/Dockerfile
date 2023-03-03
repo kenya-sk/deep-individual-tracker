@@ -2,6 +2,7 @@ FROM python:3.8-slim AS builder
 
 WORKDIR /workspace
 ARG PLATFORM="prod"
+
 RUN pip install poetry
 COPY pyproject.toml ./
 RUN poetry install
@@ -10,10 +11,12 @@ RUN if [ "$PLATFORM" = "dev" ]; \
     else poetry export -f requirements.txt > requirements.txt; \
     fi
 
+
 FROM python:3.8-slim
 
-ENV PYTHONUNBUFFERED=1
 WORKDIR /workspace
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH /workspace
 
 RUN apt-get update && apt-get install -y libopencv-dev
 COPY --from=builder /workspace/requirements.txt .

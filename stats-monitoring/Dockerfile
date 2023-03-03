@@ -1,6 +1,6 @@
 FROM python:3.8.5-slim AS builder
 
-WORKDIR /root
+WORKDIR /workspace
 ARG PLATFORM="prod"
 
 # create requirements.txt from poetry
@@ -14,7 +14,8 @@ RUN if [ "$PLATFORM" = "dev" ]; \
 
 FROM python:3.8.5-slim
 
-WORKDIR /root
+WORKDIR /workspace
+ENV PYTHONPATH /workspace
 
 # shift timezone to Asia/Tokyo.
 RUN apt-get update \
@@ -30,7 +31,7 @@ RUN apt-get update \
     && echo "export LANG=ja_JP.UTF-8" >> ~/.bashrc
 
 # install python package from requirements.txt
-COPY --from=builder /root/requirements.txt .
+COPY --from=builder /workspace/requirements.txt .
 RUN pip install -r requirements.txt
 
 # copy scripts and dependency file from source directory

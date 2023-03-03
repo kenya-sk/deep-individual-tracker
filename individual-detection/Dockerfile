@@ -1,6 +1,7 @@
 FROM tensorflow/tensorflow:1.15.5-gpu-py3
 
 WORKDIR /workspace
+ENV PYTHONPATH /workspace
 
 # add nvidia public key
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
