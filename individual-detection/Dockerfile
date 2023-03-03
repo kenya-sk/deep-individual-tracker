@@ -15,7 +15,6 @@ RUN if [ "$PLATFORM" = "dev" ]; \
 FROM tensorflow/tensorflow:1.15.5-gpu-py3
 
 WORKDIR /workspace
-COPY --from=builder /workspace/requirements.txt .
 
 # add nvidia public key
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
@@ -28,6 +27,9 @@ RUN apt-get install -y \
     libsm6 \
     libxrender1 \
     libxext6
+
+# install python package from requirements.txt
+COPY --from=builder /workspace/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
