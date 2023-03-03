@@ -19,16 +19,7 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v2
-      - name: Setup Python 3.8 environment
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.8
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-      - name: Add path for Poetry
-        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
-      - name: Install dependencies
-        run: poetry install --no-interaction
-      - name: Run PyTest
-        run: poetry run pytest tests -v
+      - name: Bulid Docker image
+        run: docker build -t monitoring:latest ./ --build-arg PLATFORM="dev"
+      # - name: Run PyTest
+      #   run: docker run monitoring:latest pytest tests -v

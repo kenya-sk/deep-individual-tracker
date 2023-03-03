@@ -1,0 +1,25 @@
+name: detection-test
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'individual-detection/**'
+  pull_request:
+    paths:
+      - 'individual-detection/**'
+
+jobs:
+  build:
+    name: pytest for individual-detection
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./individual-detection
+    steps:
+      - name: Check out
+        uses: actions/checkout@v2
+      - name: Bulid Docker image
+        run: docker build -t detection:latest .
+      - name: Run PyTest
+        run: docker run detection:latest pytest tests -v
