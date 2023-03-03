@@ -1,7 +1,21 @@
+FROM python:3.8-slim AS builder
+
+WORKDIR /root
+ARG PLATFORM="prod"
+
+# create requirements.txt from poetry
+RUN pip install poetry
+COPY pyproject.toml ./
+RUN poetry install
+RUN if [ "$PLATFORM" = "dev" ]; \
+    then poetry export --with dev -f requirements.txt > requirements.txt; \
+    else poetry export -f requirements.txt > requirements.txt; \
+    fi
+
 FROM tensorflow/tensorflow:1.15.5-gpu-py3
 
 WORKDIR /root
-COPY requirements.txt requirements.txt
+COPY --from=builder /root/requirements.txt .
 
 # add nvidia public key
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub

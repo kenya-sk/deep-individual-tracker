@@ -3,6 +3,7 @@ name = "density-annotator"
 version = "0.1.0"
 description = "An annotation tool that creates a density map from an image."
 authors = ["kenya-sk"]
+readme = "README.md"
 license = "MIT"
 
 [tool.poetry.dependencies]

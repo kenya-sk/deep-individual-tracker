@@ -1,8 +1,9 @@
 [tool.poetry]
-name = "aquarium-tuna-analysis"
+name = "stats-monitoring"
 version = "0.1.0"
 description = ""
 authors = ["kenya-sk"]
+readme = "README.md"
 license = "MIT"
 
 [tool.poetry.dependencies]

@@ -1,3 +1,6 @@
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+
+
 # Deep Individual Tracker / Indeividual Detection
 ## Introduction
 This repository performs individual detection in consideration of overlap by using CNN (Convolutional Neural Network) in each pixel.
