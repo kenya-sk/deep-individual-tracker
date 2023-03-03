@@ -1,4 +1,5 @@
 # Deep Individual Tracker / Statistic Monitoring
+[![monitoring-test](https://github.com/kenya-sk/deep-individual-tracker/actions/workflows/monitoring_test.yaml/badge.svg)](https://github.com/kenya-sk/deep-individual-tracker/actions/workflows/monitoring_test.yaml)
 
 ## Overview
 

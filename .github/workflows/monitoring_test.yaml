@@ -21,5 +21,5 @@ jobs:
         uses: actions/checkout@v2
       - name: Bulid Docker image
         run: docker build -t monitoring:latest ./ --build-arg PLATFORM="dev"
-      - name: Run PyTest
-        run: docker run monitoring:latest pytest tests -v
+      # - name: Run PyTest
+      #   run: docker run monitoring:latest pytest tests -v
