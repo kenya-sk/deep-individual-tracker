@@ -1,5 +1,5 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
-
+[![detection-test](https://github.com/kenya-sk/deep-individual-tracker/actions/workflows/detection_test.yaml/badge.svg)](https://github.com/kenya-sk/deep-individual-tracker/actions/workflows/detection_test.yaml)
 
 # Deep Individual Tracker / Indeividual Detection
 ## Introduction
