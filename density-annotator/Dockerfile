@@ -1,10 +1,14 @@
 FROM python:3.8-slim as builder
 
 WORKDIR /workspace
+ARG PLATFORM="prod"
 RUN pip install poetry
 COPY pyproject.toml ./
 RUN poetry install
-RUN poetry export -f requirements.txt > requirements.txt
+RUN if [ "$PLATFORM" = "dev" ]; \
+    then poetry export --with dev -f requirements.txt > requirements.txt; \
+    else poetry export -f requirements.txt > requirements.txt; \
+    fi
 
 FROM python:3.8-slim
 
