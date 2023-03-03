@@ -1,17 +1,3 @@
-FROM python:3.8-slim AS builder
-
-WORKDIR /workspace
-ARG PLATFORM="prod"
-
-# create requirements.txt from poetry
-RUN pip install poetry
-COPY pyproject.toml ./
-RUN poetry install
-RUN if [ "$PLATFORM" = "dev" ]; \
-    then poetry export --with dev -f requirements.txt > requirements.txt; \
-    else poetry export -f requirements.txt > requirements.txt; \
-    fi
-
 FROM tensorflow/tensorflow:1.15.5-gpu-py3
 
 WORKDIR /workspace
@@ -29,7 +15,7 @@ RUN apt-get install -y \
     libxext6
 
 # install python package from requirements.txt
-COPY --from=builder /workspace/requirements.txt .
+COPY ./requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 

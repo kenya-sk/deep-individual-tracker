@@ -20,6 +20,6 @@ jobs:
       - name: Check out
         uses: actions/checkout@v2
       - name: Bulid Docker image
-        run: docker build -t detection:latest ./ --build-arg PLATFORM="dev"
+        run: docker build -t detection:latest .
       - name: Run PyTest
         run: docker run detection:latest pytest tests -v
