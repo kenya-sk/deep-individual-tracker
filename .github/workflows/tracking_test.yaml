@@ -1,0 +1,23 @@
+name: tracking-test
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'individual-tracking/**'
+  pull_request:
+    paths:
+      - 'individual-tracking/**'
+
+jobs:
+  pytest:
+    name: Test for individual-tracking
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./individual-tracking
+    steps:
+      - name: Check out
+        uses: actions/checkout@v2
+      - name: Bulid Docker image
+        run: docker build -t tracking:latest .

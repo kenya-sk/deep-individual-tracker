@@ -1,6 +1,7 @@
-# Deep Individual Tracker / Statistic Monitoring
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![monitoring-test](https://github.com/kenya-sk/deep-individual-tracker/actions/workflows/monitoring_test.yaml/badge.svg)](https://github.com/kenya-sk/deep-individual-tracker/actions/workflows/monitoring_test.yaml)
 
+# Deep Individual Tracker / Statistic Monitoring
 ## Overview
 
 The system provides a monitoring environment with the following statistical information added to the video.
