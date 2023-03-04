@@ -1,12 +1,11 @@
 import math
 from glob import glob
+from pathlib import Path
 from typing import List, Tuple
 
 import cv2
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-
 from detector.constants import (
     ANALYSIS_HEIGHT_MAX,
     ANALYSIS_HEIGHT_MIN,
@@ -21,6 +20,7 @@ from detector.constants import (
 )
 from detector.exceptions import DatasetEmptyError, LoadImageError
 from detector.logger import logger
+from sklearn.model_selection import train_test_split
 
 
 def load_dataset(
@@ -118,6 +118,7 @@ def split_dataset(
     )
 
     if save_path_directory is not None:
+        Path(save_path_directory).mkdir(parents=True, exist_ok=True)
         save_dataset_path(X_train, y_train, f"{save_path_directory}/train_dataset.csv")
         save_dataset_path(X_valid, y_valid, f"{save_path_directory}/valid_dataset.csv")
         save_dataset_path(X_test, y_test, f"{save_path_directory}/test_dataset.csv")
@@ -158,6 +159,7 @@ def split_dataset_by_date(
     )
 
     if save_path_directory is not None:
+        Path(save_path_directory).mkdir(parents=True, exist_ok=True)
         save_dataset_path(X_train, y_train, f"{save_path_directory}/train_dataset.csv")
         save_dataset_path(X_valid, y_valid, f"{save_path_directory}/valid_dataset.csv")
         save_dataset_path(X_test, y_test, f"{save_path_directory}/test_dataset.csv")
@@ -244,7 +246,7 @@ def load_mask_image(mask_path: str = None, normalized: bool = True) -> np.array:
     Returns:
         np.array: loaded binary masked image
     """
-    if mask_path is not None:
+    if mask_path != "":
         # load binary mask image
         mask = cv2.imread(mask_path)
         assert (
@@ -363,7 +365,7 @@ def extract_local_data(
     height, width, channel = get_image_shape(image)
 
     pad = math.floor(LOCAL_IMAGE_SIZE / 2)
-    pad_image = np.zeros((height + pad * 2, width + pad * 2, channel), dtype="float32")
+    pad_image = np.zeros((height + pad * 2, width + pad * 2, channel), dtype="uint8")
     pad_image[pad : pad + height, pad : pad + width] = image
 
     # get each axis index

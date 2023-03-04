@@ -11,10 +11,9 @@ from detector.constants import (
     EXECUTION_TIME,
     FLOAT_MAX,
     FRAME_CHANNEL,
-    FRAME_HEIGHT,
-    FRAME_WIDTH,
     GPU_DEVICE_ID,
     GPU_MEMORY_RATE,
+    INPUT_IMAGE_SHAPE,
     LOCAL_IMAGE_SIZE,
     TRAIN_CONFIG_NAME,
 )
@@ -189,11 +188,6 @@ def train(
 
     # initialization of training
     train_loss = 0.0
-    input_image_shape = (
-        FRAME_HEIGHT,
-        FRAME_WIDTH,
-        FRAME_CHANNEL,
-    )
     hard_negative_image_array = np.zeros(
         (
             1,
@@ -212,7 +206,7 @@ def train(
         X_image, y_dens = load_sample(
             X_train[train_idx],
             y_train[train_idx],
-            input_image_shape,
+            INPUT_IMAGE_SHAPE,
             mask_image,
             is_rgb=True,
             normalized=True,
@@ -340,18 +334,13 @@ def validation(
     """
 
     valid_loss = 0.0
-    input_image_shape = (
-        FRAME_HEIGHT,
-        FRAME_WIDTH,
-        LOCAL_IMAGE_SIZE,
-    )
     sample_number = len(X_valid)
     for valid_idx in trange(sample_number, desc=f"Model Validation [epoch={epoch+1}]"):
         # load current index image and label
         X_image, y_dens = load_sample(
             X_valid[valid_idx],
             y_valid[valid_idx],
-            input_image_shape,
+            INPUT_IMAGE_SHAPE,
             mask_image,
             is_rgb=True,
             normalized=True,
@@ -433,18 +422,13 @@ def test(
     """
 
     test_loss = 0.0
-    input_image_shape = (
-        FRAME_HEIGHT,
-        FRAME_WIDTH,
-        FRAME_CHANNEL,
-    )
     sample_number = len(X_test)
     for test_idx in trange(sample_number, desc="Test Trained Model"):
         # load current index image and label
         X_image, y_dens = load_sample(
             X_test[test_idx],
             y_test[test_idx],
-            input_image_shape,
+            INPUT_IMAGE_SHAPE,
             mask_image,
             is_rgb=True,
             normalized=True,
@@ -535,8 +519,8 @@ def model_training(
     # get mask index
     # if you analyze all areas, please set a white image
     mask_image = load_mask_image(cfg["mask_path"])
-    index_h, index_w = get_masked_index(mask_image, cfg, horizontal_flip=False)
-    flip_index_h, flip_index_w = get_masked_index(mask_image, cfg, horizontal_flip=True)
+    index_h, index_w = get_masked_index(mask_image, horizontal_flip=False)
+    flip_index_h, flip_index_w = get_masked_index(mask_image, horizontal_flip=True)
     cfg["index_h"] = index_h
     cfg["index_w"] = index_w
     cfg["flip_index_h"] = flip_index_h
@@ -555,7 +539,11 @@ def model_training(
         global_variables_initializer().run()
 
     # training model
-    save_model_path = f"{str(DATA_DIR)}/{cfg['save_trained_model_directory']}/{EXECUTION_TIME}/model.ckpt"
+    save_model_dirc = (
+        DATA_DIR / f"{cfg['save_trained_model_directory']}/{EXECUTION_TIME}"
+    )
+    save_model_dirc.mkdir(parents=True, exist_ok=True)
+    save_model_path = f"{save_model_dirc}/model.ckpt"
     start_time = time.time()
     best_valid_loss = FLOAT_MAX
     not_improved_count = 0
@@ -672,7 +660,7 @@ def main(cfg: DictConfig) -> None:
     # loading train, validation and test dataset
     logger.info("Loading Dataset...")
     save_dataset_path_directory = (
-        f"{DATA_DIR}/cfg['save_dataset_path_directory']/{EXECUTION_TIME}"
+        f"{DATA_DIR}/{cfg['save_dataset_path_directory']}/{EXECUTION_TIME}"
     )
     if cfg["dataset_split_type"] == "random":
         X_list, y_list = load_dataset(
