@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-IMAGE_NAME="density-annotator"
+IMAGE_NAME="deep-annotator"
 BUILD_STATUS=false
 
 if [ "$(docker image ls -q "${IMAGE_NAME}")" ]; then

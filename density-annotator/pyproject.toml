@@ -5,6 +5,9 @@ description = "An annotation tool that creates a density map from an image."
 authors = ["kenya-sk"]
 readme = "README.md"
 license = "MIT"
+packages = [
+    { include = "annotator" },
+]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"

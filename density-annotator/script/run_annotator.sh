@@ -2,5 +2,5 @@
 set -ex
 
 echo "Running Density Annotator..."
-poetry run python src/run_annotator.py
+poetry run python annotator/run_annotator.py
 

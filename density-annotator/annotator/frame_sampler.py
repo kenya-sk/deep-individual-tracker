@@ -4,9 +4,6 @@ from typing import List
 
 import cv2
 import hydra
-from omegaconf import DictConfig
-from tqdm import tqdm
-
 from annotator.constants import (
     CONFIG_DIR,
     DATA_DIR,
@@ -16,6 +13,8 @@ from annotator.constants import (
 from annotator.exceptions import LoadVideoFrameError, SamplingTypeError
 from annotator.logger import logger
 from annotator.utils import get_full_path_list, load_video, save_image
+from omegaconf import DictConfig
+from tqdm import tqdm
 
 
 def get_sampled_frame_number(total_frame_number: int, sample_rate: int) -> List:
@@ -33,6 +32,9 @@ def get_sampled_frame_number(total_frame_number: int, sample_rate: int) -> List:
     # sample target frame number
     for start_idx in range(1, total_frame_number, sample_rate):
         end_idx = start_idx + sample_rate - 1
+        if end_idx > total_frame_number:
+            end_idx = total_frame_number - 1
+
         sampled_frame_number = random.randint(start_idx, end_idx)
         frame_number_list.append(sampled_frame_number)
 

@@ -1,8 +1,8 @@
 sampling_type: "random"
-sample_rate: 100
+sample_rate: 25
 
 # relative path from data directory
 path:
   input_video_list:
-    - "demo/video/demo_video.mp4"
-  save_frame_dirc: "demo/sample_frame"
+    - "demo/video/demo.mp4"
+  save_frame_dirc: "demo/inputs/sampling_frame"

@@ -5,7 +5,7 @@ ARG PLATFORM="prod"
 
 RUN pip install poetry
 COPY pyproject.toml ./
-RUN poetry install
+RUN poetry install --no-root
 RUN if [ "$PLATFORM" = "dev" ]; \
     then poetry export --with dev -f requirements.txt > requirements.txt; \
     else poetry export -f requirements.txt > requirements.txt; \
