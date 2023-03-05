@@ -7,7 +7,7 @@ save_dataset_path_directory: "datasets"
 tensorboard_directory: "tensorboard"
 save_trained_model_directory: "models"
 # define logic for splitting the data set
-dataset_split_type: "timeseries"
+dataset_split_type: "random"
 train_date_list: 
   - "20170416"
   - "20170417"
@@ -41,4 +41,4 @@ under_sampling_thresh: 0.2
 # dropout rate  for each layer at training process
 # 0.0: not apply dropout, 1.0: drop full units
 dropout_rate: 0.5
-hard_negative_wieght: 3.0
+hard_negative_weight: 3.0

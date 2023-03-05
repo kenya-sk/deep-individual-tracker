@@ -13,7 +13,11 @@ from detector.constants import (
     FRAME_HEIGHT,
     FRAME_WIDTH,
     IMAGE_EXTENTION,
+    LINE_TYPE,
     MOVIE_FPS,
+    POINT_COLOR,
+    POINT_RADIUS,
+    POINT_THICKNESS,
 )
 from detector.logger import logger
 from omegaconf import DictConfig
@@ -57,6 +61,29 @@ def sort_by_frame_number(path_list: List) -> List:
     return df["raw_path"].to_list()
 
 
+# [TODO] add test
+def draw_detection_points(image: np.array, point_coord: np.array) -> np.array:
+    """Draw detection points on the image.
+
+    Returns:
+        np.array: image with detection points
+    """
+    if point_coord.shape == (2,):
+        point_coord = np.array([point_coord])
+
+    for point in point_coord:
+        cv2.circle(
+            image,
+            (point[0], point[1]),
+            radius=POINT_RADIUS,
+            color=POINT_COLOR,
+            thickness=POINT_THICKNESS,
+            lineType=LINE_TYPE,
+        )
+
+    return image
+
+
 def create_detected_point_movie(
     image_directory: str,
     point_coord_directory: str,
@@ -90,16 +117,13 @@ def create_detected_point_movie(
         )
 
         # plot detected point on image
-        for cood in detected_coord:
-            cv2.circle(
-                image, (int(cood[0]), int(cood[1])), 3, (0, 0, 255), -1, cv2.LINE_AA
-            )
+        drew_image = draw_detection_points(image, detected_coord)
 
         # writes as movie data
-        output_movie.write(image)
+        output_movie.write(drew_image)
 
     cv2.destroyAllWindows()
-    logger.info("Saved Movie Data in '{movie_save_path}'")
+    logger.info(f"Saved Movie Data in '{movie_save_path}'")
 
 
 @hydra.main(
@@ -118,9 +142,9 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Loaded config: {cfg}")
 
     create_detected_point_movie(
-        str(DATA_DIR / cfg.image_directory),
-        str(DATA_DIR / cfg.point_coord_directory),
-        str(DATA_DIR / cfg.movie_save_path),
+        str(DATA_DIR / cfg["image_directory"]),
+        str(DATA_DIR / cfg["point_coord_directory"]),
+        str(DATA_DIR / cfg["movie_save_path"]),
     )
 
 

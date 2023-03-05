@@ -289,14 +289,14 @@ def main(cfg: DictConfig) -> None:
 
     # load input, label and predicted path list
     dataset_path_df = (
-        pd.read_csv(cfg["dataset_path"])
+        pd.read_csv(str(DATA_DIR / cfg["dataset_path"]))
         .sample(frac=cfg["sample_rate"])
         .reset_index(drop=True)
     )
 
     # load mask image
     if cfg["mask_path"] is not None:
-        mask_image = load_mask_image(cfg["mask_path"])
+        mask_image = load_mask_image(str(DATA_DIR / cfg["mask_path"]))
         index_h, index_w = get_masked_index(mask_image, cfg)
         cfg["index_h"] = index_h
         cfg["index_w"] = index_w
@@ -305,11 +305,7 @@ def main(cfg: DictConfig) -> None:
 
     # load trained model
     if "prediction_grid" in cfg["search_params"].keys():
-        model, tf_session = load_model(
-            str(DATA_DIR / cfg["trained_model_directory"]),
-            GPU_DEVICE_ID,
-            GPU_MEMORY_RATE,
-        )
+        model, tf_session = load_model(str(DATA_DIR / cfg["trained_model_directory"]))
     else:
         model, tf_session = None, None
 
