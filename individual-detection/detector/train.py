@@ -518,7 +518,7 @@ def model_training(
 
     # get mask index
     # if you analyze all areas, please set a white image
-    mask_image = load_mask_image(cfg["mask_path"])
+    mask_image = load_mask_image(str(DATA_DIR / cfg["mask_path"]))
     index_h, index_w = get_masked_index(mask_image, horizontal_flip=False)
     flip_index_h, flip_index_w = get_masked_index(mask_image, horizontal_flip=True)
     cfg["index_h"] = index_h

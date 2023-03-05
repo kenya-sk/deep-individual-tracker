@@ -246,7 +246,7 @@ def load_mask_image(mask_path: str = None, normalized: bool = True) -> np.array:
     Returns:
         np.array: loaded binary masked image
     """
-    if mask_path != "":
+    if Path(mask_path).is_file():
         # load binary mask image
         mask = cv2.imread(mask_path)
         assert (
@@ -275,6 +275,9 @@ def apply_masking_on_image(
     Returns:
         np.array: masked image
     """
+    if mask is None:
+        return image
+
     # apply mask to image
     if channel == 3:
         masked_image = image * mask

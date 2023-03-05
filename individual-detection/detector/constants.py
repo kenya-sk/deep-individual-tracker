@@ -2,6 +2,8 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import cv2
+
 MODULE_HOME: Path = Path(__file__).resolve().parents[1]
 MODUEL_SRC: Path = Path(__file__).resolve().parents[0]
 
@@ -13,7 +15,7 @@ TEST_DATA_DIR: Path = DATA_DIR / "test"
 TODAY: str = datetime.today().strftime("%Y%m%d")
 JST = timezone(timedelta(hours=+9), "JST")
 EXECUTION_TIME: str = datetime.now(JST).strftime("%Y%m%d_%H%M%S")
-LOGGER_NAME = "stats-monitoring"
+LOGGER_NAME = "individual-detection"
 
 TRAIN_CONFIG_NAME: str = "train"
 PREDICT_CONFIG_NAME: str = "predict"
@@ -38,9 +40,16 @@ ANALYSIS_WIDTH_MAX: int = 1920
 LOCAL_IMAGE_SIZE: int = 72
 
 # ID of using GPU: 0-max number of available GPUs
-GPU_DEVICE_ID: str = "0,1,2"
+# ex) "0,1,2"
+GPU_DEVICE_ID: str = "0"
 # using each GPU memory rate: 0.0-1.0
 GPU_MEMORY_RATE: float = 0.9
 
 RANDOM_SEED: int = 42
 FLOAT_MAX: float = sys.float_info.max
+
+# draw point parameter
+POINT_RADIUS: int = 5
+POINT_COLOR: tuple = (0, 0, 255)
+POINT_THICKNESS: int = -1
+LINE_TYPE: int = cv2.LINE_AA

@@ -1,5 +1,5 @@
 # relative path from data directory
-target_date: "20170416"
+target_date: ""  # if extract only target date
 trained_model_directory: "models/density_model/"
 image_directory: "image/raw/all"
 video_directory: "video"

@@ -181,8 +181,8 @@ def batch_prediction(
         cfg (dict): config dictionary
     """
     # set path information
-    input_image_path = f"{cfg['image_directory']}/{cfg['target_date']}/*.png"
-    output_directory = f"{cfg['output_directory']}/{cfg['target_date']}"
+    input_image_path = f"{DATA_DIR}/{cfg['image_directory']}/{cfg['target_date']}/*.png"
+    output_directory = f"{DATA_DIR}/{cfg['output_directory']}/{cfg['target_date']}"
     os.makedirs(output_directory, exist_ok=True)
     os.makedirs(f"{output_directory}/dens", exist_ok=True)
     os.makedirs(f"{output_directory}/coord", exist_ok=True)
@@ -214,11 +214,13 @@ def video_prediction(
         cfg (dict): config dictionary
     """
     for hour in range(cfg["start_hour"], cfg["end_hour"]):
-        output_directory = f"{cfg['output_directory']}/{cfg['target_date']}/{hour}"
+        output_directory = (
+            f"{DATA_DIR}/{cfg['output_directory']}/{cfg['target_date']}/{hour}"
+        )
         os.makedirs(output_directory, exist_ok=True)
-        os.makedirs("{0}/dens".format(output_directory), exist_ok=True)
-        os.makedirs("{0}/coord".format(output_directory), exist_ok=True)
-        video_path = f"{cfg['video_directory']}/{cfg['target_date']}/{cfg['target_date']}{hour:0>2d}00.mp4"
+        os.makedirs(f"{output_directory}/dens", exist_ok=True)
+        os.makedirs(f"{output_directory}/coord", exist_ok=True)
+        video_path = f"{DATA_DIR}/{cfg['video_directory']}/{cfg['target_date']}/{cfg['target_date']}{hour:0>2d}00.mp4"
         display_data_info(
             video_path,
             output_directory,
@@ -267,15 +269,13 @@ def main(cfg: DictConfig) -> None:
 
     # set valid image index information
     mask_image = load_mask_image(str(DATA_DIR / cfg["mask_path"]), normalized=True)
-    index_h, index_w = get_masked_index(mask_image, cfg, horizontal_flip=False)
+    index_h, index_w = get_masked_index(mask_image, horizontal_flip=False)
     # [TODO] create another config dictionary
     cfg["index_h"] = index_h
     cfg["index_w"] = index_w
 
     # load trained model
-    model, tf_session = load_model(
-        str(DATA_DIR / cfg["trained_model_directory"]), GPU_DEVICE_ID, GPU_MEMORY_RATE
-    )
+    model, tf_session = load_model(str(DATA_DIR / cfg["trained_model_directory"]))
 
     predict_data_type = cfg["predict_data_type"]
     if predict_data_type == "image":
