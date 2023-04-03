@@ -30,7 +30,7 @@ def test_get_directory_list(tmp_path):
     (tmp_path / "dens").mkdir()
     directory_list = get_directory_list(str(tmp_path))
     expected = ["coord", "dens"]
-    assert directory_list.sort() == expected.sort()
+    assert sorted(directory_list) == sorted(expected)
 
 
 def test_get_file_name_from_path():
