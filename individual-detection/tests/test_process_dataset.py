@@ -1,6 +1,8 @@
+import numpy as np
 import pytest
 from detector.exceptions import DatasetEmptyError
 from detector.process_dataset import (
+    get_masked_index,
     load_dataset,
     load_multi_date_datasets,
     save_dataset_path,
@@ -71,8 +73,8 @@ def test_load_dataset(setup_folder):
     ]
     assert len(image_paths) == 2
     assert len(label_paths) == 2
-    assert image_paths.sort() == expected_image_paths.sort()
-    assert image_paths.sort() == expected_label_paths.sort()
+    assert sorted(image_paths) == sorted(expected_image_paths)
+    assert sorted(label_paths) == sorted(expected_label_paths)
 
 
 def test_load_multi_date_datasets(setup_folder):
@@ -91,8 +93,8 @@ def test_load_multi_date_datasets(setup_folder):
     ]
     assert len(image_paths) == 2
     assert len(label_paths) == 2
-    assert image_paths.sort() == expected_image_paths.sort()
-    assert image_paths.sort() == expected_label_paths.sort()
+    assert sorted(image_paths) == sorted(expected_image_paths)
+    assert sorted(label_paths) == sorted(expected_label_paths)
 
 
 def test_save_dataset_path(tmp_path):
@@ -142,3 +144,72 @@ def test_split_dataset_by_date(setup_folder):
     assert (root_dirc / "train_dataset.csv").exists()
     assert (root_dirc / "valid_dataset.csv").exists()
     assert (root_dirc / "test_dataset.csv").exists()
+
+
+def test_get_masked_index():
+    # create binary mask image (0: masked, 1: unmasked)
+    # unmasked left top area
+    mask = np.zeros((10, 10))
+    mask[0:5, 0:5] = 1
+
+    # normal case
+    masked_index = get_masked_index(mask, horizontal_flip=False)
+    expected_masked_index = [
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (0, 3),
+        (0, 4),
+        (1, 0),
+        (1, 1),
+        (1, 2),
+        (1, 3),
+        (1, 4),
+        (2, 0),
+        (2, 1),
+        (2, 2),
+        (2, 3),
+        (2, 4),
+        (3, 0),
+        (3, 1),
+        (3, 2),
+        (3, 3),
+        (3, 4),
+        (4, 0),
+        (4, 1),
+        (4, 2),
+        (4, 3),
+        (4, 4),
+    ]
+    assert sorted(masked_index) == sorted(expected_masked_index)
+
+    # horizontal flip case
+    masked_index = get_masked_index(mask, horizontal_flip=True)
+    expected_masked_index = [
+        (0, 5),
+        (0, 6),
+        (0, 7),
+        (0, 8),
+        (0, 9),
+        (1, 5),
+        (1, 6),
+        (1, 7),
+        (1, 8),
+        (1, 9),
+        (2, 5),
+        (2, 6),
+        (2, 7),
+        (2, 8),
+        (2, 9),
+        (3, 5),
+        (3, 6),
+        (3, 7),
+        (3, 8),
+        (3, 9),
+        (4, 5),
+        (4, 6),
+        (4, 7),
+        (4, 8),
+        (4, 9),
+    ]
+    assert sorted(masked_index) == sorted(expected_masked_index)

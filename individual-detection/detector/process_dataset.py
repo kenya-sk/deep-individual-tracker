@@ -314,12 +314,10 @@ def get_masked_index(mask: np.array, horizontal_flip: bool = False) -> Tuple:
     if horizontal_flip:
         mask = mask[:, ::-1]
 
-    index = np.where(mask > 0)
-    index_h = index[0]
-    index_w = index[1]
-    assert len(index_h) == len(index_w)
+    # get valid index
+    index_list = list(zip(*np.where(mask > 0)))
 
-    return index_h, index_w
+    return index_list
 
 
 def get_image_shape(image: np.array) -> Tuple:
