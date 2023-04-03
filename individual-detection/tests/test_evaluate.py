@@ -1,35 +1,24 @@
 import numpy as np
 from detector.evaluate import eval_detection, get_ground_truth
+from numpy.testing import assert_array_equal
 
 
 def test_get_ground_truth(tmp_path):
     # create dummy ground truth data
     ground_truth_path = str(tmp_path / "ground_truth.csv")
-    ground_truth_array = np.array([[10, 50], [200, 450], [500, 120], [130, 125]])
-    np.savetxt(ground_truth_path, ground_truth_array, delimiter=",", fmt="%d")
+    raw_ground_truth_array = np.array([[10, 50], [200, 450], [500, 120], [130, 125]])
+    np.savetxt(ground_truth_path, raw_ground_truth_array, delimiter=",", fmt="%d")
 
     # mask_image is None case
     ground_truth_array = get_ground_truth(ground_truth_path, None)
-    assert ground_truth_array.shape == (4, 2)
-    assert ground_truth_array.dtype == np.int32
-    assert ground_truth_array[0][0] == 10
-    assert ground_truth_array[0][1] == 50
-    assert ground_truth_array[1][0] == 200
-    assert ground_truth_array[1][1] == 450
-    assert ground_truth_array[2][0] == 500
-    assert ground_truth_array[2][1] == 120
-    assert ground_truth_array[3][0] == 130
-    assert ground_truth_array[3][1] == 125
+    expected_ground_truth_array = raw_ground_truth_array.copy()
+    assert_array_equal(ground_truth_array, expected_ground_truth_array)
 
     # mask_image is not None case
     mask_image = np.ones((256, 256))
     ground_truth_array = get_ground_truth(ground_truth_path, mask_image)
-    assert ground_truth_array.shape == (2, 2)
-    assert ground_truth_array.dtype == np.int32
-    assert ground_truth_array[0][0] == 10
-    assert ground_truth_array[0][1] == 50
-    assert ground_truth_array[1][0] == 130
-    assert ground_truth_array[1][1] == 125
+    expected_ground_truth_array = np.array([[10, 50], [130, 125]])
+    assert_array_equal(ground_truth_array, expected_ground_truth_array)
 
 
 def test_eval_detection():

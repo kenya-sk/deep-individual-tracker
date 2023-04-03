@@ -71,8 +71,8 @@ def test_load_dataset(setup_folder):
     ]
     assert len(image_paths) == 2
     assert len(label_paths) == 2
-    assert image_paths.sort() == expected_image_paths.sort()
-    assert image_paths.sort() == expected_label_paths.sort()
+    assert sorted(image_paths) == sorted(expected_image_paths)
+    assert sorted(label_paths) == sorted(expected_label_paths)
 
 
 def test_load_multi_date_datasets(setup_folder):
@@ -91,8 +91,8 @@ def test_load_multi_date_datasets(setup_folder):
     ]
     assert len(image_paths) == 2
     assert len(label_paths) == 2
-    assert image_paths.sort() == expected_image_paths.sort()
-    assert image_paths.sort() == expected_label_paths.sort()
+    assert sorted(image_paths) == sorted(expected_image_paths)
+    assert sorted(label_paths) == sorted(expected_label_paths)
 
 
 def test_save_dataset_path(tmp_path):
