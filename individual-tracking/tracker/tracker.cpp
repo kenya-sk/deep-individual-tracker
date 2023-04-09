@@ -254,13 +254,8 @@ StatsResultTuple Tracker::tracking() {
           movement_vec.push_back(movement);
 
           // plot feature point
-          cv::circle(feature_point_frame, cv::Point(matching_x, matching_y), 3,
-                     cv::Scalar(0, 255, 0), -1, cv::LINE_AA);
-          // put individual ID
-          cv::putText(feature_point_frame, std::to_string(idx),
-                      cv::Point(matching_x, matching_y),
-                      cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1,
-                      CV_AA);
+          cv::circle(feature_point_frame, cv::Point(matching_x, matching_y), 5,
+                     cv::Scalar(0, 0, 255), -1, cv::LINE_AA);
 
           // update record of matching and previous coordinate
           record_matching_vec.at(idx) = true;
