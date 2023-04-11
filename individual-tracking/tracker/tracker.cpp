@@ -277,7 +277,7 @@ StatsResultTuple Tracker::tracking() {
           *std::max_element(movement_norm_vec.begin(), movement_norm_vec.end());
     } else {
       movement_mean = 0.0;
-      movement_var = 0, 0;
+      movement_var = 0.0;
       movement_max = 0.0;
     }
 
