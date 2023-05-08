@@ -22,5 +22,5 @@ void Timer::output_calculate_time() {
   int elapsed_seconds = duration_cast<seconds>(end_time - start_time).count() -
                         elapsed_hours * 3600 - elapsed_minutes * 60;
   cout << "elapsed time: " << elapsed_hours << "[h] " << elapsed_minutes
-       << "[min] " << elapsed_seconds << "[sec]" << endl;
+       << "[m] " << elapsed_seconds << "[s]" << endl;
 }
