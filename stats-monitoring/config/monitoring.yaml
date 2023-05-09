@@ -2,7 +2,7 @@
 
 animation:
   format: ffmpeg
-  frame_number: 5
+  frame_number: 9000
   interval: 33  # milli second
   density_interval: 30  # frame num
   display_dot: False
