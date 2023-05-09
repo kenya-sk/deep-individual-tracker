@@ -35,7 +35,8 @@ COPY --from=builder /workspace/requirements.txt .
 RUN pip install -r requirements.txt
 
 # copy scripts and dependency file from source directory
-COPY . .
+COPY ./config ./config
+COPY ./monitoring ./monitoring
 
 
 RUN apt-get autoremove -y
