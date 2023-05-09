@@ -3,15 +3,16 @@ from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
-from monitoring.constants import DATA_DIR, GRAPH_FONT_SIZE, TIME_LABELS
+from monitoring.constants import (
+    DATA_DIR,
+    GRAPH_FONT_SIZE,
+    LABEL_IDX,
+    LABEL_IDX_MAX,
+    TIME_LABELS,
+)
 from monitoring.exceptions import PathNotExistError, StatsKeyNotExistError
 from monitoring.logger import logger
 from omegaconf import DictConfig
-
-# if frame interval is 1000 milli second
-# LABEL_IDX = [i for i in range(0, 28801, 1800)]
-# if frame interval is 33 milli second (30FPS)
-LABEL_IDX = [i for i in range(0, 864001, 54000)]
 
 
 def load_statistics(cfg: DictConfig) -> dict:
@@ -92,7 +93,8 @@ def set_stats_metrics(
     x = [i for i in range(len(mean_arr))]
 
     # plot mean speed
-    mean_ax.plot(x[: frame_num + 1], mean_arr[: frame_num + 1], color="#0000cd")
+    mean_ax.plot(x[: frame_num + 1], mean_arr[: frame_num + 1])
+    mean_ax.set_xlim(0, LABEL_IDX_MAX)
     mean_ax.set_ylim(0, cfg["statistics"]["mean_max"])
     mean_ax.set_ylabel("Mean moving \ndistance \n[pixel $s^{-1}$]")
     mean_ax.tick_params(labelbottom=False, bottom=False)
@@ -100,7 +102,8 @@ def set_stats_metrics(
 
     # plot cumulate acceleration count
     acc_arr = load_array(stats_dict, "acceleration")
-    acc_ax.plot(x[: frame_num + 1], acc_arr[: frame_num + 1], color="#0000cd")
+    acc_ax.plot(x[: frame_num + 1], acc_arr[: frame_num + 1])
+    acc_ax.set_xlim(0, LABEL_IDX_MAX)
     acc_ax.set_ylim(0, cfg["statistics"]["acceleration_max"])
     acc_ax.set_ylabel("Cumulative \nnumber of \nsudden acceleration \n[$d^{-1}$]")
     acc_ax.axvline(frame_num, 0, 100, color="black", linestyle="dashed")

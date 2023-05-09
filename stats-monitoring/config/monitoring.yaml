@@ -13,7 +13,7 @@ histogram:
   y_bin_granularity: 50
 
 statistics:
-  mean_max: 210
+  mean_max: 250
   acceleration_max: 70
 
 # relative path from data directory
