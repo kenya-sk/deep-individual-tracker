@@ -20,7 +20,7 @@ FRAME_WIDTH: int = 1920
 GRAPH_HEIGHT: int = 240
 GRAPH_WIDTH: int = 240
 GRAPH_MARGIN: int = 20
-GRAPH_NUM: int = 3
+GRAPH_NUM: int = 2
 GRAPH_FONT_SIZE: int = 18
 
 FIGURE_HEIGHT: int = (
@@ -28,6 +28,12 @@ FIGURE_HEIGHT: int = (
 )
 FIGURE_WIDTH: int = FRAME_WIDTH + GRAPH_WIDTH + 5 * GRAPH_MARGIN
 
+# if frame interval is 1000 milli second
+# LABEL_IDX = [i for i in range(0, 28801, 1800)]
+# if frame interval is 33 milli second (30FPS)
+LABEL_IDX_MAX: int = 864000
+LABEL_IDX_INTERVAL: int = 54000
+LABEL_IDX: List[int] = [i for i in range(0, LABEL_IDX_MAX + 1, LABEL_IDX_INTERVAL)]
 TIME_LABELS: List[str] = [
     "9:00",
     "9:30",

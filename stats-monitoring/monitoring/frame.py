@@ -52,7 +52,7 @@ def set_frame(
         one_hour_density_df (pd.DataFrame): DataFrame containing past 1 hour coordinates
         ax (plt.axis): matplotlib figure axis of frame
     """
-    frame_path = DATA_DIR / f"cfg['path']['frame_directory']/{frame_num}.png"
+    frame_path = str(DATA_DIR / cfg["path"]["frame_directory"] / f"{frame_num}.png")
     if os.path.isfile(frame_path):
         frame = cv2.imread(frame_path)
     else:
