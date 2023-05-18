@@ -1,13 +1,11 @@
 version: '3.3'
 services:
   detection:
-    platform: linux/x86_64
     build:
       context: ./individual-detection
-      dockerfile: Dockerfile
-    runtime: nvidia
-    image: deep-detection-gpu
-    container_name: deep-detection-gpu
+      dockerfile: Dockerfile.cpu
+    image: deep-detection-cpu
+    container_name: deep-detection-cpu
     volumes:
       - /data
     tty: true

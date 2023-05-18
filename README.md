@@ -23,6 +23,7 @@ The system provides a monitoring environment with the following statistical info
 ## Build Environment
 ``` bash
 # Create an execution environment for each module using docker-compose.
-$ docker-compose build
-$ docker-compose up -d
+# if you use CPU environment, specify the "docker-compose-cpu.yaml" file.
+$ docker-compose -f docker-compose.yaml build
+$ docker-compose -f docker-compose.yaml up -d
 ```

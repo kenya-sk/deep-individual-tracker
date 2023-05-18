@@ -11,7 +11,7 @@ The execution environment can be build using Docker Comopse. In this case, OpenC
 
 ``` bash
 # launch countainer
-$ docker-compose exec tracker /bin/bash
+$ docker-compose -f docker-compose.yaml exec tracker /bin/bash
 ```
 
 ## Execute Tracking
