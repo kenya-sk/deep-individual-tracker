@@ -1,0 +1,41 @@
+version: '3.3'
+services:
+  detection-cpu:
+    build:
+      context: ./individual-detection
+      dockerfile: Dockerfile.cpu
+    image: deep-detection-cpu
+    container_name: deep-detection-cpu
+    volumes:
+      - /data
+    tty: true
+
+  tracker:
+    build:
+      context: ./individual-tracking
+      dockerfile: Dockerfile
+    image: deep-tracker
+    container_name: deep-tracker
+    volumes:
+      - /data
+    tty: true
+
+#   monitoring:
+#     build:
+#       context: ./stats-monitoring
+#       dockerfile: Dockerfile
+#     image: deep-monitoring
+#     container_name: deep-monitoring
+#     volumes:
+#       - /data
+#     tty: true
+
+#   annotator:
+#     build:
+#       context: ./density-annotator
+#       dockerfile: Dockerfile
+#     image: deep-annotator
+#     container_name: deep-annotator
+#     volumes:
+#       - /data
+#     tty: true
