@@ -4,11 +4,12 @@ from typing import List, Tuple
 
 import cv2
 import tensorflow as tf
+from detector.exceptions import LoadVideoError
+from detector.logger import logger
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.compat.v1.summary import FileWriter, merge_all
 
-from detector.exceptions import LoadVideoError
-from detector.logger import logger
+tf.compat.v1.disable_eager_execution()
 
 
 def display_data_info(input_path: str, output_dirctory: str, cfg: dict) -> None:
