@@ -1,6 +1,6 @@
 version: '3.3'
 services:
-  detection:
+  detection-gpu:
     platform: linux/x86_64
     build:
       context: ./individual-detection

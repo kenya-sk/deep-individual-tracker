@@ -16,7 +16,7 @@ Build a GPU-enabled environment with Docker Compose. The directory of `/data` wa
 
 ``` bash
 # launch containers in a GPU environment
-$ docker-compose -f docker-compose.yaml exec detection /bin/bash
+$ docker-compose -f docker-compose.yaml exec detection-gpu /bin/bash
 ``` 
 
 The following python code can be used to check if a GPU is available.
