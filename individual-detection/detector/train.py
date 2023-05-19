@@ -4,9 +4,7 @@ from typing import List, Tuple
 
 import hydra
 import numpy as np
-import tensorflow.compat.v1 as tf
-
-tf.disable_v2_behavior()
+import tensorflow as tf
 from detector.constants import (
     CONFIG_DIR,
     DATA_DIR,
