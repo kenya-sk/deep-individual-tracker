@@ -43,6 +43,8 @@ from tensorflow.compat.v1.train import Saver
 from tensorflow.python.framework.ops import Tensor as OpsTensor
 from tqdm import trange
 
+tf.compat.v1.disable_eager_execution()
+
 
 def hard_negative_mining(
     X: np.array, y: np.array, loss_array: np.array, weight: float

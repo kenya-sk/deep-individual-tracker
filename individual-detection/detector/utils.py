@@ -9,6 +9,8 @@ from detector.logger import logger
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.compat.v1.summary import FileWriter, merge_all
 
+tf.compat.v1.disable_eager_execution()
+
 
 def display_data_info(input_path: str, output_dirctory: str, cfg: dict) -> None:
     """Display setting information

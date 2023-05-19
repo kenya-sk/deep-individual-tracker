@@ -8,6 +8,8 @@ from detector.logger import logger
 from tensorflow.compat.v1 import InteractiveSession, placeholder, summary
 from tensorflow.compat.v1.train import AdamOptimizer
 
+tf.compat.v1.disable_eager_execution()
+
 
 class DensityModel(object):
     """Class defined by 7-layer convolutional neural networks.
