@@ -1,7 +1,9 @@
 import math
 from typing import List, Tuple
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+
+tf.disable_v2_behavior()
 from detector.constants import GPU_DEVICE_ID, GPU_MEMORY_RATE
 from detector.exceptions import LoadModelError, TensorShapeError
 from detector.logger import logger

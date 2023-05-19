@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.15.5-gpu-py3
+FROM tensorflow/tensorflow:2.13.0rc0-gpu
 
 WORKDIR /workspace
 ENV PYTHONPATH /workspace
@@ -13,7 +13,8 @@ RUN apt-get install -y \
     libglib2.0-0 \
     libsm6 \
     libxrender1 \
-    libxext6
+    libxext6 \
+    libgl1-mesa-dev
 
 # install python package from requirements.txt
 COPY ./requirements.txt .

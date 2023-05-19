@@ -6,13 +6,7 @@ import hydra
 import numpy as np
 import pandas as pd
 from detector.clustering import apply_clustering_to_density_map
-from detector.constants import (
-    CONFIG_DIR,
-    DATA_DIR,
-    GPU_DEVICE_ID,
-    GPU_MEMORY_RATE,
-    SEARCH_PARAMETER_CONFIG_NAME,
-)
+from detector.constants import CONFIG_DIR, DATA_DIR, SEARCH_PARAMETER_CONFIG_NAME
 from detector.evaluate import eval_detection, eval_metrics, get_ground_truth
 from detector.logger import logger
 from detector.model import DensityModel, load_model

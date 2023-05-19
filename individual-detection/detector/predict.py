@@ -1,4 +1,3 @@
-import logging
 import math
 import os
 from glob import glob
@@ -13,8 +12,6 @@ from detector.constants import (
     DATA_DIR,
     FRAME_HEIGHT,
     FRAME_WIDTH,
-    GPU_DEVICE_ID,
-    GPU_MEMORY_RATE,
     PREDICT_CONFIG_NAME,
 )
 from detector.exceptions import IndexExtractionError, PredictionTypeError
