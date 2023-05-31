@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-WORKDIR /root
+WORKDIR /workspace
 
 RUN apt update -y && \
     apt install git vim -y
@@ -23,7 +23,9 @@ RUN git clone -b 3.4.0 https://github.com/opencv/opencv.git && \
 
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib
 
-COPY . .
+# copy scripts and dependency file from source directory
+COPY ./config ./config
+COPY ./tracker ./tracker
 
 RUN apt-get autoremove -y
 

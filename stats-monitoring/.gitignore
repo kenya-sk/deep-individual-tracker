@@ -134,10 +134,8 @@ dmypy.json
 # mac file system
 .DS_Store
 
-# VScode devcontainer
-.devcontainer
-
 # ignore data directory
-data/dens/
-data/images/
-data/outputs/
+data/coordinate/
+data/frame/
+data/movie/
+data/stats/

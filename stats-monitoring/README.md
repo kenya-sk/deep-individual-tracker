@@ -21,5 +21,5 @@ The execution environment can be build using Docker Comopse. The directory of `/
 
 ``` bash
 # launch countainer
-$ docker-compose exec monitoring /bin/bash
+$ docker-compose -f docker-compose.yaml exec monitoring /bin/bash
 ```

@@ -30,6 +30,19 @@ RUN apt-get update \
     && locale-gen ja_JP.UTF-8 \
     && echo "export LANG=ja_JP.UTF-8" >> ~/.bashrc
 
+# install dependencies
+RUN apt-get update \
+    && apt-get install -y \
+    vim \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
+    libgl1-mesa-dev \
+    ffmpeg \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # install python package from requirements.txt
 COPY --from=builder /workspace/requirements.txt .
 RUN pip install -r requirements.txt
