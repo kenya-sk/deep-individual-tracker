@@ -24,6 +24,7 @@ RUN pip install -r requirements.txt
 # copy scripts and dependency file from source directory
 COPY ./config ./config
 COPY ./detector ./detector
+COPY ./tests ./tests
 
 RUN apt-get autoremove -y
 
