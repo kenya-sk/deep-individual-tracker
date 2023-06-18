@@ -43,7 +43,7 @@ def get_sampled_frame_number(total_frame_number: int, sample_rate: int) -> List:
 
 def get_frame_number_list(
     total_frame_number: int, sampling_type: str, sample_rate: int
-) -> List:
+) -> List[int]:
     """Get a list of frames with two sampling methods: "random" or "fixed".
 
     Args:
@@ -106,7 +106,9 @@ def frame_sampler(
                 raise LoadVideoFrameError(message)
 
 
-@hydra.main(config_path=str(CONFIG_DIR), config_name=SAMPLER_CONFIG_NAME)
+@hydra.main(
+    version_base="1.1", config_path=str(CONFIG_DIR), config_name=SAMPLER_CONFIG_NAME
+)
 def main(cfg: DictConfig) -> None:
     """Run frame sampler according to the settings defined in the config file.
 

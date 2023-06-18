@@ -1,4 +1,5 @@
 import os
+from typing import List, Optional
 
 import cv2
 import numpy as np
@@ -39,17 +40,17 @@ class DensityAnnotator:
         self.mouse_event_interval = cfg.mouse_event_interval
 
         # set frame information
-        self.video = None
-        self.frame = None
-        self.frame_list = []
-        self.width = None
-        self.height = None
-        self.features = None
-        self.coordinate_matrix = None
+        self.video: cv2.VideoCapture
+        self.frame: np.ndarray
+        self.frame_list: List[np.ndarray]
+        self.width: int
+        self.height: int
+        self.features: np.ndarray
+        self.coordinate_matrix: Optional[np.ndarray] = None
         self.frame_num = 0
 
         # set file path
-        self.input_file_path = None
+        self.input_file_path: str
         self.input_file_path_list = get_path_list(DATA_DIR, cfg.path.input_file_path)
         self.save_raw_image_dir = DATA_DIR / cfg.path.save_raw_image_dir
         self.save_annotated_dir = DATA_DIR / cfg.path.save_annotated_dir
@@ -73,9 +74,10 @@ class DensityAnnotator:
         for file_path in tqdm(self.input_file_path_list, desc="Annotation File Number"):
             # initialization
             self.frame_list = []
-            self.features = None
+            self.features = np.array([], np.uint16)
             # load file
-            self.input_file_path = file_path
+            self.input_file_path = str(file_path)
+            print(self.input_file_path)
             data_type = get_input_data_type(self.input_file_path)
             logger.info(f"Annotation Data Type: {data_type}")
             if data_type == "image":
@@ -112,7 +114,9 @@ class DensityAnnotator:
         self.frame = load_image(self.input_file_path)
         self.frame_list.append(self.frame.copy())
         # frame number get from input file name
-        self.frame_num = os.path.splitext(os.path.basename(self.input_file_path))[0]
+        self.frame_num = int(
+            os.path.splitext(os.path.basename(self.input_file_path))[0]
+        )
         # initialize by frame information
         self.annotator_initialization()
         while True:
@@ -148,7 +152,7 @@ class DensityAnnotator:
         wait_interval = self.mouse_event_interval
         while ret:
             if wait_interval != 0:
-                self.features = None
+                self.features = np.array([], np.uint16)
                 self.frame_num += 1
                 # display current frame
                 cv2.imshow("click annotation points", self.frame)
@@ -205,7 +209,7 @@ class DensityAnnotator:
         :param y: y coordinate of the clicked position
         :return: None
         """
-        if self.features is None:
+        if self.features.size == 0:
             self.features = np.array([[x, y]], np.uint16)
         else:
             self.features = np.append(self.features, [[x, y]], axis=0).astype(np.uint16)
@@ -216,13 +220,13 @@ class DensityAnnotator:
 
         :return: None
         """
-        if (self.features is not None) and (len(self.features) > 0):
+        if self.features.size > 0:
             self.features = np.delete(self.features, -1, 0)
             self.frame_list.pop()
             self.frame = self.frame_list[-1].copy()
             cv2.imshow("click annotation points", self.frame)
 
-    def calculate_gaussian_kernel(self) -> np.array:
+    def calculate_gaussian_kernel(self) -> np.ndarray:
         """Calculate the density map using the Gaussian kernel
         based on the annotated coordinates.
 
@@ -245,24 +249,21 @@ class DensityAnnotator:
 
         :return: None
         """
-        if self.features is None:
-            logger.info("None have been annotated.")
-        else:
-            # save image that added annotated point
-            save_image(
-                f"{self.save_annotated_image_dir}/{self.frame_num}{self.save_image_extension}",
-                self.frame,
-            )
+        # save image that added annotated point
+        save_image(
+            f"{self.save_annotated_image_dir}/{self.frame_num}{self.save_image_extension}",
+            self.frame,
+        )
 
-            # save the coordinates of the annotated point
-            save_coordinate(
-                f"{self.save_annotated_coord_dir}/{self.frame_num}.csv", self.features
-            )
+        # save the coordinates of the annotated point
+        save_coordinate(
+            f"{self.save_annotated_coord_dir}/{self.frame_num}.csv", self.features
+        )
 
-            # save annotated density map
-            annotated_density = self.calculate_gaussian_kernel()
-            save_density_map(
-                f"{self.save_annotated_density_dir}/{self.frame_num}.npy",
-                annotated_density,
-            )
-            logger.info(f"Annotated and saved frame number: {self.frame_num}")
+        # save annotated density map
+        annotated_density = self.calculate_gaussian_kernel()
+        save_density_map(
+            f"{self.save_annotated_density_dir}/{self.frame_num}.npy",
+            annotated_density,
+        )
+        logger.info(f"Annotated and saved frame number: {self.frame_num}")

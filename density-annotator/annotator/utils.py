@@ -5,12 +5,11 @@ from typing import List
 
 import cv2
 import numpy as np
-
 from annotator.exceptions import LoadImageError, LoadVideoError, PathNotExistError
 from annotator.logger import logger
 
 
-def get_path_list(working_directory: Path, path: str) -> List:
+def get_path_list(working_directory: Path, path: str) -> List[Path]:
     """
     Takes a file or directory path and creates a list of full paths.
 
@@ -23,7 +22,11 @@ def get_path_list(working_directory: Path, path: str) -> List:
     if os.path.isfile(full_path):
         path_list = [full_path]
     elif os.path.isdir(full_path):
-        path_list = [current_path for current_path in glob(f"{full_path}/*")]
+        path_list = [
+            Path(current_path)
+            for current_path in glob(f"{full_path}/*")
+            if os.path.isfile(current_path)
+        ]
     else:
         message = f'path="{full_path}" is not exist.'
         logger.error(message)
@@ -65,7 +68,7 @@ def get_input_data_type(path: str) -> str:
     return data_type
 
 
-def load_image(path: str) -> np.array:
+def load_image(path: str) -> np.ndarray:
     """
     Loads image data from the input path and returns image in numpy array format.
 
@@ -99,7 +102,7 @@ def load_video(path: str) -> cv2.VideoCapture:
     return video
 
 
-def save_image(path: str, image: np.array) -> None:
+def save_image(path: str, image: np.ndarray) -> None:
     """
     Save the image data in numpy format in the target path.
 
@@ -111,7 +114,7 @@ def save_image(path: str, image: np.array) -> None:
     logger.info(f"Saved Image: {path}")
 
 
-def save_coordinate(path: str, coordinate: np.array) -> None:
+def save_coordinate(path: str, coordinate: np.ndarray) -> None:
     """
     Save the coordinate data (x, y) in numpy format in the target path.
 
@@ -123,7 +126,7 @@ def save_coordinate(path: str, coordinate: np.array) -> None:
     logger.info(f"Saved Coordinate: {path}")
 
 
-def save_density_map(path: str, density_map: np.array) -> None:
+def save_density_map(path: str, density_map: np.ndarray) -> None:
     """
     Save the density map data in numpy format in the target path.
 

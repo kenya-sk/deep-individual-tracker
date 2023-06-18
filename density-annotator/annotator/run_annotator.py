@@ -1,13 +1,12 @@
 import hydra
-from omegaconf import DictConfig
-
 from annotator.constants import ANNOTATOR_CONFIG_NAME, CONFIG_DIR
 from annotator.density_annotator import DensityAnnotator
 from annotator.logger import logger
+from omegaconf import DictConfig
 
 
 @hydra.main(
-    config_path=str(CONFIG_DIR), config_name=ANNOTATOR_CONFIG_NAME, version_base="1.1"
+    version_base="1.1", config_path=str(CONFIG_DIR), config_name=ANNOTATOR_CONFIG_NAME
 )
 def main(cfg: DictConfig) -> None:
     """
