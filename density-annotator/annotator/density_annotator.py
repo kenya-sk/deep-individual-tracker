@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import List
 
 import cv2
 import numpy as np
@@ -46,7 +46,7 @@ class DensityAnnotator:
         self.width: int
         self.height: int
         self.features: np.ndarray
-        self.coordinate_matrix: Optional[np.ndarray] = None
+        self.coordinate_matrix: np.ndarray
         self.frame_num = 0
 
         # set file path
