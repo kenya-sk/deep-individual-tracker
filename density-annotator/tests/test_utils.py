@@ -37,7 +37,7 @@ def test_get_path_list(tmp_path: Path) -> None:
     assert path_list_2.sort() == expected_2.sort()
 
     # not exist case
-    not_exist_path = tmp_path / "not_exist"
+    not_exist_path = str(tmp_path / "not_exist")
     with pytest.raises(PathNotExistError):
         _ = get_path_list(tmp_path, not_exist_path)
 
@@ -55,13 +55,13 @@ def test_get_input_data_type(tmp_path: Path) -> None:
     image_file = "test.png"
     image_path = tmp_path / image_file
     image_path.touch()
-    assert get_input_data_type(image_path) == "image"
+    assert get_input_data_type(str(image_path)) == "image"
 
     # video case
     video_file = "test.mp4"
     video_path = tmp_path / video_file
     video_path.touch()
-    assert get_input_data_type(video_path) == "video"
+    assert get_input_data_type(str(video_path)) == "video"
 
     # invalid case
     invalid_path = "/home/test.txt"
