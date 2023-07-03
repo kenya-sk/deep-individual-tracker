@@ -13,7 +13,7 @@ from annotator.utils import (
 )
 
 
-def test_get_path_list(tmp_path):
+def test_get_path_list(tmp_path: Path) -> None:
     # file case
     test_file = "test_1.txt"
     test_file_path = tmp_path / test_file
@@ -42,7 +42,7 @@ def test_get_path_list(tmp_path):
         _ = get_path_list(tmp_path, not_exist_path)
 
 
-def test_full_path_list():
+def test_full_path_list() -> None:
     current_working_dirc = Path("/home/test")
     relative_path_list = ["test_1.txt", "test_2.txt"]
     full_path_list = get_full_path_list(current_working_dirc, relative_path_list)
@@ -50,7 +50,7 @@ def test_full_path_list():
     assert full_path_list.sort() == expected.sort()
 
 
-def test_get_input_data_type(tmp_path):
+def test_get_input_data_type(tmp_path: Path) -> None:
     # image case
     image_file = "test.png"
     image_path = tmp_path / image_file
@@ -68,21 +68,21 @@ def test_get_input_data_type(tmp_path):
     assert get_input_data_type(invalid_path) == "invalid"
 
 
-def test_save_image(tmp_path):
+def test_save_image(tmp_path: Path) -> None:
     image = np.zeros((10, 10), dtype=np.uint8)
     image_path = tmp_path / "test.png"
     save_image(str(image_path), image)
     assert image_path.is_file()
 
 
-def test_save_coordinate(tmp_path):
+def test_save_coordinate(tmp_path: Path) -> None:
     coordinate = np.zeros((10, 2), dtype=np.uint8)
     coordinate_path = tmp_path / "test.npy"
     save_coordinate(str(coordinate_path), coordinate)
     assert coordinate_path.is_file()
 
 
-def test_save_density_map(tmp_path):
+def test_save_density_map(tmp_path: Path) -> None:
     density_map = np.zeros((10, 10), dtype=np.uint8)
     density_map_path = tmp_path / "test.npy"
     save_density_map(str(density_map_path), density_map)

@@ -3,7 +3,7 @@ from annotator.exceptions import SamplingTypeError
 from annotator.frame_sampler import get_frame_number_list, get_sampled_frame_number
 
 
-def test_get_sampled_frame_number():
+def test_get_sampled_frame_number() -> None:
     total_frame_number = 100
     sample_rate = 10
     frame_number_list = get_sampled_frame_number(total_frame_number, sample_rate)
@@ -12,7 +12,7 @@ def test_get_sampled_frame_number():
         assert start <= frame_number_list[i] < start + sample_rate
 
 
-def test_get_frame_number_list():
+def test_get_frame_number_list() -> None:
     # random case
     total_frame_number = 100
     sample_rate = 10
