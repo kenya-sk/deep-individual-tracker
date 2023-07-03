@@ -35,7 +35,9 @@ def get_path_list(working_directory: Path, path: str) -> List[Path]:
     return path_list
 
 
-def get_full_path_list(current_working_dirc: Path, relative_path_list: List):
+def get_full_path_list(
+    current_working_dirc: Path, relative_path_list: List[str]
+) -> List[str]:
     """
     Join the current working directory name and relative path to get a list of full paths.
 

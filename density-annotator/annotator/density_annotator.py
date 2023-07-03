@@ -202,7 +202,7 @@ class DensityAnnotator:
         self.add_point(x, y)
         cv2.imshow("click annotation points", self.frame)
 
-    def add_point(self, x, y) -> None:
+    def add_point(self, x: int, y: int) -> None:
         """Add new feature point on stored list
 
         :param x: x coordinate of the clicked position
