@@ -6,7 +6,7 @@ ARG PLATFORM="prod"
 # create requirements.txt from poetry
 RUN pip install poetry
 COPY pyproject.toml ./
-RUN poetry install
+RUN poetry install --no-root
 RUN if [ "$PLATFORM" = "dev" ]; \
     then poetry export --with dev -f requirements.txt > requirements.txt; \
     else poetry export -f requirements.txt > requirements.txt; \
@@ -50,7 +50,7 @@ RUN pip install -r requirements.txt
 # copy scripts and dependency file from source directory
 COPY ./config ./config
 COPY ./monitoring ./monitoring
-
+COPY ./mypy.ini ./mypy.ini
 
 RUN apt-get autoremove -y
 

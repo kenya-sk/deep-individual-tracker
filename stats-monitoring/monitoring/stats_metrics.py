@@ -25,14 +25,14 @@ def load_statistics(cfg: DictConfig) -> dict:
         dict: dictionary containing each stats array
     """
 
-    def load_value(path: str) -> np.array:
+    def load_value(path: str) -> np.ndarray:
         """Load statistics value from CSV file
 
         Args:
             path (str): CSV file path
 
         Returns:
-            np.array: target numpy array
+            np.ndarray: target numpy array
         """
         if os.path.isfile(path):
             return np.loadtxt(path, delimiter=",")
@@ -55,7 +55,7 @@ def load_statistics(cfg: DictConfig) -> dict:
     return stats_dict
 
 
-def load_array(stats_dict: Dict, key: str) -> np.array:
+def load_array(stats_dict: Dict, key: str) -> np.ndarray:
     """Load array from statistics dictionary
 
     Args:
@@ -63,7 +63,7 @@ def load_array(stats_dict: Dict, key: str) -> np.array:
         key (str): dictionary key
 
     Returns:
-        np.array: target stats array
+        np.ndarray: target stats array
     """
     if key in stats_dict.keys():
         return stats_dict[key]

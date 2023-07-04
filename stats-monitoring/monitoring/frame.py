@@ -1,4 +1,5 @@
 import os
+from typing import Dict, List
 
 import cv2
 import matplotlib.pyplot as plt
@@ -23,7 +24,7 @@ def load_one_hour_density(coord_dirc: str, end_frame_num: int) -> pd.DataFrame:
     # get frame number 1 hour ago
     start_frame_num = max(0, end_frame_num - 3600)
     # get the distribution of individuals over the past 1 hour
-    past_density_dctlst = {"x": [], "y": []}
+    past_density_dctlst: Dict[str, List[int]] = {"x": [], "y": []}
     for frame_num in range(start_frame_num, end_frame_num):
         path = f"{coord_dirc}/{frame_num}.csv"
         if os.path.isfile(path):

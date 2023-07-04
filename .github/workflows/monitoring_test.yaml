@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - 'stats-monitoring/**'
+  workflow_dispatch:
 
 jobs:
   pytest:
@@ -21,5 +22,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Bulid Docker image
         run: docker build -t monitoring:latest ./ --build-arg PLATFORM="dev"
+      - name: Run MyPy
+        run: docker run monitoring:latest mypy --config-file mypy.ini .
       # - name: Run PyTest
       #   run: docker run monitoring:latest pytest tests -v
