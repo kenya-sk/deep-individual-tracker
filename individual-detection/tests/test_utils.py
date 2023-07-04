@@ -38,3 +38,7 @@ def test_get_file_name_from_path() -> None:
     test_path = "/home/data/20170416_20111.png"
     file_name = get_file_name_from_path(test_path)
     assert file_name == "20170416_20111"
+
+    test_path = "/home/data/20170416/20111.png"
+    file_name = get_file_name_from_path(test_path)
+    assert file_name == "20111"

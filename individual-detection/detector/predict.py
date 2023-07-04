@@ -193,7 +193,7 @@ def batch_prediction(
         if cfg["mask_path"] is not None:
             mask_image = load_mask_image(cfg["mask_path"], normalized=True)
             image = apply_masking_on_image(image, mask_image)
-        frame_num = get_file_name_from_path(path)
+        frame_num = int(get_file_name_from_path(path))
         image_prediction(model, tf_session, image, frame_num, output_directory, cfg)
 
     logger.info(f"Predicted {len(image_path_list)} images (path='{input_image_path}')")

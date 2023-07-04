@@ -130,7 +130,7 @@ def get_directory_list(root_path: str) -> List:
     return directory_list
 
 
-def get_file_name_from_path(path: str) -> int:
+def get_file_name_from_path(path: str) -> str:
     """Get file name from file path.
     ex) path="./tmp/20170416_20111.png" -> file_name=20170416_20111
 
@@ -141,4 +141,4 @@ def get_file_name_from_path(path: str) -> int:
         int: extracted file name
     """
     file_name = path.split("/")[-1]
-    return int(file_name.split(".")[0])
+    return file_name.split(".")[0]
