@@ -4,7 +4,7 @@ from detector.constants import LOG_DIR, LOGGER_NAME, TODAY
 
 
 class ColoredStreamHandler(logging.StreamHandler):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.level_map = {
             logging.DEBUG: (None, "cyan", False),

@@ -2,4 +2,4 @@
 predict_directory: "predicted"
 ground_truth_directory: "density_map"
 mask_image_path: "image/mask.png"
-detection_threshold: 15
+detection_threshold: 10

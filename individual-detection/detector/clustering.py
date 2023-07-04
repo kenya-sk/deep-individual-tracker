@@ -11,19 +11,19 @@ from sklearn.cluster import MeanShift
 
 
 def apply_clustering_to_density_map(
-    density_map: np.array, band_width: int, thresh: float = 0.5
-) -> np.array:
+    density_map: np.ndarray, band_width: int, thresh: float = 0.5
+) -> np.ndarray:
     """Apply Mean-Shift Clustering to density maps.
     The center coordinates of the computed clusters are considered the final individual detection position.
 
     Args:
-        density_map (np.array): predicted density map by trained CNN
+        density_map (np.ndarray): predicted density map by trained CNN
         band_width (int): bandwidth used in the RBF kernel.
         thresh (float, optional): threshold value to be applied to the density map.
             Values below the threshold are ignored. Defaults to 0.5.
 
     Returns:
-        np.array: array containing the cluster's centroid.
+        np.ndarray: array containing the cluster's centroid.
     """
     # search high value coordinates
     while True:
@@ -82,22 +82,22 @@ def batch_clustering(
 
 
 def plot_prediction_box(
-    image: np.array,
-    centroid_array: np.array,
+    image: np.ndarray,
+    centroid_array: np.ndarray,
     save_path: str,
     box_size: int = 12,
 ) -> None:
     """Plot the location and Box of detected individuals on the image.
 
     Args:
-        image (np.array): raw image
-        centroid_array (np.array): array of calculted centroid
+        image (np.ndarray): raw image
+        centroid_array (np.ndarray): array of calculted centroid
         save_path (str): path of saved image
         box_size (int, optional): size of the box to be plotted. Defaults to 12.
     """
 
     # get coordinates of vertex(left top and right bottom)
-    def get_rect_vertex(x, y, box_size):
+    def get_rect_vertex(x: int, y: int, box_size: int) -> np.ndarray:
         vertex = np.zeros((2, 2), dtype=np.uint16)
         shift = int(box_size / 2)
         # left top corner

@@ -1,3 +1,6 @@
+from pathlib.Path import Path
+from typing import Tuple
+
 import pytest
 from detector.exceptions import DatasetEmptyError
 from detector.process_dataset import (
@@ -8,9 +11,11 @@ from detector.process_dataset import (
     split_dataset_by_date,
 )
 
+SetupFixture = Tuple[Path, Path, Path]
+
 
 @pytest.fixture(scope="function")
-def setup_folder(tmp_path):
+def setup_folder(tmp_path: Path) -> SetupFixture:
     # Create image and label folder
     root_image_dirc = tmp_path / "image"
     root_label_dirc = tmp_path / "label"
@@ -50,7 +55,7 @@ def setup_folder(tmp_path):
     return (tmp_path, root_image_dirc, root_label_dirc)
 
 
-def test_load_dataset(setup_folder):
+def test_load_dataset(setup_folder: SetupFixture) -> None:
     # empty folder case
     with pytest.raises(DatasetEmptyError):
         _ = load_dataset("/home/not_exist/image", "/home/not_exist/label")
@@ -75,7 +80,7 @@ def test_load_dataset(setup_folder):
     assert sorted(label_paths) == sorted(expected_label_paths)
 
 
-def test_load_multi_date_datasets(setup_folder):
+def test_load_multi_date_datasets(setup_folder: SetupFixture) -> None:
     _, root_image_dirc, root_label_dirc = setup_folder
     date_list = ["20230301", "20230302"]
     image_paths, label_paths = load_multi_date_datasets(
@@ -95,7 +100,7 @@ def test_load_multi_date_datasets(setup_folder):
     assert sorted(label_paths) == sorted(expected_label_paths)
 
 
-def test_save_dataset_path(tmp_path):
+def test_save_dataset_path(tmp_path: Path) -> None:
     save_path = tmp_path / "dataset.csv"
     X_path_list = ["20230101_1.png", "20230101_2.png"]
     y_path_list = ["20230101_1.npy", "20230101_2.npy"]
@@ -103,7 +108,7 @@ def test_save_dataset_path(tmp_path):
     assert save_path.exists()
 
 
-def test_split_dataset(tmp_path):
+def test_split_dataset(tmp_path: Path) -> None:
     X_path_list = [f"20230101_{i}.png" for i in range(10)]
     y_path_list = [f"20230101_{i}.npy" for i in range(10)]
     X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
@@ -120,7 +125,7 @@ def test_split_dataset(tmp_path):
     assert (tmp_path / "test_dataset.csv").exists()
 
 
-def test_split_dataset_by_date(setup_folder):
+def test_split_dataset_by_date(setup_folder: SetupFixture) -> None:
     root_dirc, root_image_dirc, root_label_dirc = setup_folder
     train_date_list = ["20230301", "20230302", "20230303"]
     valid_date_list = ["20230304"]

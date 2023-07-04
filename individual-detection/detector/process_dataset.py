@@ -1,7 +1,7 @@
 import math
 from glob import glob
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -21,6 +21,8 @@ from detector.constants import (
 from detector.exceptions import DatasetEmptyError, LoadImageError
 from detector.logger import logger
 from sklearn.model_selection import train_test_split
+
+DatasetType = Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]
 
 
 def load_dataset(
@@ -94,8 +96,8 @@ def split_dataset(
     X_list: List,
     y_list: List,
     test_size: float,
-    save_path_directory: str = None,
-) -> Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]:
+    save_path_directory: Optional[str] = None,
+) -> DatasetType:
     """Randomly split the dataset into train, validation, and test.
 
     Args:
@@ -105,7 +107,7 @@ def split_dataset(
         save_path_directory (str, optional): directory name to save the file name of each dataset. Defaults to None.
 
     Returns:
-        Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]:
+        DatasetType:
             tuple containing the filenames of train, validation, and test
     """
     # splite dataset into train and test
@@ -132,8 +134,8 @@ def split_dataset_by_date(
     train_date_list: List[str],
     valid_date_list: List[str],
     test_date_list: List[str],
-    save_path_directory: str = None,
-) -> Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]:
+    save_path_directory: Optional[str] = None,
+) -> DatasetType:
     """split the dataset by date into train, validation, and test.
 
     Args:
@@ -145,7 +147,7 @@ def split_dataset_by_date(
         save_path_directory (str, optional): directory name to save the file name of each dataset. Defaults to None.
 
     Returns:
-        Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]:
+        DatasetType:
             tuple containing the filenames of train, validation, and test
     """
     X_train, y_train = load_multi_date_datasets(
@@ -167,7 +169,7 @@ def split_dataset_by_date(
     return X_train, X_valid, X_test, y_train, y_valid, y_test
 
 
-def load_image(path: str, is_rgb: bool = True, normalized: bool = False) -> np.array:
+def load_image(path: str, is_rgb: bool = True, normalized: bool = False) -> np.ndarray:
     """Loads image data frosm the input path and returns image in numpy array format.
 
     Args:
@@ -176,7 +178,7 @@ def load_image(path: str, is_rgb: bool = True, normalized: bool = False) -> np.a
         normalized (bool, optional): whether normalize loaded image. Defaults to False.
 
     Returns:
-        np.array: loaded image
+        np.ndarray: loaded image
     """
     image = cv2.imread(path)
     if image is None:
@@ -200,7 +202,7 @@ def load_sample(
     X_path: str,
     y_path: str,
     input_image_shape: Tuple,
-    mask_image: np.array,
+    mask_image: np.ndarray,
     is_rgb: bool,
     normalized: bool,
 ) -> Tuple:
@@ -211,7 +213,7 @@ def load_sample(
         X_path (str): x (input) path
         y_path (str): y (label) path
         input_image_shape (Tuple): raw input image shape
-        mask_image (np.array): mask image array
+        mask_image (np.ndarray): mask image array
         is_rgb (bool): whether to convert the image to RGB format
         normalized (bool): whether to normalize the image
 
@@ -236,7 +238,9 @@ def load_sample(
     return X_image, y_dens
 
 
-def load_mask_image(mask_path: str = None, normalized: bool = True) -> np.array:
+def load_mask_image(
+    mask_path: Optional[str] = None, normalized: bool = True
+) -> np.ndarray:
     """Load a binary mask image and normalizes the values as necessary.
 
     Args:
@@ -244,9 +248,9 @@ def load_mask_image(mask_path: str = None, normalized: bool = True) -> np.array:
         normalized (bool, optional): whether execute normalization. Defaults to True.
 
     Returns:
-        np.array: loaded binary masked image
+        np.ndarray: loaded binary masked image
     """
-    if Path(mask_path).is_file():
+    if (mask_path is not None) and (Path(mask_path).is_file()):
         # load binary mask image
         mask = cv2.imread(mask_path)
         assert (
@@ -263,17 +267,17 @@ def load_mask_image(mask_path: str = None, normalized: bool = True) -> np.array:
 
 
 def apply_masking_on_image(
-    image: np.array, mask: np.array, channel: int = 3
-) -> np.array:
+    image: np.ndarray, mask: np.ndarray, channel: int = 3
+) -> np.ndarray:
     """Apply mask processing to image data.
 
     Args:
-        image (np.array): image to be applied
-        mask (np.array): mask image
+        image (np.ndarray): image to be applied
+        mask (np.ndarray): mask image
         channel (int, optional): channel number of applied image. Defaults to 3.
 
     Returns:
-        np.array: masked image
+        np.ndarray: masked image
     """
     if mask is None:
         return image
@@ -287,11 +291,11 @@ def apply_masking_on_image(
     return masked_image
 
 
-def get_masked_index(mask: np.array, horizontal_flip: bool = False) -> Tuple:
+def get_masked_index(mask: np.ndarray, horizontal_flip: bool = False) -> Tuple:
     """Masking an image to get valid index
 
     Args:
-        mask (np.array): binay mask image
+        mask (np.ndarray): binay mask image
         horizontal_flip (bool, optional): Whether to perform data augumentation. Defaults to False.
 
     Returns:
@@ -322,11 +326,11 @@ def get_masked_index(mask: np.array, horizontal_flip: bool = False) -> Tuple:
     return index_h, index_w
 
 
-def get_image_shape(image: np.array) -> Tuple:
+def get_image_shape(image: np.ndarray) -> Tuple:
     """Get the height, width, and channel of the input image.
 
     Args:
-        image (np.array): input image
+        image (np.ndarray): input image
 
     Returns:
         Tuple: image shape=(height, width, channel)
@@ -342,20 +346,20 @@ def get_image_shape(image: np.array) -> Tuple:
 
 
 def extract_local_data(
-    image: np.array,
-    density_map: np.array,
+    image: np.ndarray,
+    density_map: Optional[np.ndarray],
     params_dict: dict,
     is_flip: bool,
-    index_list: List = None,
+    index_list: Optional[List[int]] = None,
 ) -> Tuple:
     """Extract local image and density map from raw data
 
     Args:
-        image (np.array): raw image
-        density_map (np.array): raw density map
+        image (np.ndarray): raw image
+        density_map (np.ndarray, optional): raw density map
         params_dict (dict): dictionary of parameters
         is_flip (bool): whether image is flip or not
-        index_list (List): target index list of index_h and index_w
+        index_list (List[int], optional): target index list of index_h and index_w
 
     Returns:
         Tuple: numpy array of local image and density map

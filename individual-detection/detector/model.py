@@ -1,5 +1,5 @@
 import math
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import tensorflow as tf
 from detector.constants import GPU_DEVICE_ID, GPU_MEMORY_RATE
@@ -17,7 +17,7 @@ class DensityModel(object):
     The density map represents the likelihood that each individual is present at that location.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # input image
         with tf.compat.v1.name_scope("input"):
             with tf.compat.v1.name_scope("X"):
@@ -184,11 +184,11 @@ class DensityModel(object):
             ).minimize(self.loss)
 
     @staticmethod
-    def __weight_variable(shape: Tuple, name: str = None) -> tf.Variable:
+    def __weight_variable(shape: List[int], name: Optional[str] = None) -> tf.Variable:
         """Initialized weight by He initialization
 
         Args:
-            shape (Tuple): weight shape
+            shape (List[int]): weight shape
             name (str, optional): variable name. Defaults to None.
 
         Returns:
@@ -215,11 +215,11 @@ class DensityModel(object):
             return tf.Variable(initial, name=name)
 
     @staticmethod
-    def __bias_variable(shape: Tuple, name: str = None) -> tf.Variable:
+    def __bias_variable(shape: List[int], name: Optional[str] = None) -> tf.Variable:
         """Initialize the bias with a normal distribution (standard deviation: 0.1).
 
         Args:
-            shape (Tuple): shape of bias tensor
+            shape (List[int]): shape of bias tensor
             name (str, optional): variable name. Defaults to None.
 
         Returns:

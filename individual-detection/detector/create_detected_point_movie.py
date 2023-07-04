@@ -61,11 +61,11 @@ def sort_by_frame_number(path_list: List) -> List:
     return df["raw_path"].to_list()
 
 
-def draw_detection_points(image: np.array, point_coord: np.array) -> np.array:
+def draw_detection_points(image: np.ndarray, point_coord: np.ndarray) -> np.ndarray:
     """Draw detection points on the image.
 
     Returns:
-        np.array: image with detection points
+        np.ndarray: image with detection points
     """
     if point_coord.shape == (2,):
         point_coord = np.array([point_coord])

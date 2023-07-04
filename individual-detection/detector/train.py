@@ -47,36 +47,36 @@ tf.compat.v1.disable_eager_execution()
 
 
 def hard_negative_mining(
-    X: np.array, y: np.array, loss_array: np.array, weight: float
-) -> Tuple[np.array, np.array]:
+    X: np.ndarray, y: np.ndarray, loss_array: np.ndarray, weight: float
+) -> Tuple[np.ndarray, np.ndarray]:
     """Hard negative mining is performed based on the error in each sample.
 
     Args:
-        X (np.array): array of local image
-        y (np.array): array of density map
-        loss_array (np.array): array of each sample loss
+        X (np.ndarray): array of local image
+        y (np.ndarray): array of density map
+        loss_array (np.ndarray): array of each sample loss
         weight (float): weight of hard negative (thresh = weight * mean loss)
 
     Returns:
-        Tuple[np.array, np.array]: tuple of hard negative image and label
+        Tuple[np.ndarray, np.ndarray]: tuple of hard negative image and label
     """
 
     # get index that error is greater than the threshold
-    def hard_negative_index(loss_array: np.array, thresh: float) -> np.array:
+    def hard_negative_index(loss_array: np.ndarray, thresh: float) -> np.ndarray:
         """Get the index of the target data from the input sample.
 
         Args:
-            loss_array (np.array): array of each sample loss
+            loss_array (np.ndarray): array of each sample loss
             thresh (float): threshold of hard negative
 
         Returns:
-            np.array: array of hard negative index
+            np.ndarray: array of hard negative index
         """
         index = np.where(loss_array > thresh)[0]
         return index
 
     # the threshold is three times the average
-    thresh = np.mean(loss_array) * weight
+    thresh = float(np.mean(loss_array) * weight)
     index = hard_negative_index(loss_array, thresh)
     hard_negative_image_array = np.zeros(
         (len(index), LOCAL_IMAGE_SIZE, LOCAL_IMAGE_SIZE, FRAME_CHANNEL),
@@ -91,21 +91,21 @@ def hard_negative_mining(
 
 
 def under_sampling(
-    local_iamge_array: np.array, density_array: np.array, thresh: float
-) -> Tuple[np.array, np.array]:
+    local_iamge_array: np.ndarray, density_array: np.ndarray, thresh: float
+) -> Tuple[np.ndarray, np.ndarray]:
     """Undersampling to avoid unbalanced labels in the data set.
     The ratio of positive to negative examples should be 1:1.
 
     Args:
-        local_iamge_array (np.array): target local image array
-        density_array (np.array): target density value array
+        local_iamge_array (np.ndarray): target local image array
+        density_array (np.ndarray): target density value array
         thresh (float): threshold of positive sample
 
     Returns:
-        Tuple[np.array, np.array]: sampled dataset
+        Tuple[np.ndarray, np.ndarray]: sampled dataset
     """
 
-    def select(length: int, k: int) -> np.array:
+    def select(length: int, k: int) -> np.ndarray:
         """Array of boolean which length = length and #True = k
 
         Args:
@@ -113,7 +113,7 @@ def under_sampling(
             k (int): positive sample number
 
         Returns:
-            np.array: selected negative sample index
+            np.ndarray: selected negative sample index
         """
         seed = np.arange(length)
         np.random.shuffle(seed)
@@ -130,18 +130,18 @@ def under_sampling(
 
 
 def get_local_samples(
-    X_image: np.array, y_dens: np.array, is_flip: bool, params_dict: dict
-) -> Tuple[np.array, np.array]:
+    X_image: np.ndarray, y_dens: np.ndarray, is_flip: bool, params_dict: dict
+) -> Tuple[np.ndarray, np.ndarray]:
     """Get samples of local images to be input to the model from the image and label pairs.
 
     Args:
-        X_image (np.array): target raw image (input)
-        y_dens (np.array): target density map (label)
+        X_image (np.ndarray): target raw image (input)
+        y_dens (np.ndarray): target density map (label)
         is_flip (bool): whether apply horizontal flip or not
         params_dict (dict): parameter dictionary
 
     Returns:
-        Tuple[np.array, np.array]: local samples array
+        Tuple[np.ndarray, np.ndarray]: local samples array
     """
 
     if (is_flip) and (np.random.rand() < params_dict["flip_prob"]):
@@ -166,7 +166,7 @@ def train(
     model: DensityModel,
     X_train: List,
     y_train: List,
-    mask_image: np.array,
+    mask_image: np.ndarray,
     params_dict: dict,
     summuray_merged: OpsTensor,
     writer: FileWriter,
@@ -179,7 +179,7 @@ def train(
         model (DensityModel): trained model
         X_train (List): training input image path List
         y_train (List): training label path List
-        mask_image (np.array): mask image
+        mask_image (np.ndarray): mask image
         params_dict (dict): parameter dictionary
         summuray_merged (OpsTensor): tensorflow dashboard summury
         writer (FileWriter): tensorflow dashboard writer
@@ -270,7 +270,7 @@ def train(
             )
 
             # update training loss
-            train_loss += np.mean(train_diff)
+            train_loss += float(np.mean(train_diff))
 
             # check hard negative sample
             (
@@ -312,7 +312,7 @@ def validation(
     model: DensityModel,
     X_valid: List,
     y_valid: List,
-    mask_image: np.array,
+    mask_image: np.ndarray,
     params_dict: dict,
     summuray_merged: OpsTensor,
     writer: FileWriter,
@@ -326,7 +326,7 @@ def validation(
         model (DensityModel): trained model
         X_valid (List): validation input image path List
         y_valid (List): validation label path List
-        mask_image (np.array): mask image
+        mask_image (np.ndarray): mask image
         params_dict (dict): parameter dictionary
         summuray_merged (OpsTensor): tensorflow dashboard summury
         writer (FileWriter): tensorflow dashboard writer
@@ -402,7 +402,7 @@ def test(
     model: DensityModel,
     X_test: List,
     y_test: List,
-    mask_image: np.array,
+    mask_image: np.ndarray,
     params_dict: dict,
     summuray_merged: OpsTensor,
     writer: FileWriter,
@@ -414,7 +414,7 @@ def test(
         model (DensityModel): trained model
         X_test (List): test input image path List
         y_test (List): test label path List
-        mask_image (np.array): mask image
+        mask_image (np.ndarray): mask image
         params_dict (dict): parameter dictionary
         summuray_merged (OpsTensor): tensorflow dashboard summury
         writer (FileWriter): tensorflow dashboard writer

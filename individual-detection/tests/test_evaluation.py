@@ -8,7 +8,7 @@ from detector.evaluation_metrics import (
 from detector.exceptions import DetectionSampleNumberError
 
 
-def test_eval_metrics():
+def test_eval_metrics() -> None:
     # all detected case
     true_positive = 100
     false_positive = 0
@@ -59,7 +59,7 @@ def test_eval_metrics():
         )
 
 
-def test_batch_evaluation():
+def test_batch_evaluation() -> None:
     true_positive_list = [100, 50, 0]
     false_positive_list = [0, 50, 0]
     false_negative_list = [0, 50, 100]
@@ -82,7 +82,7 @@ def test_batch_evaluation():
     assert metrics_list[2].f_measure == 0.0
 
 
-def test_calculate_metrics_summury():
+def test_calculate_metrics_summury() -> None:
     metrics_list = [
         BasicMetrics(1.0, 1.0, 1.0, 1.0),
         BasicMetrics(0.5, 0.5, 0.5, 0.5),

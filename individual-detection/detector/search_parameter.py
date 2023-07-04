@@ -1,6 +1,6 @@
 import copy
 import time
-from typing import List
+from typing import Dict, List, Optional
 
 import hydra
 import numpy as np
@@ -30,24 +30,21 @@ class ParameterStore:
             cols_order (List[str]): define columns name and order to save
         """
         self.cols_order = cols_order
-        self.result_dictlist = {key: [] for key in cols_order}
-        (
-            self.calculation_time_list,
-            self.accuracy_list,
-            self.precision_list,
-            self.recall_list,
-            self.f_measure_list,
-        ) = ([], [], [], [], [])
+        self.result_dictlist: Dict[str, List[float]] = {key: [] for key in cols_order}
+
+        self.calculation_time_list: List[float] = []
+        self.accuracy_list: List[float] = []
+        self.precision_list: List[float] = []
+        self.recall_list: List[float] = []
+        self.f_measure_list: List[float] = []
 
     def init_per_image_metrics(self) -> None:
         """Initialize lists that store temporarily metrics value"""
-        (
-            self.calculation_time_list,
-            self.accuracy_list,
-            self.precision_list,
-            self.recall_list,
-            self.f_measure_list,
-        ) = ([], [], [], [], [])
+        self.calculation_time_list.clear()
+        self.accuracy_list.clear()
+        self.precision_list.clear()
+        self.recall_list.clear()
+        self.f_measure_list.clear()
 
     def update_per_image_metrics(
         self,
@@ -77,7 +74,7 @@ class ParameterStore:
         key: str,
         summury_method: str,
         metrics_list: List[float],
-        percentile_num: int,
+        percentile_num: Optional[int],
     ) -> None:
         """Receive a list of metrics and summarize by mean or percentile.
 
@@ -85,16 +82,18 @@ class ParameterStore:
             key (str): dictionary key name
             summury_method (str): summry method name (mean of percentile)
             metrics_list (List[float]): summurized metrics list
-            percentile_num (int): percentile number (ex: q1 -> 25)
+            percentile_num (int, optional):
+                percentile number (ex: q1 -> 25)
+                if calculate mean, set None
         """
         if key not in self.result_dictlist.keys():
             return
 
         if summury_method == "mean":
-            self.result_dictlist[key].append(np.mean(metrics_list))
+            self.result_dictlist[key].append(float(np.mean(metrics_list)))
         elif summury_method == "percentile":
             self.result_dictlist[key].append(
-                np.percentile(metrics_list, percentile_num)
+                float(np.percentile(metrics_list, percentile_num))
             )
         else:
             logger.info(f"Invalid summury method: {summury_method}")
@@ -104,7 +103,7 @@ class ParameterStore:
         # calculate mean of metrics values
         # time metrics is only calculate mean value
         self.result_dictlist["calculation_time_per_image_mean"].append(
-            np.mean(self.calculation_time_list)
+            float(np.mean(self.calculation_time_list))
         )
         self.update_summury_metrics("accuracy_mean", "mean", self.accuracy_list, None)
         self.update_summury_metrics("precision_mean", "mean", self.precision_list, None)
@@ -154,7 +153,7 @@ def search(
     search_param: str,
     dataset_path_df: pd.DataFrame,
     patterns: List[float],
-    mask_image: np.array,
+    mask_image: Optional[np.ndarray],
     model: DensityModel,
     tf_session: InteractiveSession,
     cfg: DictConfig,
@@ -165,7 +164,7 @@ def search(
         search_param (str): search parameter name
         dataset_path_df (pd.DataFrame): DataFrame containing paths for input, label, and predicted density map
         patterns (List[float]): serach parameter patterns list
-        mask_image (np.array): mask image
+        mask_image (np.ndarray, optional): mask image
         model (DensityModel): trained density model
         tf_session (InteractiveSession): tensorflow session
         cfg (DictConfig): config about analysis image region
@@ -210,28 +209,23 @@ def search(
 
             # load groud truth label
             ground_truth_array = get_ground_truth(
-                dataset_path_df["label"][i], mask_image, cfg
+                dataset_path_df["label"][i], mask_image
             )
 
             # evaluate current frame
             true_pos, false_pos, false_neg, sample_number = eval_detection(
                 predicted_centroid_array, ground_truth_array, cfg["detection_threshold"]
             )
-            (
-                accuracy_per_image,
-                precision_per_image,
-                recall_per_image,
-                f_measure_per_image,
-            ) = eval_metrics(true_pos, false_pos, false_neg, sample_number)
+            basic_metrics = eval_metrics(true_pos, false_pos, false_neg, sample_number)
 
             # upadate metrics
             calculation_time = time.time() - start_time
             params_store.update_per_image_metrics(
                 calculation_time,
-                accuracy_per_image,
-                precision_per_image,
-                recall_per_image,
-                f_measure_per_image,
+                basic_metrics.accuracy,
+                basic_metrics.precision,
+                basic_metrics.recall,
+                basic_metrics.f_measure,
             )
 
         # store current paramter percentile results
@@ -246,17 +240,17 @@ def search(
 
 def search_parameter(
     dataset_path_df: pd.DataFrame,
-    mask_image: np.array,
+    mask_image: Optional[np.ndarray],
     model: DensityModel,
     tf_session: InteractiveSession,
     cfg: DictConfig,
-):
+) -> None:
     """Search for parameters that maximize accuracy. The search essentially uses a validation data set.
     The parameters that can be explored are "clustering threshold" and "prediction grid".
 
     Args:
         dataset_path_df (pd.DataFrame): DataFrame containing paths for input, label, and predicted density map
-        mask_image (np.array): mask image
+        mask_image (np.ndarray, optional): mask image
         model (DensityModel): trained density model
         tf_session (InteractiveSession): tensorflow session
         cfg (DictConfig): config about analysis image region

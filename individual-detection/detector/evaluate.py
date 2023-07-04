@@ -1,5 +1,5 @@
 import glob
-from typing import Tuple
+from typing import Optional, Tuple
 
 import hydra
 import numpy as np
@@ -12,16 +12,18 @@ from scipy import optimize
 from tqdm import tqdm
 
 
-def get_ground_truth(ground_truth_path: str, mask_image: np.array) -> np.array:
+def get_ground_truth(
+    ground_truth_path: str, mask_image: Optional[np.ndarray]
+) -> np.ndarray:
     """Plots the coordinates of answer label on the black image(all value 0)
     and creates a correct image for accuracy evaluation.
 
     Args:
         ground_truth_path (str): coordinates of the estimated target (.csv)
-        mask_image (np.array): binay mask image
+        mask_image (np.ndarray, optional): binay mask image
 
     Returns:
-        np.array: array showing the positon of target
+        np.ndarray: array showing the positon of target
     """
 
     ground_truth_array = np.loadtxt(ground_truth_path, delimiter=",", dtype="int32")
@@ -42,16 +44,16 @@ def get_ground_truth(ground_truth_path: str, mask_image: np.array) -> np.array:
 
 
 def eval_detection(
-    predcit_centroid_array: np.array,
-    ground_truth_array: np.array,
+    predcit_centroid_array: np.ndarray,
+    ground_truth_array: np.ndarray,
     detection_threshold: int,
 ) -> Tuple:
     """A prediction is considered successful when the distance between
     the predicted detection point and the ground-truth is less than the "discriminant threshold".
 
     Args:
-        predcit_centroid_array (np.array): coordinates of predicted point
-        ground_truth_array (np.array): coordinates of ground truth
+        predcit_centroid_array (np.ndarray): coordinates of predicted point
+        ground_truth_array (np.ndarray): coordinates of ground truth
         detection_threshold (int): threshold value used to determine detection
 
     Returns:

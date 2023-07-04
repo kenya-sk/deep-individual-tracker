@@ -25,6 +25,7 @@ RUN pip install -r requirements.txt
 COPY ./config ./config
 COPY ./detector ./detector
 COPY ./tests ./tests
+COPY ./mypy.ini ./mypy.ini
 
 RUN apt-get autoremove -y
 

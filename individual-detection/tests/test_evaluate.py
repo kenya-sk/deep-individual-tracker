@@ -1,9 +1,11 @@
+from pathlib.Path import Path
+
 import numpy as np
 from detector.evaluate import eval_detection, get_ground_truth
 from numpy.testing import assert_array_equal
 
 
-def test_get_ground_truth(tmp_path):
+def test_get_ground_truth(tmp_path: Path) -> None:
     # create dummy ground truth data
     ground_truth_path = str(tmp_path / "ground_truth.csv")
     raw_ground_truth_array = np.array([[10, 50], [200, 450], [500, 120], [130, 125]])
@@ -21,7 +23,7 @@ def test_get_ground_truth(tmp_path):
     assert_array_equal(ground_truth_array, expected_ground_truth_array)
 
 
-def test_eval_detection():
+def test_eval_detection() -> None:
     # detect all sample case
     predcit_centroid_array = np.array([[10, 50], [200, 450], [500, 120], [130, 125]])
     ground_truth_array = np.array([[10, 50], [200, 450], [500, 120], [130, 125]])

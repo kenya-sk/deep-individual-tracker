@@ -6,7 +6,7 @@ from detector.create_detected_point_movie import (
 )
 
 
-def test_sort_by_frame_number():
+def test_sort_by_frame_number() -> None:
     path_list = [
         "./example/2022_03_19_234224.png",
         "./example/2022_03_19_234225.png",
@@ -21,7 +21,7 @@ def test_sort_by_frame_number():
     assert sorted_path_list == expected
 
 
-def test_draw_detection_points():
+def test_draw_detection_points() -> None:
     image = np.zeros((10, 10, 3), dtype=np.uint8)
     # single point case
     point_coord = np.array([1, 1])

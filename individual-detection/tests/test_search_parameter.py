@@ -1,10 +1,12 @@
+from pathlib.Path import Path
+
 import pandas as pd
 import pytest
 from detector.search_parameter import ParameterStore
 
 
 @pytest.fixture(scope="function")
-def ps():
+def ps() -> ParameterStore:
     cols_order = [
         "parameter",
         "sample_number",
@@ -38,7 +40,7 @@ def ps():
     return ParameterStore(cols_order)
 
 
-def test_init_per_image_metrics(ps):
+def test_init_per_image_metrics(ps: ParameterStore) -> None:
     ps.init_per_image_metrics()
     assert ps.calculation_time_list == []
     assert ps.accuracy_list == []
@@ -47,7 +49,7 @@ def test_init_per_image_metrics(ps):
     assert ps.f_measure_list == []
 
 
-def test_update_per_image_metrics(ps):
+def test_update_per_image_metrics(ps: ParameterStore) -> None:
     ps.update_per_image_metrics(100.2, 1.0, 0.8, 0.5, 0.6)
     assert ps.calculation_time_list == [100.2]
     assert ps.accuracy_list == [1.0]
@@ -56,7 +58,7 @@ def test_update_per_image_metrics(ps):
     assert ps.f_measure_list == [0.6]
 
 
-def test_update_summury_metrics(ps):
+def test_update_summury_metrics(ps: ParameterStore) -> None:
     # not exist key case
     prev_result_dictlist = ps.result_dictlist
     ps.update_summury_metrics("not_exist_key", "mean", [1.0, 0.5, 0.3], None)
@@ -73,7 +75,7 @@ def test_update_summury_metrics(ps):
     assert ps.result_dictlist["accuracy_med"] == [0.4]
 
 
-def test_store_percentile_results(ps):
+def test_store_percentile_results(ps: ParameterStore) -> None:
     ps.calculation_time_list = [100.2, 100.1, 100.3, 100.4, 100.5]
     ps.accuracy_list = [1.0, 0.5, 0.4, 0.3, 0.2]
     ps.precision_list = [0.8, 0.4, 0.3, 0.2, 0.1]
@@ -110,7 +112,7 @@ def test_store_percentile_results(ps):
     assert ps.result_dictlist["f_measure_max"][0] == 0.6
 
 
-def test_save_results(ps, tmp_path):
+def test_save_results(ps: ParameterStore, tmp_path: Path) -> None:
     cols_order = ps.cols_order
     ps.save_results(str(tmp_path / "test_parameter.csv"))
 

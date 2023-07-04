@@ -4,7 +4,7 @@ from detector.constants import FRAME_CHANNEL, LOCAL_IMAGE_SIZE
 from detector.train import hard_negative_mining, under_sampling
 
 
-def test_hard_negative_mining():
+def test_hard_negative_mining() -> None:
     X = np.ones((5, LOCAL_IMAGE_SIZE, LOCAL_IMAGE_SIZE, FRAME_CHANNEL))
     y = np.array([0.32, 0.34, 0.11, 0.92, 0.99], dtype="float32")
     loss_array = np.array([0.1, 0.2, 0.3, 5, 13])  # mean loss = 3.72
@@ -14,7 +14,7 @@ def test_hard_negative_mining():
     assert y_hard[0] == pytest.approx(0.99)
 
 
-def test_under_sampling():
+def test_under_sampling() -> None:
     local_iamge_array = np.ones((5, LOCAL_IMAGE_SIZE, LOCAL_IMAGE_SIZE, FRAME_CHANNEL))
     density_array = np.array([0.32, 0.34, 0.11, 0.92, 0.99], dtype="float32")
     threshold = 0.5

@@ -3,7 +3,7 @@ from detector.exceptions import IndexExtractionError
 from detector.predict import extract_prediction_indices
 
 
-def test_extract_prediction_indices():
+def test_extract_prediction_indices() -> None:
     # example = 3x5 shape
     height_index_list = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3]
     width_index_list = [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5]

@@ -2,7 +2,7 @@ import numpy as np
 from detector.clustering import apply_clustering_to_density_map
 
 
-def test_apply_clustering_to_density_map():
+def test_apply_clustering_to_density_map() -> None:
     # check empty array
     density_map = np.zeros((214, 214))
     centroid_array = apply_clustering_to_density_map(density_map, 10, thresh=0.5)

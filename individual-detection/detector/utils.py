@@ -141,4 +141,4 @@ def get_file_name_from_path(path: str) -> int:
         int: extracted file name
     """
     file_name = path.split("/")[-1]
-    return file_name.split(".")[0]
+    return int(file_name.split(".")[0])

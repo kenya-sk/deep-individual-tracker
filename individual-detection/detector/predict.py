@@ -82,9 +82,9 @@ def extract_prediction_indices(
 def predict_density_map(
     model: DensityModel,
     tf_session: InteractiveSession,
-    image: np.array,
+    image: np.ndarray,
     cfg: dict,
-) -> np.array:
+) -> np.ndarray:
     # set horizontal index
     index_list = extract_prediction_indices(
         cfg["index_h"],
@@ -128,7 +128,7 @@ def predict_density_map(
 def image_prediction(
     model: DensityModel,
     tf_session: InteractiveSession,
-    image: np.array,
+    image: np.ndarray,
     frame_num: int,
     output_directory: str,
     cfg: dict,
@@ -138,7 +138,7 @@ def image_prediction(
     Args:
         model (DensityModel): trained model
         tf_session (InteractiveSession): tensorflow session
-        image (np.array): target raw image
+        image (np.ndarray): target raw image
         frame_num (int): target frame number
         output_directory (str): output directory name
         cfg (dict): config dictionary
@@ -218,15 +218,7 @@ def video_prediction(
         os.makedirs(f"{output_directory}/dens", exist_ok=True)
         os.makedirs(f"{output_directory}/coord", exist_ok=True)
         video_path = f"{DATA_DIR}/{cfg['video_directory']}/{cfg['target_date']}/{cfg['target_date']}{hour:0>2d}00.mp4"
-        display_data_info(
-            video_path,
-            output_directory,
-            cfg["skip_width"],
-            cfg["predict_batch_size"],
-            cfg["band_width"],
-            cfg["cluster_thresh"],
-            cfg["is_saved_map"],
-        )
+        display_data_info(video_path, output_directory, cfg)
 
         # initializetion
         cap, _, _, _, _, _ = set_capture(video_path)

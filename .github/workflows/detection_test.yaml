@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - 'individual-detection/**'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,5 +22,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Bulid Docker image
         run: docker build -t detection:latest .
+      - name: Run MyPy
+        run: docker run detection:latest mypy --config-file mypy.ini .
       - name: Run PyTest
         run: docker run detection:latest pytest tests -v
