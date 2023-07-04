@@ -1,4 +1,4 @@
-from pathlib.Path import Path
+from pathlib import Path
 from typing import Tuple
 
 import pytest

@@ -1,7 +1,7 @@
 import random
 import re
 import time
-from pathlib.Path import Path
+from pathlib import Path
 
 from detector.utils import (
     get_directory_list,

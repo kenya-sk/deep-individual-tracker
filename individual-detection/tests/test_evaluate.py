@@ -1,4 +1,4 @@
-from pathlib.Path import Path
+from pathlib import Path
 
 import numpy as np
 from detector.evaluate import eval_detection, get_ground_truth
