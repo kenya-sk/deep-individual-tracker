@@ -2,12 +2,10 @@ from dataclasses import dataclass
 from typing import List
 
 import numpy as np
-
 from detector.exceptions import DetectionSampleNumberError
 from detector.logger import logger
 
 
-@dataclass(frozen=True)
 class BasicMetrics:
     accuracy: float
     precision: float
@@ -18,22 +16,22 @@ class BasicMetrics:
         self, accuracy: float, precision: float, recall: float, f_measure: float
     ) -> None:
         if self.check_metrics_range(accuracy):
-            object.__setattr__(self, "accuracy", accuracy)
+            self.accuracy = accuracy
         else:
             raise ValueError("Accuracy should be in the range 0.0-1.0.")
 
         if self.check_metrics_range(precision):
-            object.__setattr__(self, "precision", precision)
+            self.precision = precision
         else:
             raise ValueError("Precision should be in the range 0.0-1.0.")
 
         if self.check_metrics_range(recall):
-            object.__setattr__(self, "recall", recall)
+            self.recall = recall
         else:
             raise ValueError("Recall should be in the range 0.0-1.0.")
 
         if self.check_metrics_range(f_measure):
-            object.__setattr__(self, "f_measure", f_measure)
+            self.f_measure = f_measure
         else:
             raise ValueError("F-Measure should be in the range 0.0-1.0.")
 
@@ -57,7 +55,7 @@ class BasicMetrics:
             return False
 
 
-@dataclass(frozen=True)
+# @dataclass(frozen=True)
 class MetricsSummury:
     total_sample_num: int
     mean_accuracy: float
@@ -84,23 +82,40 @@ class MetricsSummury:
         recall_list: List[float],
         f_measure_list: List[float],
     ) -> None:
-        object.__setattr__(self, "total_sample_num", len(accuracy_list))
-        object.__setattr__(self, "mean_accuracy", np.mean(accuracy_list))
-        object.__setattr__(self, "mean_precision", np.mean(precision_list))
-        object.__setattr__(self, "mean_recall", np.mean(recall_list))
-        object.__setattr__(self, "mean_f_measure", np.mean(f_measure_list))
-        object.__setattr__(self, "std_accuracy", np.std(accuracy_list))
-        object.__setattr__(self, "std_precision", np.std(precision_list))
-        object.__setattr__(self, "std_recall", np.std(recall_list))
-        object.__setattr__(self, "std_f_measure", np.std(f_measure_list))
-        object.__setattr__(self, "min_accuracy", np.min(accuracy_list))
-        object.__setattr__(self, "min_precision", np.min(precision_list))
-        object.__setattr__(self, "min_recall", np.min(recall_list))
-        object.__setattr__(self, "min_f_measure", np.min(f_measure_list))
-        object.__setattr__(self, "max_accuracy", np.max(accuracy_list))
-        object.__setattr__(self, "max_precision", np.max(precision_list))
-        object.__setattr__(self, "max_recall", np.max(recall_list))
-        object.__setattr__(self, "max_f_measure", np.max(f_measure_list))
+        self.accuracy_list = accuracy_list
+        self.precision_list = precision_list
+        self.recall_list = recall_list
+        self.f_measure_list = f_measure_list
+
+        # set aggregation metrics
+        self.set_mean_metrics()
+        self.set_std_metrics()
+        self.set_min_metrics()
+        self.set_max_metrics()
+
+    def set_mean_metrics(self) -> None:
+        self.mean_accuracy = np.mean(self.accuracy_list)
+        self.mean_precision = np.mean(self.precision_list)
+        self.mean_recall = np.mean(self.recall_list)
+        self.mean_f_measure = np.mean(self.f_measure_list)
+
+    def set_std_metrics(self) -> None:
+        self.std_accuracy = np.std(self.accuracy_list)
+        self.std_precision = np.std(self.precision_list)
+        self.std_recall = np.std(self.recall_list)
+        self.std_f_measure = np.std(self.f_measure_list)
+
+    def set_min_metrics(self) -> None:
+        self.min_accuracy = np.min(self.accuracy_list)
+        self.min_precision = np.min(self.precision_list)
+        self.min_recall = np.min(self.recall_list)
+        self.min_f_measure = np.min(self.f_measure_list)
+
+    def set_max_metrics(self) -> None:
+        self.max_accuracy = np.max(self.accuracy_list)
+        self.max_precision = np.max(self.precision_list)
+        self.max_recall = np.max(self.recall_list)
+        self.max_f_measure = np.max(self.f_measure_list)
 
 
 def eval_metrics(
