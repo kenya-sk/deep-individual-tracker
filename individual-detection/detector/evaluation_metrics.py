@@ -82,6 +82,7 @@ class MetricsSummury:
         recall_list: List[float],
         f_measure_list: List[float],
     ) -> None:
+        self.total_sample_num = len(accuracy_list)
         self.accuracy_list = accuracy_list
         self.precision_list = precision_list
         self.recall_list = recall_list
