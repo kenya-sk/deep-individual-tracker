@@ -94,16 +94,16 @@ class MetricsSummury:
         self.set_max_metrics()
 
     def set_mean_metrics(self) -> None:
-        self.mean_accuracy = np.mean(self.accuracy_list)
-        self.mean_precision = np.mean(self.precision_list)
-        self.mean_recall = np.mean(self.recall_list)
-        self.mean_f_measure = np.mean(self.f_measure_list)
+        self.mean_accuracy = float(np.mean(self.accuracy_list))
+        self.mean_precision = float(np.mean(self.precision_list))
+        self.mean_recall = float(np.mean(self.recall_list))
+        self.mean_f_measure = float(np.mean(self.f_measure_list))
 
     def set_std_metrics(self) -> None:
-        self.std_accuracy = np.std(self.accuracy_list)
-        self.std_precision = np.std(self.precision_list)
-        self.std_recall = np.std(self.recall_list)
-        self.std_f_measure = np.std(self.f_measure_list)
+        self.std_accuracy = float(np.std(self.accuracy_list))
+        self.std_precision = float(np.std(self.precision_list))
+        self.std_recall = float(np.std(self.recall_list))
+        self.std_f_measure = float(np.std(self.f_measure_list))
 
     def set_min_metrics(self) -> None:
         self.min_accuracy = np.min(self.accuracy_list)
