@@ -15,7 +15,7 @@ from monitoring.logger import logger
 from omegaconf import DictConfig
 
 
-def load_statistics(cfg: DictConfig) -> dict:
+def load_statistics(cfg: DictConfig) -> Dict[str, np.ndarray]:
     """Load the statistics used in the monitoring environment
 
     Args:
@@ -55,7 +55,7 @@ def load_statistics(cfg: DictConfig) -> dict:
     return stats_dict
 
 
-def load_array(stats_dict: Dict, key: str) -> np.ndarray:
+def load_array(stats_dict: Dict[str, np.ndarray], key: str) -> np.ndarray:
     """Load array from statistics dictionary
 
     Args:
@@ -76,7 +76,7 @@ def load_array(stats_dict: Dict, key: str) -> np.ndarray:
 def set_stats_metrics(
     cfg: DictConfig,
     frame_num: int,
-    stats_dict: Dict,
+    stats_dict: Dict[str, np.ndarray],
     mean_ax: plt.axis,
     acc_ax: plt.axis,
 ) -> None:

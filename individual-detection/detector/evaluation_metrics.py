@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List
 
 import numpy as np
@@ -55,7 +54,6 @@ class BasicMetrics:
             return False
 
 
-# @dataclass(frozen=True)
 class MetricsSummury:
     total_sample_num: int
     mean_accuracy: float

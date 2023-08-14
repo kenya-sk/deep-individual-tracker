@@ -2,7 +2,6 @@ import os
 
 # [FIXME] support displot or kdeplot
 import warnings
-from glob import glob
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -17,7 +16,6 @@ from monitoring.constants import (
 from monitoring.exceptions import PathNotExistError
 from monitoring.logger import logger
 from omegaconf import DictConfig
-from tqdm import tqdm
 
 warnings.resetwarnings()
 warnings.simplefilter("ignore", FutureWarning)
