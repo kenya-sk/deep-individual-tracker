@@ -18,16 +18,14 @@ from detector.constants import (
     TRAIN_CONFIG_NAME,
 )
 from detector.exceptions import DatasetSplitTypeError
+from detector.index_manager import IndexManager
 from detector.logger import logger
 from detector.model import DensityModel
 from detector.process_dataset import (
+    Dataset,
     extract_local_data,
-    get_masked_index,
-    load_dataset,
     load_mask_image,
     load_sample,
-    split_dataset,
-    split_dataset_by_date,
 )
 from detector.utils import get_elapsed_time_str, set_tensorboard
 from omegaconf import DictConfig, OmegaConf
@@ -130,7 +128,11 @@ def under_sampling(
 
 
 def get_local_samples(
-    X_image: np.ndarray, y_dens: np.ndarray, is_flip: bool, params_dict: dict
+    X_image: np.ndarray,
+    y_dens: np.ndarray,
+    is_flip: bool,
+    index_manager: IndexManager,
+    params_dict: dict,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Get samples of local images to be input to the model from the image and label pairs.
 
@@ -138,6 +140,7 @@ def get_local_samples(
         X_image (np.ndarray): target raw image (input)
         y_dens (np.ndarray): target density map (label)
         is_flip (bool): whether apply horizontal flip or not
+        index_manager (IndexManager): index manager class of masked image
         params_dict (dict): parameter dictionary
 
     Returns:
@@ -149,12 +152,12 @@ def get_local_samples(
         X_train_local_list, y_train_local_list = extract_local_data(
             X_image[:, ::-1, :],
             y_dens[:, ::-1],
-            params_dict,
+            index_manager,
             is_flip=True,
         )
     else:
         X_train_local_list, y_train_local_list = extract_local_data(
-            X_image, y_dens, params_dict, is_flip=False
+            X_image, y_dens, index_manager, is_flip=False
         )
 
     return np.array(X_train_local_list), np.array(y_train_local_list)
@@ -167,6 +170,7 @@ def train(
     X_train: List,
     y_train: List,
     mask_image: np.ndarray,
+    index_manager: IndexManager,
     params_dict: dict,
     summuray_merged: OpsTensor,
     writer: FileWriter,
@@ -180,6 +184,7 @@ def train(
         X_train (List): training input image path List
         y_train (List): training label path List
         mask_image (np.ndarray): mask image
+        index_manager (IndexManager): index manager class of masked image
         params_dict (dict): parameter dictionary
         summuray_merged (OpsTensor): tensorflow dashboard summury
         writer (FileWriter): tensorflow dashboard writer
@@ -217,7 +222,7 @@ def train(
         # load training local image
         # data augmentation (horizontal flip)
         X_train_local, y_train_local = get_local_samples(
-            X_image, y_dens, True, params_dict
+            X_image, y_dens, True, index_manager, params_dict
         )
 
         # under sampling
@@ -313,6 +318,7 @@ def validation(
     X_valid: List,
     y_valid: List,
     mask_image: np.ndarray,
+    index_manager: IndexManager,
     params_dict: dict,
     summuray_merged: OpsTensor,
     writer: FileWriter,
@@ -327,6 +333,7 @@ def validation(
         X_valid (List): validation input image path List
         y_valid (List): validation label path List
         mask_image (np.ndarray): mask image
+        index_manager (IndexManager): index manager class of masked image
         params_dict (dict): parameter dictionary
         summuray_merged (OpsTensor): tensorflow dashboard summury
         writer (FileWriter): tensorflow dashboard writer
@@ -351,7 +358,7 @@ def validation(
         # load validation local image
         # *Not* apply data augmentation (horizontal flip)
         X_valid_local, y_valid_local = get_local_samples(
-            X_image, y_dens, False, params_dict
+            X_image, y_dens, False, index_manager, params_dict
         )
 
         # under sampling
@@ -403,6 +410,7 @@ def test(
     X_test: List,
     y_test: List,
     mask_image: np.ndarray,
+    index_manager: IndexManager,
     params_dict: dict,
     summuray_merged: OpsTensor,
     writer: FileWriter,
@@ -415,6 +423,7 @@ def test(
         X_test (List): test input image path List
         y_test (List): test label path List
         mask_image (np.ndarray): mask image
+        index_manager (IndexManager): index manager class of masked image
         params_dict (dict): parameter dictionary
         summuray_merged (OpsTensor): tensorflow dashboard summury
         writer (FileWriter): tensorflow dashboard writer
@@ -439,7 +448,7 @@ def test(
         # load test local image
         # *Not* apply data augmentation (horizontal flip)
         X_test_local, y_test_local = get_local_samples(
-            X_image, y_dens, False, params_dict
+            X_image, y_dens, False, index_manager, params_dict
         )
 
         test_n_batches = int(len(X_test_local) / params_dict["batch_size"])
@@ -481,24 +490,14 @@ def test(
 
 
 def model_training(
-    X_train: List,
-    X_valid: List,
-    X_test: List,
-    y_train: List,
-    y_valid: List,
-    y_test: List,
+    dataset: Dataset,
     cfg: dict,
 ) -> None:
     """Training the model. Perform an interim evaluation using validation data,
     and finally evaluate the learning results with test data.
 
     Args:
-        X_train (List): training input image path List
-        X_valid (List): validation input image path List
-        X_test (List): test input image path List
-        y_train (List): training label path List
-        y_valid (List): validation label path List
-        y_test (List): test label path List
+        dataset (Dataset): dataset class for model training
         cfg (dict): config dictionary
     """
     # start TensorFlow session
@@ -521,12 +520,7 @@ def model_training(
     # get mask index
     # if you analyze all areas, please set a white image
     mask_image = load_mask_image(str(DATA_DIR / cfg["mask_path"]))
-    index_h, index_w = get_masked_index(mask_image, horizontal_flip=False)
-    flip_index_h, flip_index_w = get_masked_index(mask_image, horizontal_flip=True)
-    cfg["index_h"] = index_h
-    cfg["index_w"] = index_w
-    cfg["flip_index_h"] = flip_index_h
-    cfg["flip_index_w"] = flip_index_w
+    index_manager = IndexManager(mask_image)
 
     # initialization of model variable
     saver = Saver()  # save weight
@@ -560,9 +554,10 @@ def model_training(
                 tf_session,
                 epoch,
                 model,
-                X_train,
-                y_train,
+                dataset.X_train,
+                dataset.y_train,
                 mask_image,
+                index_manager,
                 cfg,
                 summuray_merged,
                 train_writer,
@@ -573,9 +568,10 @@ def model_training(
                 tf_session,
                 epoch,
                 model,
-                X_valid,
-                y_valid,
+                dataset.X_valid,
+                dataset.y_valid,
                 mask_image,
+                index_manager,
                 cfg,
                 summuray_merged,
                 valid_writer,
@@ -623,9 +619,10 @@ def model_training(
         mean_test_loss = test(
             tf_session,
             model,
-            X_test,
-            y_test,
+            dataset.X_test,
+            dataset.y_test,
             mask_image,
+            index_manager,
             cfg,
             summuray_merged,
             test_writer,
@@ -665,36 +662,34 @@ def main(cfg: DictConfig) -> None:
         f"{DATA_DIR}/{cfg['save_dataset_path_directory']}/{EXECUTION_TIME}"
     )
     if cfg["dataset_split_type"] == "random":
-        X_list, y_list = load_dataset(
+        dataset = Dataset(
             str(DATA_DIR / cfg["image_directory"]),
             str(DATA_DIR / cfg["density_directory"]),
-        )
-        X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
-            X_list,
-            y_list,
-            cfg["test_size"],
+            test_size=cfg["test_size"],
             save_path_directory=save_dataset_path_directory,
         )
+        dataset.create_random_dataset()
     elif cfg["dataset_split_type"] == "timeseries":
-        X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset_by_date(
+        dataset = Dataset(
             str(DATA_DIR / cfg["image_directory"]),
             str(DATA_DIR / cfg["density_directory"]),
-            cfg["train_date_list"],
-            cfg["valid_date_list"],
-            cfg["test_date_list"],
+            train_date_list=cfg["train_date_list"],
+            valid_date_list=cfg["valid_date_list"],
+            test_date_list=cfg["test_date_list"],
             save_path_directory=save_dataset_path_directory,
         )
+        dataset.create_date_dataset()
     else:
         message = f'dataset_split_type="{cfg["dataset_split_type"]}" is note defined.'
         logger.error(message)
         raise DatasetSplitTypeError(message)
 
-    logger.info(f"Training Dataset Size: {len(X_train)}")
-    logger.info(f"Validation Dataset Size: {len(X_valid)}")
-    logger.info(f"Test Dataset Size: {len(X_test)}")
+    logger.info(f"Training Dataset Size: {len(dataset.X_train)}")
+    logger.info(f"Validation Dataset Size: {len(dataset.X_valid)}")
+    logger.info(f"Test Dataset Size: {len(dataset.X_test)}")
 
     # training cnn model to predcit densiy map from image
-    model_training(X_train, X_valid, X_test, y_train, y_valid, y_test, cfg)
+    model_training(dataset, cfg)
 
 
 if __name__ == "__main__":

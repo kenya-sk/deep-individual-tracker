@@ -3,13 +3,15 @@ from typing import Optional, Tuple
 
 import hydra
 import numpy as np
-from detector.constants import CONFIG_DIR, DATA_DIR, EVALUATE_CONFIG_NAME
-from detector.evaluation_metrics import eval_metrics, output_evaluation_report
-from detector.logger import logger
-from detector.process_dataset import get_masked_index, load_mask_image
 from omegaconf import DictConfig, OmegaConf
 from scipy import optimize
 from tqdm import tqdm
+
+from detector.constants import CONFIG_DIR, DATA_DIR, EVALUATE_CONFIG_NAME
+from detector.evaluation_metrics import eval_metrics, output_evaluation_report
+from detector.index_manager import IndexManager
+from detector.logger import logger
+from detector.process_dataset import load_mask_image
 
 
 def get_ground_truth(
@@ -30,15 +32,15 @@ def get_ground_truth(
     if mask_image is None:
         return ground_truth_array
     else:
-        valid_h, valid_w = get_masked_index(mask_image, horizontal_flip=False)
+        index_manager = IndexManager(mask_image)
         valid_ground_truth_list = []
         for i in range(ground_truth_array.shape[0]):
-            index_w = np.where(valid_w == ground_truth_array[i][0])
-            index_h = np.where(valid_h == ground_truth_array[i][1])
+            index_w = np.where(index_manager.index_w == ground_truth_array[i][0])
+            index_h = np.where(index_manager.index_h == ground_truth_array[i][1])
             intersect = np.intersect1d(index_w, index_h)
             if len(intersect) == 1:
                 valid_ground_truth_list.append(
-                    [valid_w[intersect[0]], valid_h[intersect[0]]]
+                    [index_manager.index_w[intersect[0]], index_manager.index_h[intersect[0]]]
                 )
         return np.array(valid_ground_truth_list, dtype="int32")
 

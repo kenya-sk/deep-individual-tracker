@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Tuple
 
 import pytest
+
 from detector.exceptions import DatasetEmptyError
 from detector.process_dataset import (
     load_dataset,
@@ -58,13 +59,13 @@ def setup_folder(tmp_path: Path) -> SetupFixture:
 def test_load_dataset(setup_folder: SetupFixture) -> None:
     # empty folder case
     with pytest.raises(DatasetEmptyError):
-        _ = load_dataset("/home/not_exist/image", "/home/not_exist/label")
+        _ = load_dataset("/home/not_exist/image", "/home/not_exist/label", "*.png")
 
     # normal case
     _, root_image_dirc, root_label_dirc = setup_folder
     target_date = "2023-01-01"
     image_paths, label_paths = load_dataset(
-        str(root_image_dirc / target_date), str(root_label_dirc / target_date)
+        str(root_image_dirc / target_date), str(root_label_dirc / target_date), "*.png"
     )
     expected_image_paths = [
         str(root_image_dirc / "2023-01-01" / "20230101_1.png"),

@@ -12,27 +12,106 @@ from detector.constants import (
     ANALYSIS_WIDTH_MAX,
     ANALYSIS_WIDTH_MIN,
     FRAME_CHANNEL,
-    FRAME_HEIGHT,
-    FRAME_WIDTH,
     IMAGE_EXTENTION,
     LOCAL_IMAGE_SIZE,
     RANDOM_SEED,
 )
 from detector.exceptions import DatasetEmptyError, LoadImageError
+from detector.index_manager import IndexManager
 from detector.logger import logger
+from detector.utils import get_image_shape
 from sklearn.model_selection import train_test_split
 
 DatasetType = Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]
 
 
+class Dataset:
+    """Create dataset for model training.
+    This class can choose between two types of data sets via methods.
+    First, random split dataset that randomly splits the dataset into train, validation, and test.
+    Second, date base split dataset that splits the dataset into train, validation, and test
+    based on given list of dates.
+    """
+
+    def __init__(
+        self,
+        image_directory: str,
+        density_directory: str,
+        test_size: float = 0.2,
+        train_date_list: Optional[List[str]] = None,
+        valid_date_list: Optional[List[str]] = None,
+        test_date_list: Optional[List[str]] = None,
+        save_path_directory: Optional[str] = None,
+    ) -> None:
+        self.image_directory = image_directory
+        self.density_directory = density_directory
+        self.test_size = test_size
+        self.train_date_list = train_date_list
+        self.valid_date_list = valid_date_list
+        self.test_date_list = test_date_list
+        self.save_path_directory = save_path_directory
+        self.X_list: List[str]
+        self.y_list: List[str]
+        self.X_train: List[str]
+        self.X_valid: List[str]
+        self.X_test: List[str]
+        self.y_train: List[str]
+        self.y_valid: List[str]
+        self.y_test: List[str]
+
+    def create_random_dataset(self) -> None:
+        """Create random splitted dataset."""
+        self.X_list, self.y_list = load_dataset(
+            self.image_directory, self.density_directory, f"*{IMAGE_EXTENTION}"
+        )
+        (
+            self.X_train,
+            self.X_valid,
+            self.X_test,
+            self.y_train,
+            self.y_valid,
+            self.y_test,
+        ) = split_dataset(
+            self.X_list, self.y_list, self.test_size, self.save_path_directory
+        )
+
+    def create_date_dataset(self) -> None:
+        """Create date base splitted dataset. This dataset avoided data leakage."""
+        if (
+            self.train_date_list is None
+            or self.valid_date_list is None
+            or self.test_date_list is None
+        ):
+            message = "train_date_list, valid_date_list, test_date_list is None."
+            logger.error(message)
+            raise ValueError(message)
+
+        (
+            self.X_train,
+            self.X_valid,
+            self.X_test,
+            self.y_train,
+            self.y_valid,
+            self.y_test,
+        ) = split_dataset_by_date(
+            self.image_directory,
+            self.density_directory,
+            self.train_date_list,
+            self.valid_date_list,
+            self.test_date_list,
+            self.save_path_directory,
+        )
+
+
 def load_dataset(
-    image_directory: str, density_directory: str, file_pattern: str = "*.png"
+    image_directory: str, density_directory: str, file_pattern: str
 ) -> Tuple[List[str], List[str]]:
     """Load the file name of the data set.
 
     Args:
         image_directory (str): directory name of image (input)
         density_directory (str): directory name of density map (label)
+        file_pattern (str): file name pattern of image (input)
 
     Returns:
         Tuple[List[str], List[str]]: tuple with image and label filename pairs
@@ -291,64 +370,10 @@ def apply_masking_on_image(
     return masked_image
 
 
-def get_masked_index(mask: np.ndarray, horizontal_flip: bool = False) -> Tuple:
-    """Masking an image to get valid index
-
-    Args:
-        mask (np.ndarray): binay mask image
-        horizontal_flip (bool, optional): Whether to perform data augumentation. Defaults to False.
-
-    Returns:
-        Tuple: valid index list (heiht and width)
-    """
-    if mask is None:
-        mask = np.ones((FRAME_HEIGHT, FRAME_WIDTH))
-
-    # convert gray scale image
-    if (len(mask.shape) == 3) and (mask.shape[2] > 1):
-        mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
-
-    # crop the image to the analysis area
-    mask = mask[
-        ANALYSIS_HEIGHT_MIN:ANALYSIS_HEIGHT_MAX,
-        ANALYSIS_WIDTH_MIN:ANALYSIS_WIDTH_MAX,
-    ]
-
-    # index of data augumentation
-    if horizontal_flip:
-        mask = mask[:, ::-1]
-
-    index = np.where(mask > 0)
-    index_h = index[0]
-    index_w = index[1]
-    assert len(index_h) == len(index_w)
-
-    return index_h, index_w
-
-
-def get_image_shape(image: np.ndarray) -> Tuple:
-    """Get the height, width, and channel of the input image.
-
-    Args:
-        image (np.ndarray): input image
-
-    Returns:
-        Tuple: image shape=(height, width, channel)
-    """
-    height = image.shape[0]
-    width = image.shape[1]
-    if len(image.shape) == 3:
-        channel = image.shape[2]
-    else:
-        channel = 1
-
-    return (height, width, channel)
-
-
 def extract_local_data(
     image: np.ndarray,
     density_map: Optional[np.ndarray],
-    params_dict: dict,
+    index_manager: IndexManager,
     is_flip: bool,
     index_list: Optional[List[int]] = None,
 ) -> Tuple:
@@ -357,7 +382,7 @@ def extract_local_data(
     Args:
         image (np.ndarray): raw image
         density_map (np.ndarray, optional): raw density map
-        params_dict (dict): dictionary of parameters
+        index_manager (IndexManager): index manager class of masked image
         is_flip (bool): whether image is flip or not
         index_list (List[int], optional): target index list of index_h and index_w
 
@@ -377,11 +402,11 @@ def extract_local_data(
 
     # get each axis index
     if is_flip:
-        index_h = params_dict["flip_index_h"]
-        index_w = params_dict["flip_index_w"]
+        index_h = index_manager.flip_index_h
+        index_w = index_manager.flip_index_w
     else:
-        index_h = params_dict["index_h"]
-        index_w = params_dict["index_w"]
+        index_h = index_manager.index_h
+        index_w = index_manager.index_w
 
     # extract local image
     assert len(index_w) == len(
