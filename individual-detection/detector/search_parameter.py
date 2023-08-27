@@ -6,17 +6,19 @@ import hydra
 import numpy as np
 import pandas as pd
 from detector.clustering import apply_clustering_to_density_map
-from detector.constants import CONFIG_DIR, DATA_DIR, SEARCH_PARAMETER_CONFIG_NAME
+from detector.constants import (
+    CONFIG_DIR,
+    DATA_DIR,
+    FRAME_HEIGHT,
+    FRAME_WIDTH,
+    SEARCH_PARAMETER_CONFIG_NAME,
+)
 from detector.evaluate import eval_detection, eval_metrics, get_ground_truth
+from detector.index_manager import IndexManager
 from detector.logger import logger
 from detector.model import DensityModel, load_model
 from detector.predict import predict_density_map
-from detector.process_dataset import (
-    apply_masking_on_image,
-    get_masked_index,
-    load_image,
-    load_mask_image,
-)
+from detector.process_dataset import apply_masking_on_image, load_image, load_mask_image
 from omegaconf import DictConfig, OmegaConf
 from tensorflow.compat.v1 import InteractiveSession
 from tqdm import tqdm
@@ -111,6 +113,7 @@ def search(
     mask_image: Optional[np.ndarray],
     model: DensityModel,
     tf_session: InteractiveSession,
+    index_manager: IndexManager,
     cfg: DictConfig,
 ) -> None:
     """Validate multiple combinations of parameters and evaluate accuracy, precision, recall, f-measure.
@@ -122,6 +125,7 @@ def search(
         mask_image (np.ndarray, optional): mask image
         model (DensityModel): trained density model
         tf_session (InteractiveSession): tensorflow session
+        index_manager (IndexManager): index manager class of masked image
         cfg (DictConfig): config about analysis image region
     """
     params_store = ParameterStore(cfg["cols_order"])
@@ -151,7 +155,7 @@ def search(
                 if mask_image is not None:
                     image = apply_masking_on_image(image, mask_image)
                 predicted_density_map = predict_density_map(
-                    model, tf_session, image, param_cfg
+                    model, tf_session, image, index_manager, param_cfg
                 )
                 predicted_centroid_array = apply_clustering_to_density_map(
                     predicted_density_map,
@@ -198,6 +202,7 @@ def search_parameter(
     mask_image: Optional[np.ndarray],
     model: DensityModel,
     tf_session: InteractiveSession,
+    index_manager: IndexManager,
     cfg: DictConfig,
 ) -> None:
     """Search for parameters that maximize accuracy. The search essentially uses a validation data set.
@@ -208,6 +213,7 @@ def search_parameter(
         mask_image (np.ndarray, optional): mask image
         model (DensityModel): trained density model
         tf_session (InteractiveSession): tensorflow session
+        index_manager (IndexManager): index manager class of masked image
         cfg (DictConfig): config about analysis image region
     """
     for param, patterns in cfg["search_params"].items():
@@ -217,7 +223,16 @@ def search_parameter(
         logger.info(f"Search Parameter: {param}")
         logger.info(f"Search Patterns: {patterns}")
 
-        search(param, dataset_path_df, patterns, mask_image, model, tf_session, cfg)
+        search(
+            param,
+            dataset_path_df,
+            patterns,
+            mask_image,
+            model,
+            tf_session,
+            index_manager,
+            cfg,
+        )
         logger.info(f"Completed: {param}")
 
 
@@ -240,11 +255,10 @@ def main(cfg: DictConfig) -> None:
     # load mask image
     if cfg["mask_path"] is not None:
         mask_image = load_mask_image(str(DATA_DIR / cfg["mask_path"]))
-        index_h, index_w = get_masked_index(mask_image, cfg)
-        cfg["index_h"] = index_h
-        cfg["index_w"] = index_w
+        index_manager = IndexManager(mask_image)
     else:
         mask_image = None
+        index_manager = IndexManager(np.ones((FRAME_HEIGHT, FRAME_WIDTH)))
 
     # load trained model
     if "prediction_grid" in cfg["search_params"].keys():
@@ -253,7 +267,7 @@ def main(cfg: DictConfig) -> None:
         model, tf_session = None, None
 
     # search best parameter
-    search_parameter(dataset_path_df, mask_image, model, tf_session, cfg)
+    search_parameter(dataset_path_df, mask_image, model, tf_session, index_manager, cfg)
 
 
 if __name__ == "__main__":

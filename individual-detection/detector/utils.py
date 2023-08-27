@@ -3,6 +3,7 @@ import time
 from typing import List, Tuple
 
 import cv2
+import numpy as np
 import tensorflow as tf
 from detector.exceptions import LoadVideoError
 from detector.logger import logger
@@ -10,6 +11,25 @@ from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.compat.v1.summary import FileWriter, merge_all
 
 tf.compat.v1.disable_eager_execution()
+
+
+def get_image_shape(image: np.ndarray) -> Tuple:
+    """Get the height, width, and channel of the input image.
+
+    Args:
+        image (np.ndarray): input image
+
+    Returns:
+        Tuple: image shape=(height, width, channel)
+    """
+    height = image.shape[0]
+    width = image.shape[1]
+    if len(image.shape) == 3:
+        channel = image.shape[2]
+    else:
+        channel = 1
+
+    return (height, width, channel)
 
 
 def display_data_info(input_path: str, output_dirctory: str, cfg: dict) -> None:

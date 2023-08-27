@@ -15,12 +15,12 @@ from detector.constants import (
     PREDICT_CONFIG_NAME,
 )
 from detector.exceptions import IndexExtractionError, PredictionTypeError
+from detector.index_manager import IndexManager
 from detector.logger import logger
 from detector.model import DensityModel, load_model
 from detector.process_dataset import (
     apply_masking_on_image,
     extract_local_data,
-    get_masked_index,
     load_image,
     load_mask_image,
 )
@@ -83,18 +83,19 @@ def predict_density_map(
     model: DensityModel,
     tf_session: InteractiveSession,
     image: np.ndarray,
+    index_manager: IndexManager,
     cfg: dict,
 ) -> np.ndarray:
     # set horizontal index
     index_list = extract_prediction_indices(
-        cfg["index_h"],
-        cfg["index_w"],
+        list(index_manager.index_h),
+        list(index_manager.index_w),
         cfg["skip_pixel_interval"],
         cfg["index_extract_type"],
     )
 
     # load local images to be predicted
-    X_local, _ = extract_local_data(image, None, cfg, False, index_list)
+    X_local, _ = extract_local_data(image, None, index_manager, False, index_list)
 
     # set prediction parameters
     pred_batch_size = cfg["predict_batch_size"]
@@ -119,7 +120,8 @@ def predict_density_map(
         logger.debug(f"DONE: batch {batch+1}/{pred_n_batches}")
 
         pred_dens_map[
-            cfg["index_h"][target_idx_list], cfg["index_w"][target_idx_list]
+            index_manager.index_h[target_idx_list],
+            index_manager.index_w[target_idx_list],
         ] = pred_array
 
     return pred_dens_map
@@ -131,6 +133,7 @@ def image_prediction(
     image: np.ndarray,
     frame_num: int,
     output_directory: str,
+    index_manager: IndexManager,
     cfg: dict,
 ) -> None:
     """Predictions are applied to single image data using trained model.
@@ -141,12 +144,13 @@ def image_prediction(
         image (np.ndarray): target raw image
         frame_num (int): target frame number
         output_directory (str): output directory name
+        index_manager (IndexManager): index manager class of masked image
         cfg (dict): config dictionary
     """
     logger.info("STSRT: predict density map (frame number= {0})".format(frame_num))
 
     # predict density map by trained model
-    pred_dens_map = predict_density_map(model, tf_session, image, cfg)
+    pred_dens_map = predict_density_map(model, tf_session, image, index_manager, cfg)
 
     # save predicted data
     if cfg["is_saved_map"]:
@@ -168,13 +172,17 @@ def image_prediction(
 
 
 def batch_prediction(
-    model: DensityModel, tf_session: InteractiveSession, cfg: dict
+    model: DensityModel,
+    tf_session: InteractiveSession,
+    index_manager: IndexManager,
+    cfg: dict,
 ) -> None:
     """Predictions are applied to multipule image data using trained model.
 
     Args:
         model (DensityModel): trained model
         tf_session (InteractiveSession): tensorflow session
+        index_manager (IndexManager): index manager class of masked image
         cfg (dict): config dictionary
     """
     # set path information
@@ -194,20 +202,26 @@ def batch_prediction(
             mask_image = load_mask_image(cfg["mask_path"], normalized=True)
             image = apply_masking_on_image(image, mask_image)
         frame_num = int(get_file_name_from_path(path))
-        image_prediction(model, tf_session, image, frame_num, output_directory, cfg)
+        image_prediction(
+            model, tf_session, image, frame_num, output_directory, index_manager, cfg
+        )
 
     logger.info(f"Predicted {len(image_path_list)} images (path='{input_image_path}')")
     tf_session.close()
 
 
 def video_prediction(
-    model: DensityModel, tf_session: InteractiveSession, cfg: dict
+    model: DensityModel,
+    tf_session: InteractiveSession,
+    index_manager: IndexManager,
+    cfg: dict,
 ) -> None:
     """Predictions are applied to video data using trained model.
 
     Args:
         model (DensityModel): trained model
         tf_session (InteractiveSession): tensorflow session
+        index_manager (IndexManager): index manager class of masked image
         cfg (dict): config dictionary
     """
     for hour in range(cfg["start_hour"], cfg["end_hour"]):
@@ -235,7 +249,13 @@ def video_prediction(
                         mask_image = load_mask_image(cfg["mask_path"], normalized=True)
                         frame = apply_masking_on_image(frame, mask_image)
                     image_prediction(
-                        model, tf_session, frame, frame_num, output_directory, cfg
+                        model,
+                        tf_session,
+                        frame,
+                        frame_num,
+                        output_directory,
+                        index_manager,
+                        cfg,
                     )
             else:
                 # reached the last frame of the video
@@ -258,10 +278,7 @@ def main(cfg: DictConfig) -> None:
 
     # set valid image index information
     mask_image = load_mask_image(str(DATA_DIR / cfg["mask_path"]), normalized=True)
-    index_h, index_w = get_masked_index(mask_image, horizontal_flip=False)
-    # [TODO] create another config dictionary
-    cfg["index_h"] = index_h
-    cfg["index_w"] = index_w
+    index_manager = IndexManager(mask_image)
 
     # load trained model
     model, tf_session = load_model(str(DATA_DIR / cfg["trained_model_directory"]))
@@ -269,10 +286,10 @@ def main(cfg: DictConfig) -> None:
     predict_data_type = cfg["predict_data_type"]
     if predict_data_type == "image":
         # predict from image data
-        batch_prediction(model, tf_session, cfg)
+        batch_prediction(model, tf_session, index_manager, cfg)
     elif predict_data_type == "video":
         # predict from video data
-        video_prediction(model, tf_session, cfg)
+        video_prediction(model, tf_session, index_manager, cfg)
     else:
         message = f'predict_data_type="{predict_data_type}" is not supported.'
         logger.error(message)
