@@ -1,9 +1,12 @@
 import os
 import random
+from pathlib import Path
 from typing import List
 
 import cv2
-import hydra
+from tqdm import tqdm
+
+from annotator.config import load_sampler_config
 from annotator.constants import (
     CONFIG_DIR,
     DATA_DIR,
@@ -13,8 +16,6 @@ from annotator.constants import (
 from annotator.exceptions import LoadVideoFrameError, SamplingTypeError
 from annotator.logger import logger
 from annotator.utils import get_full_path_list, load_video, save_image
-from omegaconf import DictConfig
-from tqdm import tqdm
 
 
 def get_sampled_frame_number(total_frame_number: int, sample_rate: int) -> List:
@@ -69,12 +70,15 @@ def get_frame_number_list(
 
 
 def frame_sampler(
-    input_video_list: List, save_frame_dirc: str, sampling_type: str, sample_rate: int
+    input_video_list: List[Path],
+    save_frame_dirc: Path,
+    sampling_type: str,
+    sample_rate: int,
 ) -> None:
     """Load the video and save the sampled frames as image data.
 
     Args:
-        input_video_list (List): list of input video path
+        input_video_list (List[Path]): list of input video path
         save_frame_dirc (str): save sampled frame path
         sampling_type (str): sampling type "random" or "fixed"
         sample_rate (int): sampling rate for frame
@@ -98,7 +102,9 @@ def frame_sampler(
             # load current frame
             ret, frame = video.read()
             if ret:
-                save_file_name = f"{current_save_dirc}/{frame_number}{IMAGE_EXTENTION}"
+                save_file_name = Path(
+                    f"{current_save_dirc}/{frame_number}{IMAGE_EXTENTION}"
+                )
                 save_image(save_file_name, frame)
             else:
                 message = f"Frame number={frame_number} cannot load."
@@ -106,15 +112,13 @@ def frame_sampler(
                 raise LoadVideoFrameError(message)
 
 
-@hydra.main(
-    version_base="1.1", config_path=str(CONFIG_DIR), config_name=SAMPLER_CONFIG_NAME
-)
-def main(cfg: DictConfig) -> None:
+def main() -> None:
     """Run frame sampler according to the settings defined in the config file.
 
     Args:
         cfg (DictConfig): config that loaded by @hydra.main()
     """
+    cfg = load_sampler_config(CONFIG_DIR / SAMPLER_CONFIG_NAME)
     logger.info(f"Loaded config: {cfg}")
     input_video_list = get_full_path_list(DATA_DIR, cfg.path.input_video_list)
     save_frame_dirc = DATA_DIR / cfg.path.save_frame_dirc

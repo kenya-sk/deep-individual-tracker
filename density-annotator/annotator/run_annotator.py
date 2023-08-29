@@ -7,13 +7,9 @@ from annotator.logger import logger
 
 
 def main() -> None:
-    """
-    Run DensityAnnotator according to the settings defined in the config file.
-
-    :param cfg: config that loaded by @hydra.main()
-    :return: None
-    """
+    """Run DensityAnnotator according to the settings defined in the config file."""
     cfg = load_annotator_config(CONFIG_DIR / ANNOTATOR_CONFIG_NAME)
+    logger.info(f"Loaded config: {cfg}")
     annotator = DensityAnnotator(cfg)
     annotator.run()
 

@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+
 from annotator.exceptions import PathNotExistError
 from annotator.utils import (
     get_full_path_list,
@@ -15,7 +16,7 @@ from annotator.utils import (
 
 def test_get_path_list(tmp_path: Path) -> None:
     # file case
-    test_file = "test_1.txt"
+    test_file = Path("test_1.txt")
     test_file_path = tmp_path / test_file
     test_file_path.touch()
     path_list_1 = get_path_list(tmp_path, test_file)
@@ -23,7 +24,7 @@ def test_get_path_list(tmp_path: Path) -> None:
     assert path_list_1 == expected_1
 
     # directory case
-    test_dir = "test_dir"
+    test_dir = Path("test_dir")
     test_dir_path = tmp_path / test_dir
     test_dir_path.mkdir()
     test_file_2 = "test_2.txt"
