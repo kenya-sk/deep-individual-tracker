@@ -114,7 +114,8 @@ def load_video(path: Path) -> cv2.VideoCapture:
     Returns:
         cv2.VideoCapture: loaded video
     """
-    video = cv2.VideoCapture(path)
+    # opencv cannot read Pathlib.Path format
+    video = cv2.VideoCapture(str(path))
     if not (video.isOpened()):
         message = f'path="{path}" cannot read video file.'
         logger.error(message)
@@ -131,7 +132,8 @@ def save_image(path: Path, image: np.ndarray) -> None:
         path (Path): save path of image
         image (np.ndarray): target image
     """
-    cv2.imwrite(path, image)
+    # opencv cannot treat Pathlib.Path format
+    cv2.imwrite(str(path), image)
     logger.info(f"Saved Image: {path}")
 
 
