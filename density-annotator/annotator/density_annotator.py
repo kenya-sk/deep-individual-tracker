@@ -1,8 +1,12 @@
 import os
+from pathlib import Path
 from typing import List
 
 import cv2
 import numpy as np
+from tqdm import tqdm
+
+from annotator.config import AnnotatorConfig
 from annotator.constants import D_KEY, DATA_DIR, IMAGE_EXTENTION, P_KEY, Q_KEY, S_KEY
 from annotator.exceptions import InputFileTypeError
 from annotator.logger import logger
@@ -15,8 +19,6 @@ from annotator.utils import (
     save_density_map,
     save_image,
 )
-from omegaconf import DictConfig
-from tqdm import tqdm
 
 
 class DensityAnnotator:
@@ -27,11 +29,11 @@ class DensityAnnotator:
     and the density map for each target frame.
     """
 
-    def __init__(self, cfg: DictConfig) -> None:
-        """
-        Initialize DensityAnnotator class by hydra config.
+    def __init__(self, cfg: AnnotatorConfig) -> None:
+        """Initialize DensityAnnotator class by AnnotationConfig.
 
-        :param cfg: config of DensityAnnotator class
+        Args:
+            cfg (AnnotatorConfig): config data
         """
         logger.info(f"Loaded config: {cfg}")
         cv2.namedWindow("click annotation points")
@@ -50,7 +52,7 @@ class DensityAnnotator:
         self.frame_num = 0
 
         # set file path
-        self.input_file_path: str
+        self.input_file_path: Path
         self.input_file_path_list = get_path_list(DATA_DIR, cfg.path.input_file_path)
         self.save_raw_image_dir = DATA_DIR / cfg.path.save_raw_image_dir
         self.save_annotated_dir = DATA_DIR / cfg.path.save_annotated_dir
@@ -69,15 +71,15 @@ class DensityAnnotator:
         """Select the data type of the image or video from the extension
         of the input data and execute the annotation.
 
-        :return: None
+        Raises:
+            InputFileTypeError: input file format not covered
         """
         for file_path in tqdm(self.input_file_path_list, desc="Annotation File Number"):
             # initialization
             self.frame_list = []
             self.features = np.array([], np.uint16)
             # load file
-            self.input_file_path = str(file_path)
-            print(self.input_file_path)
+            self.input_file_path = file_path
             data_type = get_input_data_type(self.input_file_path)
             logger.info(f"Annotation Data Type: {data_type}")
             if data_type == "image":
@@ -93,10 +95,7 @@ class DensityAnnotator:
         cv2.destroyAllWindows()
 
     def annotator_initialization(self) -> None:
-        """Initialize coordinate matrix that store the clicked position.
-
-        :return: None
-        """
+        """Initialize coordinate matrix that store the clicked position."""
         self.width = self.frame.shape[1]
         self.height = self.frame.shape[0]
 
@@ -106,10 +105,7 @@ class DensityAnnotator:
                 self.coordinate_matrix[i][j] = [i, j]
 
     def image_annotation(self) -> None:
-        """A function to perform annotation on a single image.
-
-        :return: None
-        """
+        """A function to perform annotation on a single image."""
         # load input image
         self.frame = load_image(self.input_file_path)
         self.frame_list.append(self.frame.copy())
@@ -139,8 +135,6 @@ class DensityAnnotator:
         """A function to perform annotation on movie.
         This function allow to annotate multiple images cut out
         from the video data at any time.
-
-        :return: None
         """
         # load input video data
         self.video = load_video(self.input_file_path)
@@ -186,12 +180,12 @@ class DensityAnnotator:
     def mouse_event(self, event: int, x: int, y: int, flags: int, param: dict) -> None:
         """Select annotated point by left click of mouse
 
-        :param event: the type of mouse event
-        :param x: x coordinate of the clicked position
-        :param y: y coordinate of the clicked position
-        :param flags: the type of button or key that was pressed during the mouse event
-        :param param: the value of param set in the third argument of setMouseCallback
-        :return: None
+        Args:
+            event (int): the type of mouse event
+            x (int): x coordinate of the clicked position
+            y (int): y coordinate of the clicked position
+            flags (int): the type of button or key that was pressed during the mouse event
+            param (dict): the value of param set in the third argument of setMouseCallback
         """
         # other than left click
         if event != cv2.EVENT_LBUTTONDOWN:
@@ -205,9 +199,9 @@ class DensityAnnotator:
     def add_point(self, x: int, y: int) -> None:
         """Add new feature point on stored list
 
-        :param x: x coordinate of the clicked position
-        :param y: y coordinate of the clicked position
-        :return: None
+        Args:
+            x (int): x coordinate of the clicked position
+            y (int): y coordinate of the clicked position
         """
         if self.features.size == 0:
             self.features = np.array([[x, y]], np.uint16)
@@ -216,10 +210,7 @@ class DensityAnnotator:
         self.frame_list.append(self.frame.copy())
 
     def delete_point(self) -> None:
-        """Delete the previous feature point from stored list.
-
-        :return: None
-        """
+        """Delete the previous feature point from stored list."""
         if self.features.size > 0:
             self.features = np.delete(self.features, -1, 0)
             self.frame_list.pop()
@@ -230,7 +221,8 @@ class DensityAnnotator:
         """Calculate the density map using the Gaussian kernel
         based on the annotated coordinates.
 
-        :return: calculated density map in numpy format
+        Returns:
+            np.ndarray: calculated density map in numpy format
         """
         kernel = np.zeros((self.width, self.height))
 
@@ -245,25 +237,24 @@ class DensityAnnotator:
         return kernel.T
 
     def save_annotated_data(self) -> None:
-        """Save coordinate and raw image. There are feature point information.
-
-        :return: None
-        """
+        """Save coordinate and raw image. There are feature point information."""
         # save image that added annotated point
         save_image(
-            f"{self.save_annotated_image_dir}/{self.frame_num}{self.save_image_extension}",
+            Path(
+                f"{self.save_annotated_image_dir}/{self.frame_num}{self.save_image_extension}"
+            ),
             self.frame,
         )
 
         # save the coordinates of the annotated point
         save_coordinate(
-            f"{self.save_annotated_coord_dir}/{self.frame_num}.csv", self.features
+            Path(f"{self.save_annotated_coord_dir}/{self.frame_num}.csv"), self.features
         )
 
         # save annotated density map
         annotated_density = self.calculate_gaussian_kernel()
         save_density_map(
-            f"{self.save_annotated_density_dir}/{self.frame_num}.npy",
+            Path(f"{self.save_annotated_density_dir}/{self.frame_num}.npy"),
             annotated_density,
         )
         logger.info(f"Annotated and saved frame number: {self.frame_num}")
