@@ -5,11 +5,12 @@ from typing import List
 
 import cv2
 import numpy as np
+
 from annotator.exceptions import LoadImageError, LoadVideoError, PathNotExistError
 from annotator.logger import logger
 
 
-def get_path_list(working_directory: Path, path: str) -> List[Path]:
+def get_path_list(working_directory: Path, path: Path) -> List[Path]:
     """
     Takes a file or directory path and creates a list of full paths.
 

@@ -3,6 +3,9 @@ from typing import List
 
 import cv2
 import numpy as np
+from tqdm import tqdm
+
+from annotator.config import AnnotatorConfig
 from annotator.constants import D_KEY, DATA_DIR, IMAGE_EXTENTION, P_KEY, Q_KEY, S_KEY
 from annotator.exceptions import InputFileTypeError
 from annotator.logger import logger
@@ -15,8 +18,6 @@ from annotator.utils import (
     save_density_map,
     save_image,
 )
-from omegaconf import DictConfig
-from tqdm import tqdm
 
 
 class DensityAnnotator:
@@ -27,7 +28,7 @@ class DensityAnnotator:
     and the density map for each target frame.
     """
 
-    def __init__(self, cfg: DictConfig) -> None:
+    def __init__(self, cfg: AnnotatorConfig) -> None:
         """
         Initialize DensityAnnotator class by hydra config.
 
