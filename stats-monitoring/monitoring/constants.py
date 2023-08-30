@@ -12,7 +12,7 @@ DATA_DIR: Path = MODULE_HOME / "data"
 TODAY: str = datetime.today().strftime("%Y%m%d")
 LOGGER_NAME = "stats-monitoring"
 
-MONITORING_CONFIG_NAME: str = "monitoring"
+MONITORING_CONFIG_NAME: str = "monitoring.yaml"
 
 FRAME_HEIGHT: int = 1080
 FRAME_WIDTH: int = 1920

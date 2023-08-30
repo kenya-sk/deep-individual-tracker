@@ -14,7 +14,6 @@ The system can set the following two options for the video.
 - Whether to display the position of the detected individual as a dot
 - Whether to display a two-dimensional probability density map
 
-![montering_example](data/document/monitoring_example.png)
 
 ## Execution Environment
 The execution environment can be build using Docker Comopse. The directory of `/data` was mounted by docker-compose.

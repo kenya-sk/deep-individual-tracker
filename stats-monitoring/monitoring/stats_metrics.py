@@ -1,8 +1,11 @@
 import os
+from pathlib import Path
 from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+from monitoring.config import MonitoringConfig
 from monitoring.constants import (
     DATA_DIR,
     GRAPH_FONT_SIZE,
@@ -12,24 +15,23 @@ from monitoring.constants import (
 )
 from monitoring.exceptions import PathNotExistError, StatsKeyNotExistError
 from monitoring.logger import logger
-from omegaconf import DictConfig
 
 
-def load_statistics(cfg: DictConfig) -> Dict[str, np.ndarray]:
+def load_statistics(cfg: MonitoringConfig) -> Dict[str, np.ndarray]:
     """Load the statistics used in the monitoring environment
 
     Args:
-        cfg (DictConfig): hydra config for monitoring environment
+        cfg (MonitoringConfig): config for monitoring environment
 
     Returns:
         dict: dictionary containing each stats array
     """
 
-    def load_value(path: str) -> np.ndarray:
+    def load_value(path: Path) -> np.ndarray:
         """Load statistics value from CSV file
 
         Args:
-            path (str): CSV file path
+            path (Path): CSV file path
 
         Returns:
             np.ndarray: target numpy array
@@ -42,13 +44,11 @@ def load_statistics(cfg: DictConfig) -> Dict[str, np.ndarray]:
             raise PathNotExistError(message)
 
     stats_dict = {
-        "mean": load_value(str(DATA_DIR / cfg["path"]["mean_speed_path"])),
-        "past_mean": load_value(str(DATA_DIR / cfg["path"]["past_mean_speed_path"])),
-        "acceleration": load_value(
-            str(DATA_DIR / cfg["path"]["acceleration_count_path"])
-        ),
+        "mean": load_value(DATA_DIR / cfg.path.mean_speed_path),
+        "past_mean": load_value(DATA_DIR / cfg.path.past_mean_speed_path),
+        "acceleration": load_value(DATA_DIR / cfg.path.acceleration_count_path),
         "past_acceleration": load_value(
-            str(DATA_DIR / cfg["path"]["past_acceleration_count_path"])
+            DATA_DIR / cfg.path.past_acceleration_count_path
         ),
     }
 
@@ -74,7 +74,7 @@ def load_array(stats_dict: Dict[str, np.ndarray], key: str) -> np.ndarray:
 
 
 def set_stats_metrics(
-    cfg: DictConfig,
+    cfg: MonitoringConfig,
     frame_num: int,
     stats_dict: Dict[str, np.ndarray],
     mean_ax: plt.axis,
@@ -83,7 +83,7 @@ def set_stats_metrics(
     """Set the stats for the current frame on each axis
 
     Args:
-        cfg (DictConfig): hydra config for monitoring environment
+        cfg (MonitoringConfig): config for monitoring environment
         frame_num (int): current frame number
         stats_dict (Dict): dictionary containing each stats array
         mean_ax (plt.axis): matplotlib figure axis of mean speed
@@ -95,7 +95,7 @@ def set_stats_metrics(
     # plot mean speed
     mean_ax.plot(x[: frame_num + 1], mean_arr[: frame_num + 1])
     mean_ax.set_xlim(0, LABEL_IDX_MAX)
-    mean_ax.set_ylim(0, cfg["statistics"]["mean_max"])
+    mean_ax.set_ylim(0, cfg.statistics.mean_max)
     mean_ax.set_ylabel("Mean moving \ndistance \n[pixel $s^{-1}$]")
     mean_ax.tick_params(labelbottom=False, bottom=False)
     mean_ax.axvline(frame_num, 0, 100, color="black", linestyle="dashed")
@@ -104,7 +104,7 @@ def set_stats_metrics(
     acc_arr = load_array(stats_dict, "acceleration")
     acc_ax.plot(x[: frame_num + 1], acc_arr[: frame_num + 1])
     acc_ax.set_xlim(0, LABEL_IDX_MAX)
-    acc_ax.set_ylim(0, cfg["statistics"]["acceleration_max"])
+    acc_ax.set_ylim(0, cfg.statistics.acceleration_max)
     acc_ax.set_ylabel("Cumulative \nnumber of \nsudden acceleration \n[$d^{-1}$]")
     acc_ax.axvline(frame_num, 0, 100, color="black", linestyle="dashed")
 
