@@ -6,7 +6,7 @@ from typing import List
 import cv2
 from tqdm import tqdm
 
-from annotator.config import load_sampler_config
+from annotator.config import SamplerConfig, load_config
 from annotator.constants import (
     CONFIG_DIR,
     DATA_DIR,
@@ -118,7 +118,7 @@ def main() -> None:
     Args:
         cfg (DictConfig): config that loaded by @hydra.main()
     """
-    cfg = load_sampler_config(CONFIG_DIR / SAMPLER_CONFIG_NAME)
+    cfg = load_config(CONFIG_DIR / SAMPLER_CONFIG_NAME, SamplerConfig)
     logger.info(f"Loaded config: {cfg}")
     input_video_list = get_full_path_list(DATA_DIR, cfg.path.input_video_list)
     save_frame_dirc = DATA_DIR / cfg.path.save_frame_dirc

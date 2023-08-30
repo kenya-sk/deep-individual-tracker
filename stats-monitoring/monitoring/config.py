@@ -46,7 +46,7 @@ class MonitoringConfig:
     path: PathConfig
 
 
-def load_monitoring_config(config_path: Path) -> MonitoringConfig:
+def load_config(config_path: Path) -> MonitoringConfig:
     """Load monitoring config file.
     Config class created by pydantic.dataclasses.dataclass from yaml file.
     Config file path defined in monitoring/constants.py.

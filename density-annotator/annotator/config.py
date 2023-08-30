@@ -1,8 +1,15 @@
 from pathlib import Path
-from typing import List
+from typing import List, Type, TypeVar
 
 import yaml
 from pydantic.dataclasses import dataclass
+
+T = TypeVar("T", bound="BaseConfig")
+
+
+@dataclass(frozen=True)
+class BaseConfig:
+    pass
 
 
 @dataclass(frozen=True)
@@ -13,7 +20,7 @@ class AnnotatorPathConfig:
 
 
 @dataclass(frozen=True)
-class AnnotatorConfig:
+class AnnotatorConfig(BaseConfig):
     sigma_pow: int
     mouse_event_interval: int
     path: AnnotatorPathConfig
@@ -26,39 +33,24 @@ class SamplerPathConfig:
 
 
 @dataclass(frozen=True)
-class SamplerConfig:
+class SamplerConfig(BaseConfig):
     sampling_type: str
     sample_rate: int
     path: SamplerPathConfig
 
 
-def load_annotator_config(config_path: Path) -> AnnotatorConfig:
-    """Load annotator config file.
+def load_config(config_path: Path, config_class: Type[T]) -> T:
+    """Load config file.
     Config class created by pydantic.dataclasses.dataclass from yaml file.
     Config file path defined in annotator/constants.py.
 
     Args:
-        config_path (Path): config file path of annotator
+        config_path (Path): config file path
+        config_class (Type[T]): config class
 
     Returns:
-        SamplerConfig: config of annotator
+        T: dataclass of config
     """
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
-    return AnnotatorConfig(**config)
-
-
-def load_sampler_config(config_path: Path) -> SamplerConfig:
-    """Load sampler config file.
-    Config class created by pydantic.dataclasses.dataclass from yaml file.
-    Config file path defined in annotator/constants.py.
-
-    Args:
-        config_path (Path): config file path of sampler
-
-    Returns:
-        SamplerConfig: config of sampler
-    """
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
-    return SamplerConfig(**config)
+    return config_class(**config)
