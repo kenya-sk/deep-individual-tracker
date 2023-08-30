@@ -1,21 +1,23 @@
 import os
+from pathlib import Path
 from typing import Dict, List
 
 import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+
+from monitoring.config import MonitoringConfig
 from monitoring.constants import DATA_DIR, FRAME_HEIGHT, FRAME_WIDTH
 from monitoring.exceptions import PathNotExistError
 from monitoring.logger import logger
-from omegaconf import DictConfig
 
 
-def load_one_hour_density(coord_dirc: str, end_frame_num: int) -> pd.DataFrame:
+def load_one_hour_density(coord_dirc: Path, end_frame_num: int) -> pd.DataFrame:
     """Load the density over the past 1 hour
 
     Args:
-        coord_dirc (str): directory name of coordinate data
+        coord_dirc (Path): directory name of coordinate data
         end_frame_num (int): frame number of end data
 
     Returns:
@@ -38,7 +40,7 @@ def load_one_hour_density(coord_dirc: str, end_frame_num: int) -> pd.DataFrame:
 
 
 def set_frame(
-    cfg: DictConfig,
+    cfg: MonitoringConfig,
     frame_num: int,
     detected_coordinate_df: pd.DataFrame,
     one_hour_density_df: pd.DataFrame,
@@ -47,15 +49,16 @@ def set_frame(
     """Set the current frame on frame axis
 
     Args:
-        cfg (DictConfig): hydra config for monitoring environment
+        cfg (MonitoringConfig): config for monitoring environment
         frame_num (int): current frame number
         detected_coordinate_df (pd.DataFrame): DataFrame containing current frame coordinates
         one_hour_density_df (pd.DataFrame): DataFrame containing past 1 hour coordinates
         ax (plt.axis): matplotlib figure axis of frame
     """
-    frame_path = str(DATA_DIR / cfg["path"]["frame_directory"] / f"{frame_num}.png")
+    frame_path = DATA_DIR / cfg.path.frame_directory / f"{frame_num}.png"
     if os.path.isfile(frame_path):
-        frame = cv2.imread(frame_path)
+        # opencv cannot read Pathlib.Path format
+        frame = cv2.imread(str(frame_path))
     else:
         message = f'frame_path="{frame_path}" is not exist.'
         logger.error(message)

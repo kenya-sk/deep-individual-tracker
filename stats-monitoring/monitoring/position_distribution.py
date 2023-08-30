@@ -6,6 +6,8 @@ import warnings
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+
+from monitoring.config import MonitoringConfig
 from monitoring.constants import (
     DATA_DIR,
     FIGURE_HEIGHT,
@@ -15,26 +17,23 @@ from monitoring.constants import (
 )
 from monitoring.exceptions import PathNotExistError
 from monitoring.logger import logger
-from omegaconf import DictConfig
 
 warnings.resetwarnings()
 warnings.simplefilter("ignore", FutureWarning)
 
 
-def load_current_coordinate(cfg: DictConfig, frame_num: int) -> pd.DataFrame:
+def load_current_coordinate(cfg: MonitoringConfig, frame_num: int) -> pd.DataFrame:
     """Load the current frame distribution
 
     Args:
-        cfg (DictConfig): hydra config for monitoring environment
+        cfg (MonitoringConfigg): config for monitoring environment
         frame_num (int): current frame number
 
     Returns:
         pd.DataFrame: DataFrame of current frame distribution
     """
     # Each coordinate is defined by the column names "x" and "y"
-    coordinate_path = str(
-        DATA_DIR / cfg["path"]["coordinate_directory"] / f"{frame_num}.csv"
-    )
+    coordinate_path = DATA_DIR / cfg.path.coordinate_directory / f"{frame_num}.csv"
     if os.path.isfile(coordinate_path):
         coordinate_df = pd.read_csv(coordinate_path)
         coordinate_df.columns = ["x", "y"]
@@ -47,7 +46,7 @@ def load_current_coordinate(cfg: DictConfig, frame_num: int) -> pd.DataFrame:
 
 
 def set_histogram(
-    cfg: DictConfig,
+    cfg: MonitoringConfig,
     current_coordinate_df: pd.DataFrame,
     x_ax: plt.axis,
     y_ax: plt.axis,
@@ -55,14 +54,14 @@ def set_histogram(
     """Set the individual distribution on histogram axis
 
     Args:
-        cfg (DictConfig): hydra config for monitoring environment
+        cfg (MonitoringConfigg): config for monitoring environment
         current_coordinate_df (pd.DataFrame): DataFrame containing current frame coordinates
         x_ax (plt.axis): matplotlib figure axis of X-histogram
         y_ax (plt.axis): matplotlib figure axis of Y-histogram
     """
     # plot X-axis histogram
     # set X-axis histogram bin number
-    x_bins = int(FIGURE_WIDTH / cfg["histogram"]["x_bin_granularity"])
+    x_bins = int(FIGURE_WIDTH / cfg.histogram.x_bin_granularity)
 
     # current X-axis distribution
     sns.distplot(
@@ -91,7 +90,7 @@ def set_histogram(
 
     # plot Y-axis histogram
     # set Y-axis histogram bin number
-    y_bins = int(FIGURE_HEIGHT / cfg["histogram"]["y_bin_granularity"])
+    y_bins = int(FIGURE_HEIGHT / cfg.histogram.y_bin_granularity)
 
     # current Y-axis distribution
     sns.distplot(
