@@ -29,16 +29,16 @@ def test_get_directory_list(tmp_path: Path) -> None:
     (tmp_path / "test.txt").touch()
     (tmp_path / "coord").mkdir()
     (tmp_path / "dens").mkdir()
-    directory_list = get_directory_list(str(tmp_path))
+    directory_list = get_directory_list(tmp_path)
     expected = ["coord", "dens"]
     assert sorted(directory_list) == sorted(expected)
 
 
 def test_get_file_name_from_path() -> None:
-    test_path = "/home/data/20170416_20111.png"
+    test_path = Path("/home/data/20170416_20111.png")
     file_name = get_file_name_from_path(test_path)
     assert file_name == "20170416_20111"
 
-    test_path = "/home/data/20170416/20111.png"
+    test_path = Path("/home/data/20170416/20111.png")
     file_name = get_file_name_from_path(test_path)
     assert file_name == "20111"

@@ -19,7 +19,7 @@ train_date_list:
   - "20181029"
   - "20181030"
   - "20181031"
-valid_date_list: 
+validation_date_list: 
   - "20181101"
 test_date_list: 
   - "20181102"

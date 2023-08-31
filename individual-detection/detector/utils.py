@@ -1,14 +1,17 @@
 import os
 import time
+from pathlib import Path
 from typing import List, Tuple
 
 import cv2
 import numpy as np
 import tensorflow as tf
-from detector.exceptions import LoadVideoError
-from detector.logger import logger
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.compat.v1.summary import FileWriter, merge_all
+
+from detector.config import PredictConfig
+from detector.exceptions import LoadVideoError
+from detector.logger import logger
 
 tf.compat.v1.disable_eager_execution()
 
@@ -32,13 +35,15 @@ def get_image_shape(image: np.ndarray) -> Tuple:
     return (height, width, channel)
 
 
-def display_data_info(input_path: str, output_dirctory: str, cfg: dict) -> None:
+def display_data_info(
+    input_path: Path, output_dirctory: Path, cfg: PredictConfig
+) -> None:
     """Display setting information
 
     Args:
-        input_path (str): input data path
-        output_dirctory (str): output directory
-        cfg: config dictionary of parameter
+        input_path (Path): input data path
+        output_dirctory (Path): output directory path
+        cfg (PredictConfig): config for prediction
 
     Returns:
         None:
@@ -46,24 +51,25 @@ def display_data_info(input_path: str, output_dirctory: str, cfg: dict) -> None:
     logger.info("*************************************************")
     logger.info(f"Input path          : {input_path}")
     logger.info(f"Output dirctory     : {output_dirctory}")
-    logger.info(f"Skip pixel interval : {cfg['skip_pixel_interval']}")
-    logger.info(f"Pred batch size     : {cfg['predict_batch_size']}")
-    logger.info(f"Band width          : {cfg['band_width']}")
-    logger.info(f"Cluster threshold   : {cfg['cluster_thresh']}")
-    logger.info(f"Save density map    : {cfg['is_saved_map']}")
+    logger.info(f"Skip pixel interval : {cfg.skip_pixel_interval}")
+    logger.info(f"Pred batch size     : {cfg.predict_batch_size}")
+    logger.info(f"Band width          : {cfg.band_width}")
+    logger.info(f"Cluster threshold   : {cfg.cluster_threshold}")
+    logger.info(f"Save density map    : {cfg.is_saved_map}")
     logger.info("*************************************************\n")
 
 
-def set_capture(video_path: str) -> Tuple:
+def set_capture(video_path: Path) -> Tuple:
     """Get input video information
 
     Args:
-        video_path (str): input video path
+        video_path (Path): input video path
 
     Returns:
         Tuple: video information
     """
-    cap = cv2.VideoCapture(video_path)
+    # opencv cannot read Pathlib.Path format
+    cap = cv2.VideoCapture(str(video_path))
     if cap is None:
         message = f'video_path="{video_path}" cannot load.'
         logger.error(message)
@@ -104,14 +110,15 @@ def get_elapsed_time_str(start_time: float) -> str:
 
 
 def set_tensorboard(
-    tensorboard_directory: str,
+    tensorboard_directory: Path,
     current_time_str: str,
     tf_session: InteractiveSession,
 ) -> Tuple:
     """Set tensorboard directory and writer
 
     Args:
-        tensorboard_directory (str): directory that save tensorflow log
+        tensorboard_directory (Path): directory that save tensorflow log
+        current_time_str (str): current time string
         tf_session (InteractiveSession): tensorflow session
 
     Returns:
@@ -135,11 +142,11 @@ def set_tensorboard(
     return summuray_merged, train_writer, valid_writer, test_writer
 
 
-def get_directory_list(root_path: str) -> List:
+def get_directory_list(root_path: Path) -> List:
     """Get a list of directories under the root path
 
     Args:
-        root_path (str): target root path
+        root_path (Path): target root path
 
     Returns:
         List: list of directory
@@ -150,15 +157,15 @@ def get_directory_list(root_path: str) -> List:
     return directory_list
 
 
-def get_file_name_from_path(path: str) -> str:
+def get_file_name_from_path(path: Path) -> str:
     """Get file name from file path.
     ex) path="./tmp/20170416_20111.png" -> file_name=20170416_20111
 
     Args:
-        path (str): file path
+        path (Path): file path
 
     Returns:
         int: extracted file name
     """
-    file_name = path.split("/")[-1]
+    file_name = str(path).split("/")[-1]
     return file_name.split(".")[0]

@@ -1,12 +1,12 @@
 import glob
+from pathlib import Path
 from typing import Optional, Tuple
 
-import hydra
 import numpy as np
-from omegaconf import DictConfig, OmegaConf
 from scipy import optimize
 from tqdm import tqdm
 
+from detector.config import EvaluateConfig, load_config
 from detector.constants import CONFIG_DIR, DATA_DIR, EVALUATE_CONFIG_NAME
 from detector.evaluation_metrics import eval_metrics, output_evaluation_report
 from detector.index_manager import IndexManager
@@ -15,13 +15,13 @@ from detector.process_dataset import load_mask_image
 
 
 def get_ground_truth(
-    ground_truth_path: str, mask_image: Optional[np.ndarray]
+    ground_truth_path: Path, mask_image: Optional[np.ndarray]
 ) -> np.ndarray:
     """Plots the coordinates of answer label on the black image(all value 0)
     and creates a correct image for accuracy evaluation.
 
     Args:
-        ground_truth_path (str): coordinates of the estimated target (.csv)
+        ground_truth_path (Path): coordinates of the estimated target (.csv)
         mask_image (np.ndarray, optional): binay mask image
 
     Returns:
@@ -40,7 +40,10 @@ def get_ground_truth(
             intersect = np.intersect1d(index_w, index_h)
             if len(intersect) == 1:
                 valid_ground_truth_list.append(
-                    [index_manager.index_w[intersect[0]], index_manager.index_h[intersect[0]]]
+                    [
+                        index_manager.index_w[intersect[0]],
+                        index_manager.index_h[intersect[0]],
+                    ]
                 )
         return np.array(valid_ground_truth_list, dtype="int32")
 
@@ -105,18 +108,18 @@ def eval_detection(
 
 
 def evaluate(
-    predict_dirctory: str,
-    ground_truth_dirctory: str,
-    mask_image_path: str,
+    predict_dirctory: Path,
+    ground_truth_dirctory: Path,
+    mask_image_path: Path,
     detection_threshold: int,
 ) -> None:
     """The evaluation indices of accuracy, precision, recall, and f measure are calculated for each image.
     Then, the average value is calculated and the overall evaluation is performed.
 
     Args:
-        predict_dirctory (str): directory name of prediction results
-        ground_truth_dirctory (str): directory name of ground truth
-        mask_image_path (str): path of mask image
+        predict_dirctory (Path): directory name of prediction results
+        ground_truth_dirctory (Path): directory name of ground truth
+        mask_image_path (Path): path of mask image
         detection_threshold (int): threshold value used to determine detection
 
     Returns:
@@ -146,7 +149,7 @@ def evaluate(
             # exist detection point case
             mask_image = load_mask_image(mask_image_path)
             ground_truth_array = get_ground_truth(
-                f"{ground_truth_dirctory}/{file_name}", mask_image
+                ground_truth_dirctory / file_name, mask_image
             )
             true_pos, false_pos, false_neg, sample_number = eval_detection(
                 predcit_centroid_array, ground_truth_array, detection_threshold
@@ -169,19 +172,16 @@ def evaluate(
     )
 
 
-@hydra.main(
-    config_path=str(CONFIG_DIR), config_name=EVALUATE_CONFIG_NAME, version_base="1.1"
-)
-def main(cfg: DictConfig) -> None:
-    cfg = OmegaConf.to_container(cfg)
+def main() -> None:
+    cfg = load_config(CONFIG_DIR / EVALUATE_CONFIG_NAME, EvaluateConfig)
     logger.info(f"Loaded config: {cfg}")
 
     # evaluate predction results
     evaluate(
-        str(DATA_DIR / cfg["predict_directory"]),
-        str(DATA_DIR / cfg["ground_truth_directory"]),
-        str(DATA_DIR / cfg["mask_image_path"]),
-        cfg["detection_threshold"],
+        DATA_DIR / cfg.predict_directory,
+        DATA_DIR / cfg.ground_truth_directory,
+        DATA_DIR / cfg.mask_path,
+        cfg.detection_threshold,
     )
 
 

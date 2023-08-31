@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+
 from detector.search_parameter import ParameterStore
 
 
@@ -72,7 +73,7 @@ def test_store_percentile_results(ps: ParameterStore) -> None:
 
 def test_save_results(ps: ParameterStore, tmp_path: Path) -> None:
     cols_order = ps.cols_order
-    ps.save_results(str(tmp_path / "test_parameter.csv"))
+    ps.save_results(tmp_path / "test_parameter.csv")
 
     # check file exists
     assert (tmp_path / "test_parameter.csv").is_file()

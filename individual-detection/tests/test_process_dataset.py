@@ -59,21 +59,23 @@ def setup_folder(tmp_path: Path) -> SetupFixture:
 def test_load_dataset(setup_folder: SetupFixture) -> None:
     # empty folder case
     with pytest.raises(DatasetEmptyError):
-        _ = load_dataset("/home/not_exist/image", "/home/not_exist/label", "*.png")
+        _ = load_dataset(
+            Path("/home/not_exist/image"), Path("/home/not_exist/label"), "*.png"
+        )
 
     # normal case
     _, root_image_dirc, root_label_dirc = setup_folder
     target_date = "2023-01-01"
     image_paths, label_paths = load_dataset(
-        str(root_image_dirc / target_date), str(root_label_dirc / target_date), "*.png"
+        root_image_dirc / target_date, root_label_dirc / target_date, "*.png"
     )
     expected_image_paths = [
-        str(root_image_dirc / "2023-01-01" / "20230101_1.png"),
-        str(root_image_dirc / "2023-01-01" / "20230101_2.png"),
+        root_image_dirc / "2023-01-01" / "20230101_1.png",
+        root_image_dirc / "2023-01-01" / "20230101_2.png",
     ]
     expected_label_paths = [
-        str(root_label_dirc / "2023-01-01" / "20230101_1.npy"),
-        str(root_label_dirc / "2023-01-01" / "20230101_2.npy"),
+        root_label_dirc / "2023-01-01" / "20230101_1.npy",
+        root_label_dirc / "2023-01-01" / "20230101_2.npy",
     ]
     assert len(image_paths) == 2
     assert len(label_paths) == 2
@@ -85,15 +87,15 @@ def test_load_multi_date_datasets(setup_folder: SetupFixture) -> None:
     _, root_image_dirc, root_label_dirc = setup_folder
     date_list = ["20230301", "20230302"]
     image_paths, label_paths = load_multi_date_datasets(
-        str(root_image_dirc / "multi"), str(root_label_dirc / "multi"), date_list
+        root_image_dirc / "multi", root_label_dirc / "multi", date_list
     )
     expected_image_paths = [
-        str(root_image_dirc / "multi" / "20230301_1.png"),
-        str(root_image_dirc / "multi" / "20230302_1.png"),
+        root_image_dirc / "multi" / "20230301_1.png",
+        root_image_dirc / "multi" / "20230302_1.png",
     ]
     expected_label_paths = [
-        str(root_label_dirc / "multi" / "20230301_1.npy"),
-        str(root_label_dirc / "multi" / "20230302_1.npy"),
+        root_label_dirc / "multi" / "20230301_1.npy",
+        root_label_dirc / "multi" / "20230302_1.npy",
     ]
     assert len(image_paths) == 2
     assert len(label_paths) == 2
@@ -103,17 +105,17 @@ def test_load_multi_date_datasets(setup_folder: SetupFixture) -> None:
 
 def test_save_dataset_path(tmp_path: Path) -> None:
     save_path = tmp_path / "dataset.csv"
-    X_path_list = ["20230101_1.png", "20230101_2.png"]
-    y_path_list = ["20230101_1.npy", "20230101_2.npy"]
-    save_dataset_path(X_path_list, y_path_list, str(save_path))
+    X_path_list = [Path("20230101_1.png"), Path("20230101_2.png")]
+    y_path_list = [Path("20230101_1.npy"), Path("20230101_2.npy")]
+    save_dataset_path(X_path_list, y_path_list, save_path)
     assert save_path.exists()
 
 
 def test_split_dataset(tmp_path: Path) -> None:
-    X_path_list = [f"20230101_{i}.png" for i in range(10)]
-    y_path_list = [f"20230101_{i}.npy" for i in range(10)]
+    X_path_list = [Path(f"20230101_{i}.png") for i in range(10)]
+    y_path_list = [Path(f"20230101_{i}.npy") for i in range(10)]
     X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset(
-        X_path_list, y_path_list, 0.2, str(tmp_path)
+        X_path_list, y_path_list, 0.2, tmp_path
     )
     assert len(X_train) == 8
     assert len(X_valid) == 1
@@ -132,12 +134,12 @@ def test_split_dataset_by_date(setup_folder: SetupFixture) -> None:
     valid_date_list = ["20230304"]
     test_date_list = ["20230305"]
     X_train, X_valid, X_test, y_train, y_valid, y_test = split_dataset_by_date(
-        str(root_image_dirc / "multi"),
-        str(root_label_dirc / "multi"),
+        root_image_dirc / "multi",
+        root_label_dirc / "multi",
         train_date_list,
         valid_date_list,
         test_date_list,
-        str(root_dirc),
+        root_dirc,
     )
     assert len(X_train) == 3
     assert len(X_valid) == 1

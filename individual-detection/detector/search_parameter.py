@@ -1,11 +1,15 @@
-import copy
+import dataclasses
 import time
+from pathlib import Path
 from typing import Dict, List, Optional
 
-import hydra
 import numpy as np
 import pandas as pd
+from tensorflow.compat.v1 import InteractiveSession
+from tqdm import tqdm
+
 from detector.clustering import apply_clustering_to_density_map
+from detector.config import SearchParameterConfig, load_config
 from detector.constants import (
     CONFIG_DIR,
     DATA_DIR,
@@ -19,9 +23,6 @@ from detector.logger import logger
 from detector.model import DensityModel, load_model
 from detector.predict import predict_density_map
 from detector.process_dataset import apply_masking_on_image, load_image, load_mask_image
-from omegaconf import DictConfig, OmegaConf
-from tensorflow.compat.v1 import InteractiveSession
-from tqdm import tqdm
 
 
 class ParameterStore:
@@ -95,11 +96,11 @@ class ParameterStore:
         self.result_dictlist["recall_std"].append(float(np.std(self.recall_list)))
         self.result_dictlist["f_measure_std"].append(float(np.std(self.f_measure_list)))
 
-    def save_results(self, save_path: str) -> None:
+    def save_results(self, save_path: Path) -> None:
         """Save search result in "save_path".
 
         Args:
-            save_path (str): save path of CSV file
+            save_path (Path): save path of CSV file
         """
         results_df = pd.DataFrame(self.result_dictlist)[self.cols_order]
         results_df.to_csv(save_path, index=False)
@@ -114,7 +115,7 @@ def search(
     model: DensityModel,
     tf_session: InteractiveSession,
     index_manager: IndexManager,
-    cfg: DictConfig,
+    cfg: SearchParameterConfig,
 ) -> None:
     """Validate multiple combinations of parameters and evaluate accuracy, precision, recall, f-measure.
 
@@ -126,9 +127,9 @@ def search(
         model (DensityModel): trained density model
         tf_session (InteractiveSession): tensorflow session
         index_manager (IndexManager): index manager class of masked image
-        cfg (DictConfig): config about analysis image region
+        cfg (SearchParameterConfig): config about analysis image region
     """
-    params_store = ParameterStore(cfg["cols_order"])
+    params_store = ParameterStore(cfg.cols_order)
     for param in tqdm(patterns, desc=f"search {search_param} patterns"):
         # store parameter value
         params_store.result_dictlist["parameter"].append(param)
@@ -144,12 +145,11 @@ def search(
                 predicted_density_map = np.load(dataset_path_df["predicted"][i])
                 # clustering by target threshold
                 predicted_centroid_array = apply_clustering_to_density_map(
-                    predicted_density_map, cfg["band_width"], param
+                    predicted_density_map, cfg.band_width, param
                 )
             elif search_param == "prediction_grid":
                 # create current parameter config
-                param_cfg = copy.deepcopy(cfg)
-                param_cfg["skip_pixel_interval"] = param
+                param_cfg = dataclasses.replcae(cfg, skip_pixel_interval=param)
                 # Predicts a density map with the specified grid size
                 image = load_image(dataset_path_df["input"][i], is_rgb=True)
                 if mask_image is not None:
@@ -159,8 +159,8 @@ def search(
                 )
                 predicted_centroid_array = apply_clustering_to_density_map(
                     predicted_density_map,
-                    param_cfg["band_width"],
-                    param_cfg["fixed_cluster_thresh"],
+                    param_cfg.band_width,
+                    param_cfg.fixed_cluster_threshold,
                 )
             else:
                 logger.info(f"{param} is not defined.")
@@ -173,7 +173,7 @@ def search(
 
             # evaluate current frame
             true_pos, false_pos, false_neg, sample_number = eval_detection(
-                predicted_centroid_array, ground_truth_array, cfg["detection_threshold"]
+                predicted_centroid_array, ground_truth_array, cfg.detection_threshold
             )
             basic_metrics = eval_metrics(true_pos, false_pos, false_neg, sample_number)
 
@@ -191,9 +191,7 @@ def search(
         params_store.store_aggregation_results()
 
     # save search result
-    save_path = (
-        f"{str(DATA_DIR)}/{cfg['save_directory']}/search_result_{search_param}.csv"
-    )
+    save_path = DATA_DIR / cfg.save_directory / f"search_result_{search_param}.csv"
     params_store.save_results(save_path)
 
 
@@ -203,7 +201,7 @@ def search_parameter(
     model: DensityModel,
     tf_session: InteractiveSession,
     index_manager: IndexManager,
-    cfg: DictConfig,
+    cfg: SearchParameterConfig,
 ) -> None:
     """Search for parameters that maximize accuracy. The search essentially uses a validation data set.
     The parameters that can be explored are "clustering threshold" and "prediction grid".
@@ -214,9 +212,9 @@ def search_parameter(
         model (DensityModel): trained density model
         tf_session (InteractiveSession): tensorflow session
         index_manager (IndexManager): index manager class of masked image
-        cfg (DictConfig): config about analysis image region
+        cfg (SearchParameterConfig): config about analysis image region
     """
-    for param, patterns in cfg["search_params"].items():
+    for param, patterns in cfg.search_params.items():
         assert (
             type(patterns) == list
         ), "The search patterns are expected to be passed in a List type."
@@ -236,33 +234,28 @@ def search_parameter(
         logger.info(f"Completed: {param}")
 
 
-@hydra.main(
-    config_path=str(CONFIG_DIR),
-    config_name=SEARCH_PARAMETER_CONFIG_NAME,
-    version_base="1.1",
-)
-def main(cfg: DictConfig) -> None:
-    cfg = OmegaConf.to_container(cfg)
+def main() -> None:
+    cfg = load_config(CONFIG_DIR / SEARCH_PARAMETER_CONFIG_NAME, SearchParameterConfig)
     logger.info(f"Loaded config: {cfg}")
 
     # load input, label and predicted path list
     dataset_path_df = (
-        pd.read_csv(str(DATA_DIR / cfg["dataset_path"]))
-        .sample(frac=cfg["sample_rate"])
+        pd.read_csv(DATA_DIR / cfg.dataset_path)
+        .sample(frac=cfg.sample_rate)
         .reset_index(drop=True)
     )
 
     # load mask image
-    if cfg["mask_path"] is not None:
-        mask_image = load_mask_image(str(DATA_DIR / cfg["mask_path"]))
+    if cfg.mask_path is not None:
+        mask_image = load_mask_image(DATA_DIR / cfg.mask_path)
         index_manager = IndexManager(mask_image)
     else:
         mask_image = None
         index_manager = IndexManager(np.ones((FRAME_HEIGHT, FRAME_WIDTH)))
 
     # load trained model
-    if "prediction_grid" in cfg["search_params"].keys():
-        model, tf_session = load_model(str(DATA_DIR / cfg["trained_model_directory"]))
+    if "prediction_grid" in cfg.search_params.keys():
+        model, tf_session = load_model(DATA_DIR / cfg.trained_model_directory)
     else:
         model, tf_session = None, None
 
