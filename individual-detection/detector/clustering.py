@@ -3,11 +3,13 @@ import matplotlib
 
 matplotlib.use("Agg")
 import glob
+from pathlib import Path
 
 import numpy as np
+from sklearn.cluster import MeanShift
+
 from detector.logger import logger
 from detector.utils import get_file_name_from_path
-from sklearn.cluster import MeanShift
 
 
 def apply_clustering_to_density_map(
@@ -70,7 +72,7 @@ def batch_clustering(
         )
 
         # save clustering result
-        frame_number = get_file_name_from_path(path)
+        frame_number = get_file_name_from_path(Path(path))
         save_path = f"{save_directory}/{frame_number}.csv"
         np.savetxt(
             save_path,

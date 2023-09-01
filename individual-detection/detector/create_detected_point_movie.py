@@ -1,11 +1,14 @@
 import os
 from glob import glob
+from pathlib import Path
 from typing import List
 
 import cv2
-import hydra
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+
+from detector.config import DetectedPointMovieConfig, load_config
 from detector.constants import (
     CONFIG_DIR,
     DATA_DIR,
@@ -20,8 +23,6 @@ from detector.constants import (
     POINT_THICKNESS,
 )
 from detector.logger import logger
-from omegaconf import DictConfig
-from tqdm import tqdm
 
 
 def sort_by_frame_number(path_list: List) -> List:
@@ -58,7 +59,7 @@ def sort_by_frame_number(path_list: List) -> List:
     df.loc[:, "frame_number"] = df["raw_path"].map(_extract_frame_number)
     df = df.sort_values(by="frame_number")
 
-    return df["raw_path"].to_list()
+    return list(df["raw_path"])
 
 
 def draw_detection_points(image: np.ndarray, point_coord: np.ndarray) -> np.ndarray:
@@ -84,35 +85,35 @@ def draw_detection_points(image: np.ndarray, point_coord: np.ndarray) -> np.ndar
 
 
 def create_detected_point_movie(
-    image_directory: str,
-    point_coord_directory: str,
-    movie_save_path: str,
+    image_directory: Path,
+    point_coord_directory: Path,
+    movie_save_path: Path,
 ) -> None:
     """Image data and coordinate data of detection points are load in pairs.
     The detection points are then plotted on the image,
     and the multiple data are connected in time series order to create a video.
 
     Args:
-        image_directory (str): directory that the raw image are stored
-        point_coord_directory (str): directory that the detected point coordinate are stored
-        movie_save_path (str): path to save output movie
+        image_directory (Path): directory that the raw image are stored
+        point_coord_directory (Path): directory that the detected point coordinate are stored
+        movie_save_path (Path): path to save output movie
     """
-
+    # opencv cannot read Pathlib.Path format
     output_movie = cv2.VideoWriter(
-        movie_save_path,
+        str(movie_save_path),
         cv2.VideoWriter_fourcc("m", "p", "4", "v"),
         MOVIE_FPS,
         (FRAME_WIDTH, FRAME_HEIGHT),
     )
 
-    image_path_list = glob(f"{image_directory}/*{IMAGE_EXTENTION}")
+    image_path_list = glob(f"image_directory/*{IMAGE_EXTENTION}")
     sorted_image_path_list = sort_by_frame_number(image_path_list)
     for path in tqdm(sorted_image_path_list, desc="Create Movie Data"):
         image = cv2.imread(path)
         # The file names of the image and the coordinate data must be the same
         cood_file_name = path.split("/")[-1].replace(IMAGE_EXTENTION, ".csv")
         detected_coord = np.loadtxt(
-            f"{point_coord_directory}/{cood_file_name}", delimiter=","
+            point_coord_directory / f"{cood_file_name}", delimiter=","
         )
 
         # plot detected point on image
@@ -125,25 +126,20 @@ def create_detected_point_movie(
     logger.info(f"Saved Movie Data in '{movie_save_path}'")
 
 
-@hydra.main(
-    config_path=str(CONFIG_DIR),
-    config_name=DETECTED_MOVIE_CONFIG_NAME,
-    version_base="1.1",
-)
-def main(cfg: DictConfig) -> None:
+def main() -> None:
     """Create movie data based on the raw image data and
     the series of detected points data
 
     Args:
         cfg (DictConfig): config that loaded by @hydra.main()
     """
-
+    cfg = load_config(CONFIG_DIR / DETECTED_MOVIE_CONFIG_NAME, DetectedPointMovieConfig)
     logger.info(f"Loaded config: {cfg}")
 
     create_detected_point_movie(
-        str(DATA_DIR / cfg["image_directory"]),
-        str(DATA_DIR / cfg["point_coord_directory"]),
-        str(DATA_DIR / cfg["movie_save_path"]),
+        DATA_DIR / cfg.image_directory,
+        DATA_DIR / cfg.point_coord_directory,
+        DATA_DIR / cfg.movie_save_path,
     )
 
 

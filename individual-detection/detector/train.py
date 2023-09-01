@@ -1,10 +1,23 @@
 import gc
 import time
+from pathlib import Path
 from typing import List, Tuple
 
-import hydra
 import numpy as np
 import tensorflow as tf
+from sklearn.utils import shuffle
+from tensorflow.compat.v1 import (
+    ConfigProto,
+    GPUOptions,
+    InteractiveSession,
+    global_variables_initializer,
+)
+from tensorflow.compat.v1.summary import FileWriter
+from tensorflow.compat.v1.train import Saver
+from tensorflow.python.framework.ops import Tensor as OpsTensor
+from tqdm import trange
+
+from detector.config import TrainConfig, load_config
 from detector.constants import (
     CONFIG_DIR,
     DATA_DIR,
@@ -28,18 +41,6 @@ from detector.process_dataset import (
     load_sample,
 )
 from detector.utils import get_elapsed_time_str, set_tensorboard
-from omegaconf import DictConfig, OmegaConf
-from sklearn.utils import shuffle
-from tensorflow.compat.v1 import (
-    ConfigProto,
-    GPUOptions,
-    InteractiveSession,
-    global_variables_initializer,
-)
-from tensorflow.compat.v1.summary import FileWriter
-from tensorflow.compat.v1.train import Saver
-from tensorflow.python.framework.ops import Tensor as OpsTensor
-from tqdm import trange
 
 tf.compat.v1.disable_eager_execution()
 
@@ -131,8 +132,8 @@ def get_local_samples(
     X_image: np.ndarray,
     y_dens: np.ndarray,
     is_flip: bool,
+    flip_prob: float,
     index_manager: IndexManager,
-    params_dict: dict,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Get samples of local images to be input to the model from the image and label pairs.
 
@@ -140,14 +141,14 @@ def get_local_samples(
         X_image (np.ndarray): target raw image (input)
         y_dens (np.ndarray): target density map (label)
         is_flip (bool): whether apply horizontal flip or not
+        flip_prob (float): probability of horizontal flip
         index_manager (IndexManager): index manager class of masked image
-        params_dict (dict): parameter dictionary
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: local samples array
     """
 
-    if (is_flip) and (np.random.rand() < params_dict["flip_prob"]):
+    if (is_flip) and (np.random.rand() < flip_prob):
         # image apply horizontal flip
         X_train_local_list, y_train_local_list = extract_local_data(
             X_image[:, ::-1, :],
@@ -167,11 +168,11 @@ def train(
     tf_session: InteractiveSession,
     epoch: int,
     model: DensityModel,
-    X_train: List,
-    y_train: List,
+    X_train: List[Path],
+    y_train: List[Path],
     mask_image: np.ndarray,
     index_manager: IndexManager,
-    params_dict: dict,
+    params_dict: TrainConfig,
     summuray_merged: OpsTensor,
     writer: FileWriter,
 ) -> float:
@@ -181,11 +182,11 @@ def train(
         tf_session (InteractiveSession): tensorflow session
         epoch (int): epoch number
         model (DensityModel): trained model
-        X_train (List): training input image path List
-        y_train (List): training label path List
+        X_train (List[Path]): training input image path List
+        y_train (List[Path]): training label path List
         mask_image (np.ndarray): mask image
         index_manager (IndexManager): index manager class of masked image
-        params_dict (dict): parameter dictionary
+        params_dict (TrainConfig): config parameters
         summuray_merged (OpsTensor): tensorflow dashboard summury
         writer (FileWriter): tensorflow dashboard writer
 
@@ -222,12 +223,12 @@ def train(
         # load training local image
         # data augmentation (horizontal flip)
         X_train_local, y_train_local = get_local_samples(
-            X_image, y_dens, True, index_manager, params_dict
+            X_image, y_dens, True, params_dict.flip_prob, index_manager
         )
 
         # under sampling
         X_train_local, y_train_local = under_sampling(
-            X_train_local, y_train_local, thresh=params_dict["under_sampling_thresh"]
+            X_train_local, y_train_local, thresh=params_dict.under_sampling_threshold
         )
 
         # hard negative mining
@@ -251,10 +252,10 @@ def train(
             dtype="uint8",
         )
         hard_negative_label_array = np.zeros((1), dtype="float32")
-        train_n_batches = int(len(X_train_local) / params_dict["batch_size"])
+        train_n_batches = int(len(X_train_local) / params_dict.batch_size)
         for train_batch in range(train_n_batches):
-            train_start_index = train_batch * params_dict["batch_size"]
-            train_end_index = train_start_index + params_dict["batch_size"]
+            train_start_index = train_batch * params_dict.batch_size
+            train_end_index = train_start_index + params_dict.batch_size
 
             # training mini batch
             train_diff, train_summary, _ = tf_session.run(
@@ -270,7 +271,7 @@ def train(
                         -1, 1
                     ),
                     model.is_training: True,
-                    model.dropout_rate: params_dict["dropout_rate"],
+                    model.dropout_rate: params_dict.dropout_rate,
                 },
             )
 
@@ -285,7 +286,7 @@ def train(
                 X_train_local[train_start_index:train_end_index],
                 y_train_local[train_start_index:train_end_index],
                 train_diff,
-                params_dict["hard_negative_weight"],
+                params_dict.hard_negative_mining_weight,
             )
             # if exist hard negative sample in current batch, append in management array
             if (
@@ -315,11 +316,11 @@ def validation(
     tf_session: InteractiveSession,
     epoch: int,
     model: DensityModel,
-    X_valid: List,
-    y_valid: List,
+    X_valid: List[Path],
+    y_valid: List[Path],
     mask_image: np.ndarray,
     index_manager: IndexManager,
-    params_dict: dict,
+    params_dict: TrainConfig,
     summuray_merged: OpsTensor,
     writer: FileWriter,
 ) -> float:
@@ -330,11 +331,11 @@ def validation(
         tf_session (InteractiveSession): tensorflow session
         epoch (int): epoch number
         model (DensityModel): trained model
-        X_valid (List): validation input image path List
-        y_valid (List): validation label path List
+        X_valid (List[Path]): validation input image path List
+        y_valid (List[Path]): validation label path List
         mask_image (np.ndarray): mask image
         index_manager (IndexManager): index manager class of masked image
-        params_dict (dict): parameter dictionary
+        params_dict (TrainConfig): config parameters
         summuray_merged (OpsTensor): tensorflow dashboard summury
         writer (FileWriter): tensorflow dashboard writer
 
@@ -358,18 +359,18 @@ def validation(
         # load validation local image
         # *Not* apply data augmentation (horizontal flip)
         X_valid_local, y_valid_local = get_local_samples(
-            X_image, y_dens, False, index_manager, params_dict
+            X_image, y_dens, False, params_dict.flip_prob, index_manager
         )
 
         # under sampling
         X_valid_local, y_valid_local = under_sampling(
-            X_valid_local, y_valid_local, thresh=params_dict["under_sampling_thresh"]
+            X_valid_local, y_valid_local, thresh=params_dict.under_sampling_threshold
         )
 
-        valid_n_batches = int(len(X_valid_local) / params_dict["batch_size"])
+        valid_n_batches = int(len(X_valid_local) / params_dict.batch_size)
         for valid_batch in range(valid_n_batches):
-            valid_start_index = valid_batch * params_dict["batch_size"]
-            valid_end_index = valid_start_index + params_dict["batch_size"]
+            valid_start_index = valid_batch * params_dict.batch_size
+            valid_end_index = valid_start_index + params_dict.batch_size
 
             # validate mini batch
             valid_loss_summary, valid_batch_loss = tf_session.run(
@@ -407,11 +408,11 @@ def validation(
 def test(
     tf_session: InteractiveSession,
     model: DensityModel,
-    X_test: List,
-    y_test: List,
+    X_test: List[Path],
+    y_test: List[Path],
     mask_image: np.ndarray,
     index_manager: IndexManager,
-    params_dict: dict,
+    params_dict: TrainConfig,
     summuray_merged: OpsTensor,
     writer: FileWriter,
 ) -> float:
@@ -420,11 +421,11 @@ def test(
     Args:
         tf_session (InteractiveSession): tensorflow session
         model (DensityModel): trained model
-        X_test (List): test input image path List
-        y_test (List): test label path List
+        X_test (List[Path]): test input image path List
+        y_test (List[Path]): test label path List
         mask_image (np.ndarray): mask image
         index_manager (IndexManager): index manager class of masked image
-        params_dict (dict): parameter dictionary
+        params_dict (TrainConfig): config parameters
         summuray_merged (OpsTensor): tensorflow dashboard summury
         writer (FileWriter): tensorflow dashboard writer
 
@@ -448,13 +449,13 @@ def test(
         # load test local image
         # *Not* apply data augmentation (horizontal flip)
         X_test_local, y_test_local = get_local_samples(
-            X_image, y_dens, False, index_manager, params_dict
+            X_image, y_dens, False, params_dict.flip_prob, index_manager
         )
 
-        test_n_batches = int(len(X_test_local) / params_dict["batch_size"])
+        test_n_batches = int(len(X_test_local) / params_dict.batch_size)
         for test_batch in range(test_n_batches):
-            test_start_index = test_batch * params_dict["batch_size"]
-            test_end_index = test_start_index + params_dict["batch_size"]
+            test_start_index = test_batch * params_dict.batch_size
+            test_end_index = test_start_index + params_dict.batch_size
 
             # test mini batch
             test_summary, test_batch_loss = tf_session.run(
@@ -491,14 +492,14 @@ def test(
 
 def model_training(
     dataset: Dataset,
-    cfg: dict,
+    cfg: TrainConfig,
 ) -> None:
     """Training the model. Perform an interim evaluation using validation data,
     and finally evaluate the learning results with test data.
 
     Args:
         dataset (Dataset): dataset class for model training
-        cfg (dict): config dictionary
+        cfg (TrainConfig): config parameters
     """
     # start TensorFlow session
     tf_config = ConfigProto(
@@ -514,18 +515,18 @@ def model_training(
 
     # Tensor Board setting
     summuray_merged, train_writer, valid_writer, test_writer = set_tensorboard(
-        str(DATA_DIR / cfg["tensorboard_directory"]), EXECUTION_TIME, tf_session
+        DATA_DIR / cfg.tensorboard_directory, EXECUTION_TIME, tf_session
     )
 
     # get mask index
     # if you analyze all areas, please set a white image
-    mask_image = load_mask_image(str(DATA_DIR / cfg["mask_path"]))
+    mask_image = load_mask_image(DATA_DIR / cfg.mask_path)
     index_manager = IndexManager(mask_image)
 
     # initialization of model variable
     saver = Saver()  # save weight
     # if exist pretrained model, load variable
-    ckpt = tf.train.get_checkpoint_state(cfg["pretrained_model_path"])
+    ckpt = tf.train.get_checkpoint_state(cfg.pretrained_model_path)
     if ckpt:
         pretrained_model = ckpt.model_checkpoint_path
         logger.info(f"Load pretraind model: {pretrained_model}")
@@ -535,18 +536,16 @@ def model_training(
         global_variables_initializer().run()
 
     # training model
-    save_model_dirc = (
-        DATA_DIR / f"{cfg['save_trained_model_directory']}/{EXECUTION_TIME}"
-    )
+    save_model_dirc = DATA_DIR / cfg.save_trained_model_directory / f"{EXECUTION_TIME}"
     save_model_dirc.mkdir(parents=True, exist_ok=True)
-    save_model_path = f"{save_model_dirc}/model.ckpt"
+    save_model_path = save_model_dirc / "model.ckpt"
     start_time = time.time()
     best_valid_loss = FLOAT_MAX
     not_improved_count = 0
     try:
-        for epoch in range(cfg["n_epochs"]):
+        for epoch in range(cfg.n_epochs):
             logger.info(
-                f"****************** [epoch: {epoch+1}/{cfg['n_epochs']}] ******************"
+                f"****************** [epoch: {epoch+1}/{cfg.n_epochs}] ******************"
             )
 
             # training
@@ -583,30 +582,31 @@ def model_training(
             logger.info(f"Elapsed time: {get_elapsed_time_str(start_time)}")
 
             # check early stopping
-            if (epoch > cfg["min_epochs"]) and (mean_valid_loss > best_valid_loss):
+            if (epoch > cfg.min_epochs) and (mean_valid_loss > best_valid_loss):
                 not_improved_count += 1
             else:
                 # learning is going well
                 not_improved_count = 0
                 best_valid_loss = mean_valid_loss
                 # save current model
-                saver.save(tf_session, save_model_path)
+                # tensorflow saver cannot read Pathlib.Path format
+                saver.save(tf_session, str(save_model_path))
 
             # excute early stopping
-            if not_improved_count >= cfg["early_stopping_epochs"]:
+            if not_improved_count >= cfg.early_stopping_patience:
                 logger.info(
-                    f"early stopping due to not improvement after {cfg['early_stopping_epochs']} epochs."
+                    f"early stopping due to not improvement after {cfg.early_stopping_patience} epochs."
                 )
                 break
             logger.info(
-                f"not improved count / early stopping epoch: {not_improved_count}/{cfg['early_stopping_epochs']}"
+                f"not improved count / early stopping epoch: {not_improved_count}/{cfg.early_stopping_patience}"
             )
 
         logger.info(
             "************************** Finish model training *************************"
         )
         # save best model
-        saver.save(tf_session, save_model_path)
+        saver.save(tf_session, str(save_model_path))
         logger.info(f'Best model saved in "{save_model_path}"')
         logger.info(
             "**************************************************************************"
@@ -639,7 +639,11 @@ def model_training(
         logger.info("stop training and  save model")
         saver.save(
             tf_session,
-            f"{str(DATA_DIR)}/{cfg['save_trained_model_directory']}/{EXECUTION_TIME}/model.ckpt",
+            str(
+                DATA_DIR
+                / cfg.save_trained_model_directory
+                / f"{EXECUTION_TIME}/model.ckpt"
+            ),
         )
 
     # close all writer and session
@@ -649,38 +653,35 @@ def model_training(
     tf_session.close()
 
 
-@hydra.main(
-    config_path=str(CONFIG_DIR), config_name=TRAIN_CONFIG_NAME, version_base="1.1"
-)
-def main(cfg: DictConfig) -> None:
-    cfg = OmegaConf.to_container(cfg)
+def main() -> None:
+    cfg = load_config(CONFIG_DIR / TRAIN_CONFIG_NAME, TrainConfig)
     logger.info(f"Loaded config: {cfg}")
 
     # loading train, validation and test dataset
     logger.info("Loading Dataset...")
     save_dataset_path_directory = (
-        f"{DATA_DIR}/{cfg['save_dataset_path_directory']}/{EXECUTION_TIME}"
+        DATA_DIR / cfg.save_dataset_directory / f"{EXECUTION_TIME}"
     )
-    if cfg["dataset_split_type"] == "random":
+    if cfg.dataset_split_type == "random":
         dataset = Dataset(
-            str(DATA_DIR / cfg["image_directory"]),
-            str(DATA_DIR / cfg["density_directory"]),
-            test_size=cfg["test_size"],
+            DATA_DIR / cfg.image_directory,
+            DATA_DIR / cfg.density_directory,
+            test_size=cfg.test_size,
             save_path_directory=save_dataset_path_directory,
         )
         dataset.create_random_dataset()
-    elif cfg["dataset_split_type"] == "timeseries":
+    elif cfg.dataset_split_type == "timeseries":
         dataset = Dataset(
-            str(DATA_DIR / cfg["image_directory"]),
-            str(DATA_DIR / cfg["density_directory"]),
-            train_date_list=cfg["train_date_list"],
-            valid_date_list=cfg["valid_date_list"],
-            test_date_list=cfg["test_date_list"],
+            DATA_DIR / cfg.image_directory,
+            DATA_DIR / cfg.density_directory,
+            train_date_list=cfg.train_date_list,
+            valid_date_list=cfg.validation_date_list,
+            test_date_list=cfg.test_date_list,
             save_path_directory=save_dataset_path_directory,
         )
         dataset.create_date_dataset()
     else:
-        message = f'dataset_split_type="{cfg["dataset_split_type"]}" is note defined.'
+        message = f'dataset_split_type="{cfg.dataset_split_type}" is note defined.'
         logger.error(message)
         raise DatasetSplitTypeError(message)
 

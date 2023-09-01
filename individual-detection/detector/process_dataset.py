@@ -6,6 +6,8 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
+
 from detector.constants import (
     ANALYSIS_HEIGHT_MAX,
     ANALYSIS_HEIGHT_MIN,
@@ -20,9 +22,10 @@ from detector.exceptions import DatasetEmptyError, LoadImageError
 from detector.index_manager import IndexManager
 from detector.logger import logger
 from detector.utils import get_image_shape
-from sklearn.model_selection import train_test_split
 
-DatasetType = Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]
+DatasetType = Tuple[
+    List[Path], List[Path], List[Path], List[Path], List[Path], List[Path]
+]
 
 
 class Dataset:
@@ -35,13 +38,13 @@ class Dataset:
 
     def __init__(
         self,
-        image_directory: str,
-        density_directory: str,
+        image_directory: Path,
+        density_directory: Path,
         test_size: float = 0.2,
         train_date_list: Optional[List[str]] = None,
         valid_date_list: Optional[List[str]] = None,
         test_date_list: Optional[List[str]] = None,
-        save_path_directory: Optional[str] = None,
+        save_path_directory: Optional[Path] = None,
     ) -> None:
         self.image_directory = image_directory
         self.density_directory = density_directory
@@ -50,14 +53,14 @@ class Dataset:
         self.valid_date_list = valid_date_list
         self.test_date_list = test_date_list
         self.save_path_directory = save_path_directory
-        self.X_list: List[str]
-        self.y_list: List[str]
-        self.X_train: List[str]
-        self.X_valid: List[str]
-        self.X_test: List[str]
-        self.y_train: List[str]
-        self.y_valid: List[str]
-        self.y_test: List[str]
+        self.X_list: List[Path]
+        self.y_list: List[Path]
+        self.X_train: List[Path]
+        self.X_valid: List[Path]
+        self.X_test: List[Path]
+        self.y_train: List[Path]
+        self.y_valid: List[Path]
+        self.y_test: List[Path]
 
     def create_random_dataset(self) -> None:
         """Create random splitted dataset."""
@@ -104,17 +107,17 @@ class Dataset:
 
 
 def load_dataset(
-    image_directory: str, density_directory: str, file_pattern: str
-) -> Tuple[List[str], List[str]]:
+    image_directory: Path, density_directory: Path, file_pattern: str
+) -> Tuple[List[Path], List[Path]]:
     """Load the file name of the data set.
 
     Args:
-        image_directory (str): directory name of image (input)
-        density_directory (str): directory name of density map (label)
+        image_directory (Path): directory name of image (input)
+        density_directory (Path): directory name of density map (label)
         file_pattern (str): file name pattern of image (input)
 
     Returns:
-        Tuple[List[str], List[str]]: tuple with image and label filename pairs
+        Tuple[List[Path], List[Path]]: tuple with image and label filename pairs
     """
     X_list, y_list = [], []
     file_list = glob(f"{image_directory}/{file_pattern}")
@@ -126,27 +129,27 @@ def load_dataset(
     for path in file_list:
         # get label path from input image path
         density_file_name = path.replace(IMAGE_EXTENTION, ".npy").split("/")[-1]
-        density_path = f"{density_directory}/{density_file_name}"
+        density_path = density_directory / density_file_name
 
         # store input and label path
-        X_list.append(path)
-        y_list.append(density_path)
+        X_list.append(Path(path))
+        y_list.append(Path(density_path))
 
     return X_list, y_list
 
 
 def load_multi_date_datasets(
-    image_directory: str, density_directory: str, date_list: List[str]
-) -> Tuple[List[str], List[str]]:
+    image_directory: Path, density_directory: Path, date_list: List[str]
+) -> Tuple[List[Path], List[Path]]:
     """Load input and output pairs based on a list of dates
 
     Args:
-        image_directory (str): directory name of image (input)
-        density_directory (str): directory name of density map (label)
+        image_directory (Path): directory name of image (input)
+        density_directory (Path): directory name of density map (label)
         date_list (List[str]): list of dates to be used for splitting
 
     Returns:
-        Tuple[List[str], List[str]]: tuple with image and label filename pairs
+        Tuple[List[Path], List[Path]]: tuple with image and label filename pairs
     """
     X_multi_list, y_multi_list = [], []
     for date in date_list:
@@ -158,13 +161,15 @@ def load_multi_date_datasets(
     return X_multi_list, y_multi_list
 
 
-def save_dataset_path(X_path_list: List, y_path_list: List, save_path: str) -> None:
+def save_dataset_path(
+    X_path_list: List[Path], y_path_list: List[Path], save_path: Path
+) -> None:
     """Save the file names contained in the data set in CSV format.
 
     Args:
-        X_path_list (List): x (input) path list
-        y_path_list (List): y (label) path list
-        save_path (str): path of save destination
+        X_path_list (List[Path]): x (input) path list
+        y_path_list (List[Path]): y (label) path list
+        save_path (Path): path of save destination
     """
     pd.DataFrame({"X_path": X_path_list, "y_path": y_path_list}).to_csv(
         save_path, index=False
@@ -172,10 +177,10 @@ def save_dataset_path(X_path_list: List, y_path_list: List, save_path: str) -> N
 
 
 def split_dataset(
-    X_list: List,
-    y_list: List,
+    X_list: List[Path],
+    y_list: List[Path],
     test_size: float,
-    save_path_directory: Optional[str] = None,
+    save_path_directory: Optional[Path] = None,
 ) -> DatasetType:
     """Randomly split the dataset into train, validation, and test.
 
@@ -183,7 +188,7 @@ def split_dataset(
         X_list (List): input image path list
         y_list (List): label path list
         test_size (float): test data size (0.0 - 1.0)
-        save_path_directory (str, optional): directory name to save the file name of each dataset. Defaults to None.
+        save_path_directory (Path, optional): directory name to save the file name of each dataset. Defaults to None.
 
     Returns:
         DatasetType:
@@ -200,30 +205,30 @@ def split_dataset(
 
     if save_path_directory is not None:
         Path(save_path_directory).mkdir(parents=True, exist_ok=True)
-        save_dataset_path(X_train, y_train, f"{save_path_directory}/train_dataset.csv")
-        save_dataset_path(X_valid, y_valid, f"{save_path_directory}/valid_dataset.csv")
-        save_dataset_path(X_test, y_test, f"{save_path_directory}/test_dataset.csv")
+        save_dataset_path(X_train, y_train, save_path_directory / "train_dataset.csv")
+        save_dataset_path(X_valid, y_valid, save_path_directory / "valid_dataset.csv")
+        save_dataset_path(X_test, y_test, save_path_directory / "test_dataset.csv")
 
     return X_train, X_valid, X_test, y_train, y_valid, y_test
 
 
 def split_dataset_by_date(
-    image_directory: str,
-    density_directory: str,
+    image_directory: Path,
+    density_directory: Path,
     train_date_list: List[str],
     valid_date_list: List[str],
     test_date_list: List[str],
-    save_path_directory: Optional[str] = None,
+    save_path_directory: Optional[Path] = None,
 ) -> DatasetType:
     """split the dataset by date into train, validation, and test.
 
     Args:
-        image_directory (str): directory name of image (input)
-        density_directory (str): directory name of density map (label)
+        image_directory (Path): directory name of image (input)
+        density_directory (Path): directory name of density map (label)
         train_date_list (List[str]): date list of training data
         valid_date_list (List[str]): date list of validation data
         test_date_list (List[str]): date list of test data
-        save_path_directory (str, optional): directory name to save the file name of each dataset. Defaults to None.
+        save_path_directory (Path, optional): directory name to save the file name of each dataset. Defaults to None.
 
     Returns:
         DatasetType:
@@ -241,25 +246,26 @@ def split_dataset_by_date(
 
     if save_path_directory is not None:
         Path(save_path_directory).mkdir(parents=True, exist_ok=True)
-        save_dataset_path(X_train, y_train, f"{save_path_directory}/train_dataset.csv")
-        save_dataset_path(X_valid, y_valid, f"{save_path_directory}/valid_dataset.csv")
-        save_dataset_path(X_test, y_test, f"{save_path_directory}/test_dataset.csv")
+        save_dataset_path(X_train, y_train, save_path_directory / "train_dataset.csv")
+        save_dataset_path(X_valid, y_valid, save_path_directory / "valid_dataset.csv")
+        save_dataset_path(X_test, y_test, save_path_directory / "test_dataset.csv")
 
     return X_train, X_valid, X_test, y_train, y_valid, y_test
 
 
-def load_image(path: str, is_rgb: bool = True, normalized: bool = False) -> np.ndarray:
+def load_image(path: Path, is_rgb: bool = True, normalized: bool = False) -> np.ndarray:
     """Loads image data frosm the input path and returns image in numpy array format.
 
     Args:
-        path (str): input image file path
+        path (Path): input image file path
         is_rgb (bool, optional): whether convert RGB format. Defaults to True.
         normalized (bool, optional): whether normalize loaded image. Defaults to False.
 
     Returns:
         np.ndarray: loaded image
     """
-    image = cv2.imread(path)
+    # opencv cannot read Pathlib.Path format
+    image = cv2.imread(str(path))
     if image is None:
         message = f'image path="{path}" cannot be loaded.'
         logger.error(message)
@@ -278,8 +284,8 @@ def load_image(path: str, is_rgb: bool = True, normalized: bool = False) -> np.n
 
 
 def load_sample(
-    X_path: str,
-    y_path: str,
+    X_path: Path,
+    y_path: Path,
     input_image_shape: Tuple,
     mask_image: np.ndarray,
     is_rgb: bool,
@@ -289,8 +295,8 @@ def load_sample(
     Each sample is a set of image and label, with mask image applied as needed.
 
     Args:
-        X_path (str): x (input) path
-        y_path (str): y (label) path
+        X_path (Path): x (input) path
+        y_path (Path): y (label) path
         input_image_shape (Tuple): raw input image shape
         mask_image (np.ndarray): mask image array
         is_rgb (bool): whether to convert the image to RGB format
@@ -318,20 +324,21 @@ def load_sample(
 
 
 def load_mask_image(
-    mask_path: Optional[str] = None, normalized: bool = True
+    mask_path: Optional[Path] = None, normalized: bool = True
 ) -> np.ndarray:
     """Load a binary mask image and normalizes the values as necessary.
 
     Args:
-        mask_path (str, optional): binary mask image path. Defaults to None.
+        mask_path (Path, optional): binary mask image path. Defaults to None.
         normalized (bool, optional): whether execute normalization. Defaults to True.
 
     Returns:
         np.ndarray: loaded binary masked image
     """
-    if (mask_path is not None) and (Path(mask_path).is_file()):
+    if (mask_path is not None) and (mask_path.is_file()):
         # load binary mask image
-        mask = cv2.imread(mask_path)
+        # opencv cannot read Pathlib.Path format
+        mask = cv2.imread(str(mask_path))
         assert (
             1 <= len(np.unique(mask)) <= 2
         ), f"Error: mask image is not binary. (current unique value={len(np.unique(mask))})"

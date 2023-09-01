@@ -3,7 +3,7 @@ image_directory: "image/raw/all"
 density_directory: "dens/all"
 mask_path: "image/mask.png"
 pretrained_model_path: ""
-save_dataset_path_directory: "datasets"
+save_dataset_directory: "datasets"
 tensorboard_directory: "tensorboard"
 save_trained_model_directory: "models"
 # define logic for splitting the data set
@@ -19,7 +19,7 @@ train_date_list:
   - "20181029"
   - "20181030"
   - "20181031"
-valid_date_list: 
+validation_date_list: 
   - "20181101"
 test_date_list: 
   - "20181102"
@@ -33,12 +33,12 @@ n_epochs: 30
 # minimum learning epoch (not apply early stopping): > 0
 min_epochs: 5
 # number of epochs for early stopping
-early_stopping_epochs: 2
+early_stopping_patience: 2
 # probability of horaizontal flip. (apply only training data): 0.0-1.0
 flip_prob: 0.5
 # data below this value is target to under-sampling
-under_sampling_thresh: 0.2
+under_sampling_threshold: 0.2
 # dropout rate  for each layer at training process
 # 0.0: not apply dropout, 1.0: drop full units
 dropout_rate: 0.5
-hard_negative_weight: 3.0
+hard_negative_mining_weight: 3.0

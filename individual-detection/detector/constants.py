@@ -17,11 +17,11 @@ JST = timezone(timedelta(hours=+9), "JST")
 EXECUTION_TIME: str = datetime.now(JST).strftime("%Y%m%d_%H%M%S")
 LOGGER_NAME = "individual-detection"
 
-TRAIN_CONFIG_NAME: str = "train"
-PREDICT_CONFIG_NAME: str = "predict"
-EVALUATE_CONFIG_NAME: str = "evaluate"
-SEARCH_PARAMETER_CONFIG_NAME: str = "search_parameter"
-DETECTED_MOVIE_CONFIG_NAME: str = "detected_point_movie"
+TRAIN_CONFIG_NAME: str = "train.yaml"
+PREDICT_CONFIG_NAME: str = "predict.yaml"
+EVALUATE_CONFIG_NAME: str = "evaluate.yaml"
+SEARCH_PARAMETER_CONFIG_NAME: str = "search_parameter.yaml"
+DETECTED_MOVIE_CONFIG_NAME: str = "detected_point_movie.yaml"
 
 # input video information
 MOVIE_FPS: int = 30

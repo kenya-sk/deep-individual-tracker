@@ -1,12 +1,14 @@
 import math
+from pathlib import Path
 from typing import List, Optional, Tuple
 
 import tensorflow as tf
+from tensorflow.compat.v1 import InteractiveSession, placeholder, summary
+from tensorflow.compat.v1.train import AdamOptimizer
+
 from detector.constants import GPU_DEVICE_ID, GPU_MEMORY_RATE
 from detector.exceptions import LoadModelError, TensorShapeError
 from detector.logger import logger
-from tensorflow.compat.v1 import InteractiveSession, placeholder, summary
-from tensorflow.compat.v1.train import AdamOptimizer
 
 tf.compat.v1.disable_eager_execution()
 
@@ -303,11 +305,11 @@ class DensityModel(object):
             summary.scalar("min", tf.reduce_min(input_tensor=var))
 
 
-def load_model(model_path: str) -> Tuple:
+def load_model(model_path: Path) -> Tuple:
     """Load trained Convolutional Neural Network model that defined by TensorFlow
 
     Args:
-        model_path (str): path of trained model
+        model_path (Path): path of trained model
 
     Returns:
         Tuple: loaded model and tensorflow session

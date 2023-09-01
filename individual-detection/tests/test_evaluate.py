@@ -1,13 +1,14 @@
 from pathlib import Path
 
 import numpy as np
-from detector.evaluate import eval_detection, get_ground_truth
 from numpy.testing import assert_array_equal
+
+from detector.evaluate import eval_detection, get_ground_truth
 
 
 def test_get_ground_truth(tmp_path: Path) -> None:
     # create dummy ground truth data
-    ground_truth_path = str(tmp_path / "ground_truth.csv")
+    ground_truth_path = tmp_path / "ground_truth.csv"
     raw_ground_truth_array = np.array([[10, 50], [200, 450], [500, 120], [130, 125]])
     np.savetxt(ground_truth_path, raw_ground_truth_array, delimiter=",", fmt="%d")
 

@@ -24,4 +24,4 @@ is_saved_map: False
 # band width of Mean-Shift Clustering
 band_width: 10
 # threshold to be subjected to clustering
-cluster_thresh: 1.1
+cluster_threshold: 1.1
