@@ -59,7 +59,7 @@ def sort_by_frame_number(path_list: List) -> List:
     df.loc[:, "frame_number"] = df["raw_path"].map(_extract_frame_number)
     df = df.sort_values(by="frame_number")
 
-    return df["raw_path"].to_list()
+    return list(df["raw_path"])
 
 
 def draw_detection_points(image: np.ndarray, point_coord: np.ndarray) -> np.ndarray:

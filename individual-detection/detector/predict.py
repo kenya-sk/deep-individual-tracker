@@ -85,21 +85,23 @@ def predict_density_map(
     tf_session: InteractiveSession,
     image: np.ndarray,
     index_manager: IndexManager,
-    cfg: PredictConfig,
+    skip_pixel_interval: int,
+    index_extract_type: str,
+    predict_batch_size: int,
 ) -> np.ndarray:
     # set horizontal index
     index_list = extract_prediction_indices(
         list(index_manager.index_h),
         list(index_manager.index_w),
-        cfg.skip_pixel_interval,
-        cfg.index_extract_type,
+        skip_pixel_interval,
+        index_extract_type,
     )
 
     # load local images to be predicted
     X_local, _ = extract_local_data(image, None, index_manager, False, index_list)
 
     # set prediction parameters
-    pred_batch_size = cfg.predict_batch_size
+    pred_batch_size = predict_batch_size
     pred_n_batches = math.ceil(len(index_list) / pred_batch_size)
     pred_dens_map = np.zeros((FRAME_HEIGHT, FRAME_WIDTH), dtype="float32")
 
@@ -151,7 +153,15 @@ def image_prediction(
     logger.info("STSRT: predict density map (frame number= {0})".format(frame_num))
 
     # predict density map by trained model
-    pred_dens_map = predict_density_map(model, tf_session, image, index_manager, cfg)
+    pred_dens_map = predict_density_map(
+        model,
+        tf_session,
+        image,
+        index_manager,
+        cfg.skip_pixel_interval,
+        cfg.index_extract_type,
+        cfg.predict_batch_size,
+    )
 
     # save predicted data
     if cfg.is_saved_map:

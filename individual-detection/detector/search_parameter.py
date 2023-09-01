@@ -148,19 +148,23 @@ def search(
                     predicted_density_map, cfg.band_width, param
                 )
             elif search_param == "prediction_grid":
-                # create current parameter config
-                param_cfg = dataclasses.replcae(cfg, skip_pixel_interval=param)
                 # Predicts a density map with the specified grid size
                 image = load_image(dataset_path_df["input"][i], is_rgb=True)
                 if mask_image is not None:
                     image = apply_masking_on_image(image, mask_image)
                 predicted_density_map = predict_density_map(
-                    model, tf_session, image, index_manager, param_cfg
+                    model,
+                    tf_session,
+                    image,
+                    index_manager,
+                    param,
+                    cfg.index_extract_type,
+                    cfg.predict_batch_size,
                 )
                 predicted_centroid_array = apply_clustering_to_density_map(
                     predicted_density_map,
-                    param_cfg.band_width,
-                    param_cfg.fixed_cluster_threshold,
+                    cfg.band_width,
+                    cfg.fixed_cluster_threshold,
                 )
             else:
                 logger.info(f"{param} is not defined.")

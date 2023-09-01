@@ -589,7 +589,8 @@ def model_training(
                 not_improved_count = 0
                 best_valid_loss = mean_valid_loss
                 # save current model
-                saver.save(tf_session, save_model_path)
+                # tensorflow saver cannot read Pathlib.Path format
+                saver.save(tf_session, str(save_model_path))
 
             # excute early stopping
             if not_improved_count >= cfg.early_stopping_patience:
@@ -605,7 +606,7 @@ def model_training(
             "************************** Finish model training *************************"
         )
         # save best model
-        saver.save(tf_session, save_model_path)
+        saver.save(tf_session, str(save_model_path))
         logger.info(f'Best model saved in "{save_model_path}"')
         logger.info(
             "**************************************************************************"
@@ -638,9 +639,11 @@ def model_training(
         logger.info("stop training and  save model")
         saver.save(
             tf_session,
-            DATA_DIR
-            / cfg.save_trained_model_directory
-            / f"{EXECUTION_TIME}/model.ckpt",
+            str(
+                DATA_DIR
+                / cfg.save_trained_model_directory
+                / f"{EXECUTION_TIME}/model.ckpt"
+            ),
         )
 
     # close all writer and session

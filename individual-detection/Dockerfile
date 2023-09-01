@@ -24,6 +24,7 @@ RUN pip install -r requirements.txt
 # copy scripts and dependency file from source directory
 COPY ./config ./config
 COPY ./detector ./detector
+COPY ./scripts ./scripts
 COPY ./tests ./tests
 COPY ./mypy.ini ./mypy.ini
 
