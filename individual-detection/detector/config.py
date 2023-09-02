@@ -65,13 +65,19 @@ class EvaluateConfig(BaseConfig):
 
 
 @dataclass(frozen=True)
+class SearchRangeConfig:
+    threshold: List[float]
+    prediction_grid: List[int]
+
+
+@dataclass(frozen=True)
 class SearchParameterConfig(BaseConfig):
     dataset_path: Path
     mask_path: Path
     save_directory: Path
     trained_model_directory: Path
     cols_order: List[str]
-    search_params: Dict[str, List[Union[int, float]]]
+    search_params: SearchRangeConfig
     sample_rate: float
     predict_batch_size: int
     band_width: int
