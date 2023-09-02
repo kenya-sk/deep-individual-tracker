@@ -218,7 +218,7 @@ def search_parameter(
         index_manager (IndexManager): index manager class of masked image
         cfg (SearchParameterConfig): config about analysis image region
     """
-    for param, patterns in cfg.search_params.items():
+    for param, patterns in cfg.search_params.__dict__.items():
         assert (
             type(patterns) == list
         ), "The search patterns are expected to be passed in a List type."
@@ -258,7 +258,7 @@ def main() -> None:
         index_manager = IndexManager(np.ones((FRAME_HEIGHT, FRAME_WIDTH)))
 
     # load trained model
-    if "prediction_grid" in cfg.search_params.keys():
+    if len(cfg.search_params.prediction_grid) > 0:
         model, tf_session = load_model(DATA_DIR / cfg.trained_model_directory)
     else:
         model, tf_session = None, None
