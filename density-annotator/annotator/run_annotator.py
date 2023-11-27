@@ -1,5 +1,3 @@
-import hydra
-
 from annotator.config import AnnotatorConfig, load_config
 from annotator.constants import ANNOTATOR_CONFIG_NAME, CONFIG_DIR
 from annotator.density_annotator import DensityAnnotator
