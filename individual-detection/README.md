@@ -72,3 +72,11 @@ The training log is output by default so that it can be visualized in TensorBoar
 LOG_DIRECTORY = "/data/tensorboard"
 tensorboard --logdir "${LOG_DIRECTORY}"
 ```
+
+
+## Document
+The latest documentation of the function is generated using sphinx by executing the following command. Please check index.html under B in your browser.
+
+```bash
+bash script/create_docs.sh
+```
