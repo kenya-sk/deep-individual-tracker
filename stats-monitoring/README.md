@@ -22,3 +22,10 @@ The execution environment can be build using Docker Comopse. The directory of `/
 # launch countainer
 $ docker-compose -f docker-compose.yaml exec monitoring /bin/bash
 ```
+
+## Document
+The latest documentation of the function is generated using sphinx by executing the following command. Please check index.html under B in your browser.
+
+```bash
+bash script/create_docs.sh
+```

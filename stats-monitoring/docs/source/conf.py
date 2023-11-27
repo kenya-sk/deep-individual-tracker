@@ -8,11 +8,10 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../../"))
 
-
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "annotator"
+project = "monitoring"
 copyright = "2023, kenya-sk"
 author = "kenya-sk"
 release = "0.1.0"
