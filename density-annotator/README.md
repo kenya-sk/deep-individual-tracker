@@ -45,3 +45,10 @@ Finally, the image data can be extracted by executing the following command.
 ```bash
 bash scripts/run_sampler.sh
 ```
+
+## Document
+The latest documentation of the function is generated using sphinx by executing the following command. Please check index.html under B in your browser.
+
+```bash
+bash script/create_docs.sh
+```
