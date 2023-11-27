@@ -22,6 +22,7 @@ COPY ./config ./config
 COPY ./detector ./detector
 COPY ./scripts ./scripts
 COPY ./tests ./tests
+COPY ./docs ./docs
 COPY ./mypy.ini ./mypy.ini
 
 RUN apt-get autoremove -y
