@@ -1,0 +1,8 @@
+sigma_pow: 25
+mouse_event_interval: 1
+
+# relative path from data directory
+path:
+  input_file_path: "test/inputs"
+  save_raw_image_dir: "test/outputs/raw"
+  save_annotated_dir: "test/outputs/annotated"

@@ -15,6 +15,7 @@ IMAGE_EXTENTION: str = ".png"
 
 SAMPLER_CONFIG_NAME: str = "frame_sampling.yaml"
 ANNOTATOR_CONFIG_NAME: str = "annotator.yaml"
+ANNOTATOR_TEST_CONFIG_NAME: str = "test_annotator.yaml"
 
 # define GUI control key
 Q_KEY = 0x71  # q key (end)
