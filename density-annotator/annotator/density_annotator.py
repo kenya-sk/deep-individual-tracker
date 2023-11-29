@@ -4,8 +4,6 @@ from typing import List
 
 import cv2
 import numpy as np
-from tqdm import tqdm
-
 from annotator.config import AnnotatorConfig
 from annotator.constants import D_KEY, DATA_DIR, IMAGE_EXTENTION, P_KEY, Q_KEY, S_KEY
 from annotator.exceptions import InputFileTypeError
@@ -19,6 +17,7 @@ from annotator.utils import (
     save_density_map,
     save_image,
 )
+from tqdm import tqdm
 
 
 class DensityAnnotator:

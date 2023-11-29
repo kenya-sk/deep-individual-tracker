@@ -1,3 +1,5 @@
+from unittest.mock import Mock, patch
+
 import numpy as np
 import pytest
 from annotator.config import AnnotatorConfig, load_config
@@ -7,17 +9,18 @@ from annotator.density_annotator import DensityAnnotator
 
 @pytest.fixture(scope="function")
 def annotator_config() -> AnnotatorConfig:
-    cfg = load_config(CONFIG_DIR / ANNOTATOR_TEST_CONFIG_NAME, AnnotatorConfig)
-    (DATA_DIR / cfg.path.input_file_path).mkdir(exist_ok=True, parents=True)
-
-    return cfg
+    return load_config(CONFIG_DIR / ANNOTATOR_TEST_CONFIG_NAME, AnnotatorConfig)
 
 
-def test_init_setting(annotator_config: AnnotatorConfig) -> None:
+@patch("cv2.namedWindow")
+@patch("cv2.setMouseCallback")
+def test_init_setting(
+    window_mock: Mock, mouse_mock: Mock, annotator_config: AnnotatorConfig
+) -> None:
     annotator = DensityAnnotator(annotator_config)
     assert annotator.sigma_pow == annotator_config.sigma_pow
     assert annotator.mouse_event_interval == annotator_config.mouse_event_interval
-    assert len(annotator.input_file_path_list) == 0
+    assert len(annotator.input_file_path_list) == 1
     assert (
         annotator.save_raw_image_dir
         == DATA_DIR / annotator_config.path.save_raw_image_dir
@@ -37,7 +40,11 @@ def test_init_setting(annotator_config: AnnotatorConfig) -> None:
     )
 
 
-def test_annotator_initialization(annotator_config: AnnotatorConfig) -> None:
+@patch("cv2.namedWindow")
+@patch("cv2.setMouseCallback")
+def test_annotator_initialization(
+    window_mock: Mock, mouse_mock: Mock, annotator_config: AnnotatorConfig
+) -> None:
     frame = np.zeros((100, 200, 3), dtype=np.uint8)
     annotator = DensityAnnotator(annotator_config)
     annotator.frame = frame
@@ -50,7 +57,11 @@ def test_annotator_initialization(annotator_config: AnnotatorConfig) -> None:
     assert list(annotator.coordinate_matrix[10][20]) == [10, 20]
 
 
-def test_add_point(annotator_config: AnnotatorConfig) -> None:
+@patch("cv2.namedWindow")
+@patch("cv2.setMouseCallback")
+def test_add_point(
+    window_mock: Mock, mouse_mock: Mock, annotator_config: AnnotatorConfig
+) -> None:
     annotator = DensityAnnotator(annotator_config)
     annotator.frame = np.zeros((100, 200, 3), dtype=np.uint8)
     annotator.frame_list = []
@@ -63,7 +74,15 @@ def test_add_point(annotator_config: AnnotatorConfig) -> None:
     assert len(annotator.frame_list) == 3
 
 
-def test_delete_point(annotator_config: AnnotatorConfig) -> None:
+@patch("cv2.namedWindow")
+@patch("cv2.setMouseCallback")
+@patch("cv2.imshow")
+def test_delete_point(
+    window_mock: Mock,
+    mouse_mock: Mock,
+    show_mock: Mock,
+    annotator_config: AnnotatorConfig,
+) -> None:
     annotator = DensityAnnotator(annotator_config)
     annotator.frame = np.zeros((100, 200, 3), dtype=np.uint8)
     annotator.frame_list = []
