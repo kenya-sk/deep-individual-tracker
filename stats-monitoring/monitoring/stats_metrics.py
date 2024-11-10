@@ -58,6 +58,7 @@ def set_stats_metrics(
     frame_num: int,
     stats_data: StatsData,
     mean_ax: Axes,
+    zoom_mean_ax: Axes,
     acc_ax: Axes,
 ) -> None:
     """Set the stats for the current frame on each axis
@@ -67,19 +68,28 @@ def set_stats_metrics(
         frame_num (int): current frame number
         stats_data (StatsData): instance of each statistics data
         mean_ax (Axes): matplotlib figure axis of mean speed
+        zoom_mean_ax (Axes): matplotlib figure axis of zoomed mean speed
         acc_ax (Axes): matplotlib figure axis of acceleration count
     """
     mean_arr = stats_data.mean
     x = [i for i in range(len(mean_arr))]
+    last_5min_idx = frame_num - 30 * 60 * 5
 
     # plot mean speed
-    mean_ax.plot(x[: frame_num + 1], mean_arr[: frame_num + 1])
+    mean_ax.plot(x[: frame_num + 1], mean_arr[: frame_num + 1], zorder=2)
     mean_ax.set_xlim(0, LABEL_IDX_MAX)
     mean_ax.set_ylim(0, cfg.statistics.mean_max)
     mean_ax.set_ylabel("Mean moving \ndistance \n[pixel $s^{-1}$]")
     mean_ax.tick_params(labelbottom=False, bottom=False)
     mean_ax.axvline(frame_num, 0, 100, color="black", linestyle="dashed")
-    mean_ax.axvspan(xmin=frame_num - 30 * 60 * 5, xmax=frame_num + 1, color="gray", alpha=0.3)
+    mean_ax.axvspan(xmin=last_5min_idx, xmax=frame_num + 1, color="gray", alpha=0.5, zorder=1)
+
+    # plot last 5 minutes mean speed on zomm graph
+    zoom_mean_ax.plot(x[last_5min_idx : frame_num + 1], mean_arr[last_5min_idx : frame_num + 1], zorder=2)
+    zoom_mean_ax.tick_params(axis="y", width=2, length=6, colors="red")
+    zoom_mean_ax.tick_params(labelbottom=False, bottom=False)
+    zoom_mean_ax.axvline(frame_num, 0, 100, color="black", linestyle="dashed")
+    zoom_mean_ax.axvspan(xmin=last_5min_idx, xmax=frame_num + 1, color="gray", alpha=0.5, zorder=1)
 
     # plot cumulate acceleration count
     acc_arr = stats_data.acceleration

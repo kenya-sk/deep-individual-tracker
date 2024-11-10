@@ -49,7 +49,7 @@ def update(
     set_frame(cfg, frame_num, detected_coordinate_df, one_hour_density_data, axs.frame_ax)
 
     # set statistics metrics
-    set_stats_metrics(cfg, frame_num, stats_data, axs.mean_graph_ax, axs.acc_graph_ax)
+    set_stats_metrics(cfg, frame_num, stats_data, axs.mean_graph_ax, axs.zoom_mean_graph_ax, axs.acc_graph_ax)
 
 
 def generate_animation(cfg: MonitoringConfig, fig: Figure, axs: MonitoringAxes) -> None:
@@ -62,13 +62,12 @@ def generate_animation(cfg: MonitoringConfig, fig: Figure, axs: MonitoringAxes) 
     """
     logger.info("[START] Load Statistics Data ...")
     stats_data = load_statistics(cfg)
-    logger.info("------------ [DONE] ------------")
+    logger.info("[DONE] Loaded Statistics Data")
 
     anim = FuncAnimation(
         fig,
         update,
-        # frames=trange(cfg.animation.frame_number),
-        frames=trange(756000, 756150),
+        frames=trange(cfg.animation.frame_number),
         interval=cfg.animation.interval,
         fargs=(cfg, axs, stats_data),
     )

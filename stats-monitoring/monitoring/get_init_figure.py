@@ -69,8 +69,8 @@ def get_init_figure() -> tuple[Figure, MonitoringAxes]:
 
     zoom_mean_graph_ax = plt.axes(
         (
-            (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
-            (GRAPH_NUM * GRAPH_MARGIN) / FIGURE_HEIGHT,
+            (FIGURE_WIDTH - 1.15 * ZOOM_GRAPH_WIDTH) / FIGURE_WIDTH,
+            (GRAPH_NUM * GRAPH_WIDTH + (GRAPH_NUM + 4) * GRAPH_MARGIN) / FIGURE_HEIGHT,
             ZOOM_GRAPH_WIDTH / FIGURE_WIDTH,
             ZOOM_GRAPH_HEIGHT / FIGURE_HEIGHT,
         )

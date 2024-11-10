@@ -27,7 +27,7 @@ GRAPH_FONT_SIZE: int = 18
 
 # zoom graph size setting
 ZOOM_GRAPH_HEIGHT: int = 240
-ZOOM_GRAPH_WIDTH: int = 240
+ZOOM_GRAPH_WIDTH: int = 480
 
 # figure size setting
 # it is caluculated by frame and graph size

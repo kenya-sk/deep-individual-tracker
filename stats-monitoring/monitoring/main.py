@@ -11,11 +11,11 @@ def main() -> None:
 
     logger.info("[START] Set Figure and Each Axis ...")
     fig, axs = get_init_figure()
-    logger.info("------------ [DONE] ------------")
+    logger.info("[DONE] Set Figure and Each Axis")
 
     logger.info("[START] Generate Animation ...")
     generate_animation(cfg, fig, axs)
-    logger.info("------------ [DONE] ------------")
+    logger.info("[DONE] Generated Animation")
 
 
 if __name__ == "__main__":
