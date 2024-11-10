@@ -11,6 +11,7 @@ from monitoring.constants import DATA_DIR
 from monitoring.frame import load_one_hour_density, set_frame
 from monitoring.logger import logger
 from monitoring.position_distribution import load_current_coordinate, set_histogram
+from monitoring.schema import StatsData
 from monitoring.stats_metrics import load_statistics, set_stats_metrics
 
 
@@ -18,7 +19,7 @@ def update(
     frame_num: int,
     cfg: MonitoringConfig,
     axs: List,
-    stats_dict: Dict,
+    stats_data: StatsData,
 ) -> None:
     """Update function for movie frame
 
@@ -26,7 +27,7 @@ def update(
         frame_num (int): current frame number
         cfg (MonitoringConfig): config for monitoring environment
         axs (List): list of matplotlib axis
-        stats_dict (Dict): dictionary containing each stats array
+        stats_data (StatsData): instance of each statistics data
     """
     # clear all axis
     for ax in axs:
@@ -50,7 +51,7 @@ def update(
     set_frame(cfg, frame_num, detected_coordinate_df, one_hour_density_df, axs[0])
 
     # set statistics metrics
-    set_stats_metrics(cfg, frame_num, stats_dict, axs[3], axs[4])
+    set_stats_metrics(cfg, frame_num, stats_data, axs[3], axs[4])
 
 
 def generate_animation(cfg: MonitoringConfig, fig: Figure, axs: List) -> None:
@@ -62,7 +63,7 @@ def generate_animation(cfg: MonitoringConfig, fig: Figure, axs: List) -> None:
         axs (List): list of matplotlib axis
     """
     logger.info("[START] Load Statistics Data ...")
-    stats_dict = load_statistics(cfg)
+    stats_data = load_statistics(cfg)
     logger.info("------------ [DONE] ------------")
 
     anim = FuncAnimation(
@@ -70,7 +71,7 @@ def generate_animation(cfg: MonitoringConfig, fig: Figure, axs: List) -> None:
         update,
         frames=trange(cfg.animation.frame_number),
         interval=cfg.animation.interval,
-        fargs=(cfg, axs, stats_dict),
+        fargs=(cfg, axs, stats_data),
     )
     save_movie_path = str(DATA_DIR / cfg.path.save_movie_path)
     anim.save(save_movie_path, writer=cfg.animation.format)

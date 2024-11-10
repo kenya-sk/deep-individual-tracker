@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import Dict
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -13,18 +12,19 @@ from monitoring.constants import (
     LABEL_IDX_MAX,
     TIME_LABELS,
 )
-from monitoring.exceptions import PathNotExistError, StatsKeyNotExistError
+from monitoring.exceptions import PathNotExistError
 from monitoring.logger import logger
+from monitoring.schema import StatsData
 
 
-def load_statistics(cfg: MonitoringConfig) -> Dict[str, np.ndarray]:
+def load_statistics(cfg: MonitoringConfig) -> StatsData:
     """Load the statistics used in the monitoring environment
 
     Args:
         cfg (MonitoringConfig): config for monitoring environment
 
     Returns:
-        dict: dictionary containing each stats array
+        StatsData: instance of each statistics data
     """
 
     def load_value(path: Path) -> np.ndarray:
@@ -43,38 +43,20 @@ def load_statistics(cfg: MonitoringConfig) -> Dict[str, np.ndarray]:
             logger.error(message)
             raise PathNotExistError(message)
 
-    stats_dict = {
-        "mean": load_value(DATA_DIR / cfg.path.mean_speed_path),
-        "past_mean": load_value(DATA_DIR / cfg.path.past_mean_speed_path),
-        "acceleration": load_value(DATA_DIR / cfg.path.acceleration_count_path),
-        "past_acceleration": load_value(DATA_DIR / cfg.path.past_acceleration_count_path),
-    }
+    stats_data = StatsData(
+        mean=load_value(DATA_DIR / cfg.path.mean_speed_path),
+        past_mean=load_value(DATA_DIR / cfg.path.past_mean_speed_path),
+        acceleration=load_value(DATA_DIR / cfg.path.acceleration_count_path),
+        past_acceleration=load_value(DATA_DIR / cfg.path.past_acceleration_count_path),
+    )
 
-    return stats_dict
-
-
-def load_array(stats_dict: Dict[str, np.ndarray], key: str) -> np.ndarray:
-    """Load array from statistics dictionary
-
-    Args:
-        stats_dict (Dict): dictionary containing each stats array
-        key (str): dictionary key
-
-    Returns:
-        np.ndarray: target stats array
-    """
-    if key in stats_dict.keys():
-        return stats_dict[key]
-    else:
-        message = f'key="{key}" is not exist in stats_dict.'
-        logger.error(message)
-        raise StatsKeyNotExistError(message)
+    return stats_data
 
 
 def set_stats_metrics(
     cfg: MonitoringConfig,
     frame_num: int,
-    stats_dict: Dict[str, np.ndarray],
+    stats_data: StatsData,
     mean_ax: Axes,
     acc_ax: Axes,
 ) -> None:
@@ -83,11 +65,11 @@ def set_stats_metrics(
     Args:
         cfg (MonitoringConfig): config for monitoring environment
         frame_num (int): current frame number
-        stats_dict (Dict): dictionary containing each stats array
+        stats_data (StatsData): instance of each statistics data
         mean_ax (Axes): matplotlib figure axis of mean speed
         acc_ax (Axes): matplotlib figure axis of acceleration count
     """
-    mean_arr = load_array(stats_dict, "mean")
+    mean_arr = stats_data.mean
     x = [i for i in range(len(mean_arr))]
 
     # plot mean speed
@@ -99,7 +81,7 @@ def set_stats_metrics(
     mean_ax.axvline(frame_num, 0, 100, color="black", linestyle="dashed")
 
     # plot cumulate acceleration count
-    acc_arr = load_array(stats_dict, "acceleration")
+    acc_arr = stats_data.acceleration
     acc_ax.plot(x[: frame_num + 1], acc_arr[: frame_num + 1])
     acc_ax.set_xlim(0, LABEL_IDX_MAX)
     acc_ax.set_ylim(0, cfg.statistics.acceleration_max)
