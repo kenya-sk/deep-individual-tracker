@@ -14,18 +14,24 @@ LOGGER_NAME = "stats-monitoring"
 
 MONITORING_CONFIG_NAME: str = "monitoring.yaml"
 
+# frame size setting
 FRAME_HEIGHT: int = 1080
 FRAME_WIDTH: int = 1920
 
+# graph size setting
 GRAPH_HEIGHT: int = 240
 GRAPH_WIDTH: int = 240
 GRAPH_MARGIN: int = 20
 GRAPH_NUM: int = 2
 GRAPH_FONT_SIZE: int = 18
 
-FIGURE_HEIGHT: int = (
-    FRAME_HEIGHT + (GRAPH_HEIGHT + GRAPH_MARGIN) * (GRAPH_NUM + 1) + 4 * GRAPH_MARGIN
-)
+# zoom graph size setting
+ZOOM_GRAPH_HEIGHT: int = 240
+ZOOM_GRAPH_WIDTH: int = 240
+
+# figure size setting
+# it is caluculated by frame and graph size
+FIGURE_HEIGHT: int = FRAME_HEIGHT + (GRAPH_HEIGHT + GRAPH_MARGIN) * (GRAPH_NUM + 1) + 4 * GRAPH_MARGIN
 FIGURE_WIDTH: int = FRAME_WIDTH + GRAPH_WIDTH + 5 * GRAPH_MARGIN
 
 # if frame interval is 1000 milli second

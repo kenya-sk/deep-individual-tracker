@@ -79,6 +79,7 @@ def set_stats_metrics(
     mean_ax.set_ylabel("Mean moving \ndistance \n[pixel $s^{-1}$]")
     mean_ax.tick_params(labelbottom=False, bottom=False)
     mean_ax.axvline(frame_num, 0, 100, color="black", linestyle="dashed")
+    mean_ax.axvspan(xmin=frame_num - 30 * 60 * 5, xmax=frame_num + 1, color="gray", alpha=0.3)
 
     # plot cumulate acceleration count
     acc_arr = stats_data.acceleration
