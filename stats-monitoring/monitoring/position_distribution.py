@@ -3,9 +3,9 @@ import os
 # [FIXME] support displot or kdeplot
 import warnings
 
-import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from matplotlib.axes import Axes
 
 from monitoring.config import MonitoringConfig
 from monitoring.constants import (
@@ -48,16 +48,16 @@ def load_current_coordinate(cfg: MonitoringConfig, frame_num: int) -> pd.DataFra
 def set_histogram(
     cfg: MonitoringConfig,
     current_coordinate_df: pd.DataFrame,
-    x_ax: plt.axis,
-    y_ax: plt.axis,
+    x_ax: Axes,
+    y_ax: Axes,
 ) -> None:
     """Set the individual distribution on histogram axis
 
     Args:
         cfg (MonitoringConfigg): config for monitoring environment
         current_coordinate_df (pd.DataFrame): DataFrame containing current frame coordinates
-        x_ax (plt.axis): matplotlib figure axis of X-histogram
-        y_ax (plt.axis): matplotlib figure axis of Y-histogram
+        x_ax (Axis): matplotlib figure axis of X-histogram
+        y_ax (Axis): matplotlib figure axis of Y-histogram
     """
     # plot X-axis histogram
     # set X-axis histogram bin number

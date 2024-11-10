@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 from typing import Dict
 
-import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 
 from monitoring.config import MonitoringConfig
 from monitoring.constants import (
@@ -47,9 +47,7 @@ def load_statistics(cfg: MonitoringConfig) -> Dict[str, np.ndarray]:
         "mean": load_value(DATA_DIR / cfg.path.mean_speed_path),
         "past_mean": load_value(DATA_DIR / cfg.path.past_mean_speed_path),
         "acceleration": load_value(DATA_DIR / cfg.path.acceleration_count_path),
-        "past_acceleration": load_value(
-            DATA_DIR / cfg.path.past_acceleration_count_path
-        ),
+        "past_acceleration": load_value(DATA_DIR / cfg.path.past_acceleration_count_path),
     }
 
     return stats_dict
@@ -77,8 +75,8 @@ def set_stats_metrics(
     cfg: MonitoringConfig,
     frame_num: int,
     stats_dict: Dict[str, np.ndarray],
-    mean_ax: plt.axis,
-    acc_ax: plt.axis,
+    mean_ax: Axes,
+    acc_ax: Axes,
 ) -> None:
     """Set the stats for the current frame on each axis
 
@@ -86,8 +84,8 @@ def set_stats_metrics(
         cfg (MonitoringConfig): config for monitoring environment
         frame_num (int): current frame number
         stats_dict (Dict): dictionary containing each stats array
-        mean_ax (plt.axis): matplotlib figure axis of mean speed
-        acc_ax (plt.axis): matplotlib figure axis of acceleration count
+        mean_ax (Axes): matplotlib figure axis of mean speed
+        acc_ax (Axes): matplotlib figure axis of acceleration count
     """
     mean_arr = load_array(stats_dict, "mean")
     x = [i for i in range(len(mean_arr))]

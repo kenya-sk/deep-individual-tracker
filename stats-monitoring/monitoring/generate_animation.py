@@ -3,6 +3,7 @@ from typing import Dict, List
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.animation import FuncAnimation
+from matplotlib.figure import Figure
 from tqdm import trange
 
 from monitoring.config import MonitoringConfig
@@ -43,9 +44,7 @@ def update(
         detected_coordinate_df = pd.DataFrame()
     # get density map 1 hour ago
     if cfg.animation.display_density:
-        one_hour_density_df = load_one_hour_density(
-            cfg.path.coordinate_directory, frame_num
-        )
+        one_hour_density_df = load_one_hour_density(cfg.path.coordinate_directory, frame_num)
     else:
         one_hour_density_df = pd.DataFrame()
     set_frame(cfg, frame_num, detected_coordinate_df, one_hour_density_df, axs[0])
@@ -54,12 +53,12 @@ def update(
     set_stats_metrics(cfg, frame_num, stats_dict, axs[3], axs[4])
 
 
-def generate_animation(cfg: MonitoringConfig, fig: plt.figure, axs: List) -> None:
+def generate_animation(cfg: MonitoringConfig, fig: Figure, axs: List) -> None:
     """Generate a video for monitoring environment
 
     Args:
         cfg (MonitoringConfig): config for monitoring environment
-        fig (plt.figure): matplotlib figure
+        fig (Figure): matplotlib figure
         axs (List): list of matplotlib axis
     """
     logger.info("[START] Load Statistics Data ...")

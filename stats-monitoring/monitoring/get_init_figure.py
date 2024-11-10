@@ -1,6 +1,8 @@
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+
 from monitoring.constants import (
     FIGURE_HEIGHT,
     FIGURE_WIDTH,
@@ -14,12 +16,12 @@ from monitoring.constants import (
 )
 
 
-def get_init_figure() -> Tuple[plt.figure, List]:
+def get_init_figure() -> Tuple[Figure, List]:
     """Get the figure and the position of each graph
     used in the monitoring environment based on the constant values.
 
     Returns:
-        Tuple[plt.figure, List]: matplotlib figure, list of each graph axis
+        Tuple[Figure, List]: matplotlib figure, list of each graph axis
     """
 
     # set figure config
@@ -29,49 +31,48 @@ def get_init_figure() -> Tuple[plt.figure, List]:
     # set each graph position
     # each axes set [left, bottom, width, height]
     frame_ax = plt.axes(
-        [
+        (
             (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
             (GRAPH_NUM * GRAPH_WIDTH + (GRAPH_NUM + 2) * GRAPH_MARGIN) / FIGURE_HEIGHT,
             FRAME_WIDTH / FIGURE_WIDTH,
             FRAME_HEIGHT / FIGURE_HEIGHT,
-        ]
+        )
     )
 
     x_hist_ax = plt.axes(
-        [
+        (
             (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
-            (GRAPH_NUM * GRAPH_HEIGHT + (GRAPH_NUM + 3) * GRAPH_MARGIN + FRAME_HEIGHT)
-            / FIGURE_HEIGHT,
+            (GRAPH_NUM * GRAPH_HEIGHT + (GRAPH_NUM + 3) * GRAPH_MARGIN + FRAME_HEIGHT) / FIGURE_HEIGHT,
             FRAME_WIDTH / FIGURE_WIDTH,
             GRAPH_HEIGHT / FIGURE_HEIGHT,
-        ]
+        )
     )
 
     y_hist_ax = plt.axes(
-        [
+        (
             2 * GRAPH_MARGIN / FIGURE_WIDTH,
             (GRAPH_NUM * GRAPH_WIDTH + (GRAPH_NUM + 2) * GRAPH_MARGIN) / FIGURE_HEIGHT,
             GRAPH_WIDTH / FIGURE_WIDTH,
             FRAME_HEIGHT / FIGURE_HEIGHT,
-        ]
+        )
     )
 
     mean_graph_ax = plt.axes(
-        [
+        (
             (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
             (GRAPH_WIDTH + (GRAPH_NUM + 1) * GRAPH_MARGIN) / FIGURE_HEIGHT,
             FRAME_WIDTH / FIGURE_WIDTH,
             GRAPH_HEIGHT / FIGURE_HEIGHT,
-        ]
+        )
     )
 
     acc_graph_ax = plt.axes(
-        [
+        (
             (GRAPH_WIDTH + 3 * GRAPH_MARGIN) / FIGURE_WIDTH,
             (GRAPH_NUM * GRAPH_MARGIN) / FIGURE_HEIGHT,
             FRAME_WIDTH / FIGURE_WIDTH,
             GRAPH_HEIGHT / FIGURE_HEIGHT,
-        ]
+        )
     )
 
     axs = [frame_ax, x_hist_ax, y_hist_ax, mean_graph_ax, acc_graph_ax]

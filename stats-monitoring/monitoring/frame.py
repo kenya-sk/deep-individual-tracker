@@ -3,9 +3,9 @@ from pathlib import Path
 from typing import Dict, List
 
 import cv2
-import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from matplotlib.axes import Axes
 
 from monitoring.config import MonitoringConfig
 from monitoring.constants import DATA_DIR, FRAME_HEIGHT, FRAME_WIDTH
@@ -36,7 +36,7 @@ def load_one_hour_density(coord_dirc: Path, end_frame_num: int) -> pd.DataFrame:
         else:
             logger.warning(f"Not Exist Path: {path}")
 
-        return pd.DataFrame(past_density_dctlst)
+    return pd.DataFrame(past_density_dctlst)
 
 
 def set_frame(
@@ -44,7 +44,7 @@ def set_frame(
     frame_num: int,
     detected_coordinate_df: pd.DataFrame,
     one_hour_density_df: pd.DataFrame,
-    ax: plt.axis,
+    ax: Axes,
 ) -> None:
     """Set the current frame on frame axis
 
@@ -53,7 +53,7 @@ def set_frame(
         frame_num (int): current frame number
         detected_coordinate_df (pd.DataFrame): DataFrame containing current frame coordinates
         one_hour_density_df (pd.DataFrame): DataFrame containing past 1 hour coordinates
-        ax (plt.axis): matplotlib figure axis of frame
+        ax (Axes): matplotlib figure axis of frame
     """
     frame_path = DATA_DIR / cfg.path.frame_directory / f"{frame_num}.png"
     if os.path.isfile(frame_path):
@@ -86,7 +86,7 @@ def set_frame(
             x="x",
             y="y",
             cmap="RdYlGn_r",
-            legend="Tuna density",
+            legend=True,
             cbar=False,
             alpha=0.3,
             fill=True,
